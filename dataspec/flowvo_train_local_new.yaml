@@ -1,0 +1,46 @@
+---
+  task: flowvo
+  transform_data_augment: true
+  transform_flow_norm_factor: 0.05
+  transform_uncertainty: true
+  transform_input_size: [160, 160]
+  dataset_frame_skip: 0
+  dataset_seq_stride: 1
+  data:
+    "/home/amigo/tmp/test_root/coalmine/analyze/data_coalmine_Data_easy_P000.txt":
+      modality: 
+        "flow":
+          type: flow_lcam_front
+          cacher_size: [160, 160]
+          length: 6
+        "img0":
+          type: rgb_lcam_front
+          cacher_size: [160, 160]
+          length: 3
+        "depth0":
+          type: depth_lcam_front
+          cacher_size: [160, 160]
+          length: 1
+        "acc":
+          type: imu_acc
+          cacher_size: [3]
+          length: 10
+        "pose":
+          type: pose_lcam_front
+          cacher_size: [7]
+          length: 1
+        "lidar":
+          type: lidar
+          cacher_size: [3]
+          length: 1
+        "seg0":
+          type: seg_lcam_front
+          cacher_size: [160, 160]
+          length: 2
+      cacher:
+        data_root_key: tartan2 
+        subset_framenum: 12
+        worker_num: 2
+      transform:
+        resize_factor: 2.5
+      dataset:

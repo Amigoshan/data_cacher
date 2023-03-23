@@ -160,7 +160,8 @@ if __name__ == '__main__':
     from .ConfigParser import ConfigParser
     from .utils import visflow, visdepth
     import cv2
-    dataset_specfile = 'data_cacher/dataspec/flowvo_train_local_v1.yaml'
+    # dataset_specfile = 'data_cacher/dataspec/flowvo_train_local_v1.yaml'
+    dataset_specfile = 'data_cacher/dataspec/flowvo_train_local_v2.yaml'
     # configparser = ConfigParser()
     # dataconfigs = configparser.parse_from_fp(dataset_specfile)
     batch = 3

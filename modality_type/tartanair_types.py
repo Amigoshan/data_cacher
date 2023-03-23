@@ -163,6 +163,7 @@ class SegModBase(FrameModBase):
         '''
         return join(self.folder_name, framestr + '_' + self.file_suffix + '.png')
 
+# === lcam_front ===
 @register(TYPEDICT)
 class rgb_lcam_front(RGBModBase):
     def __init__(self, datashape):
@@ -183,7 +184,251 @@ class seg_lcam_front(SegModBase):
         super().__init__(datashape)
         self.folder_name = "seg_lcam_front"
         self.file_suffix = "lcam_front_seg"
+
+# === rcam_front ===
+@register(TYPEDICT)
+class rgb_rcam_front(RGBModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "image_rcam_front"
+        self.file_suffix = "rcam_front"
     
+@register(TYPEDICT)
+class depth_rcam_front(DepthModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "depth_rcam_front"
+        self.file_suffix = "rcam_front_depth"
+    
+@register(TYPEDICT)
+class seg_rcam_front(SegModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "seg_rcam_front"
+        self.file_suffix = "rcam_front_seg" 
+
+
+# === lcam_back ===
+@register(TYPEDICT)
+class rgb_lcam_back(RGBModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "image_lcam_back"
+        self.file_suffix = "lcam_back"
+    
+@register(TYPEDICT)
+class depth_lcam_back(DepthModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "depth_lcam_back"
+        self.file_suffix = "lcam_back_depth"
+    
+@register(TYPEDICT)
+class seg_lcam_back(SegModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "seg_lcam_back"
+        self.file_suffix = "lcam_back_seg"
+
+# === rcam_back ===
+@register(TYPEDICT)
+class rgb_rcam_back(RGBModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "image_rcam_back"
+        self.file_suffix = "rcam_back"
+    
+@register(TYPEDICT)
+class depth_rcam_back(DepthModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "depth_rcam_back"
+        self.file_suffix = "rcam_back_depth"
+    
+@register(TYPEDICT)
+class seg_rcam_back(SegModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "seg_rcam_back"
+        self.file_suffix = "rcam_back_seg" 
+
+# === lcam_left ===
+@register(TYPEDICT)
+class rgb_lcam_left(RGBModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "image_lcam_left"
+        self.file_suffix = "lcam_left"
+    
+@register(TYPEDICT)
+class depth_lcam_left(DepthModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "depth_lcam_left"
+        self.file_suffix = "lcam_left_depth"
+    
+@register(TYPEDICT)
+class seg_lcam_left(SegModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "seg_lcam_left"
+        self.file_suffix = "lcam_left_seg"
+
+# === rcam_left ===
+@register(TYPEDICT)
+class rgb_rcam_left(RGBModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "image_rcam_left"
+        self.file_suffix = "rcam_left"
+    
+@register(TYPEDICT)
+class depth_rcam_left(DepthModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "depth_rcam_left"
+        self.file_suffix = "rcam_left_depth"
+    
+@register(TYPEDICT)
+class seg_rcam_left(SegModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "seg_rcam_left"
+        self.file_suffix = "rcam_left_seg" 
+
+# === lcam_right ===
+@register(TYPEDICT)
+class rgb_lcam_right(RGBModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "image_lcam_right"
+        self.file_suffix = "lcam_right"
+    
+@register(TYPEDICT)
+class depth_lcam_right(DepthModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "depth_lcam_right"
+        self.file_suffix = "lcam_right_depth"
+    
+@register(TYPEDICT)
+class seg_lcam_right(SegModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "seg_lcam_right"
+        self.file_suffix = "lcam_right_seg"
+
+# === rcam_right ===
+@register(TYPEDICT)
+class rgb_rcam_right(RGBModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "image_rcam_right"
+        self.file_suffix = "rcam_right"
+    
+@register(TYPEDICT)
+class depth_rcam_right(DepthModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "depth_rcam_right"
+        self.file_suffix = "rcam_right_depth"
+    
+@register(TYPEDICT)
+class seg_rcam_right(SegModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "seg_rcam_right"
+        self.file_suffix = "rcam_right_seg" 
+
+# === lcam_top ===
+@register(TYPEDICT)
+class rgb_lcam_top(RGBModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "image_lcam_top"
+        self.file_suffix = "lcam_top"
+    
+@register(TYPEDICT)
+class depth_lcam_top(DepthModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "depth_lcam_top"
+        self.file_suffix = "lcam_top_depth"
+    
+@register(TYPEDICT)
+class seg_lcam_top(SegModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "seg_lcam_top"
+        self.file_suffix = "lcam_top_seg"
+
+# === rcam_top ===
+@register(TYPEDICT)
+class rgb_rcam_top(RGBModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "image_rcam_top"
+        self.file_suffix = "rcam_top"
+    
+@register(TYPEDICT)
+class depth_rcam_top(DepthModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "depth_rcam_top"
+        self.file_suffix = "rcam_top_depth"
+    
+@register(TYPEDICT)
+class seg_rcam_top(SegModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "seg_rcam_top"
+        self.file_suffix = "rcam_top_seg" 
+
+# === lcam_bottom ===
+@register(TYPEDICT)
+class rgb_lcam_bottom(RGBModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "image_lcam_bottom"
+        self.file_suffix = "lcam_bottom"
+    
+@register(TYPEDICT)
+class depth_lcam_bottom(DepthModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "depth_lcam_bottom"
+        self.file_suffix = "lcam_bottom_depth"
+    
+@register(TYPEDICT)
+class seg_lcam_bottom(SegModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "seg_lcam_bottom"
+        self.file_suffix = "lcam_bottom_seg"
+
+# === rcam_bottom ===
+@register(TYPEDICT)
+class rgb_rcam_bottom(RGBModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "image_rcam_bottom"
+        self.file_suffix = "rcam_bottom"
+    
+@register(TYPEDICT)
+class depth_rcam_bottom(DepthModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "depth_rcam_bottom"
+        self.file_suffix = "rcam_bottom_depth"
+    
+@register(TYPEDICT)
+class seg_rcam_bottom(SegModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "seg_rcam_bottom"
+        self.file_suffix = "rcam_bottom_seg" 
+
+# ==== FLOW ====
 @register(TYPEDICT)
 class flow_lcam_front(FlowModBase):
     def __init__(self, datashape):
@@ -222,6 +467,22 @@ class pose_lcam_front(SimpleModBase):
 
     def get_filename(self):
         return 'pose_lcam_front.txt'
+
+    def data_padding(self):
+        return None
+
+@register(TYPEDICT)
+class motion_lcam_front(SimpleModBase):
+    '''
+    This defines modality that is light-weight
+    such as IMU, pose, wheel_encoder
+    '''
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.data_shape = (6,)
+
+    def get_filename(self):
+        return 'motion_lcam_front.npy'
 
     def data_padding(self):
         return None

@@ -12,13 +12,13 @@
         "flow":
           type: flow_lcam_front
           cacher_size: [160, 160]
-          length: 6
+          length: 2
         "img0":
-          type: rgb_lcam_front
+          type: rgb_lcam_left
           cacher_size: [160, 160]
           length: 3
         "depth0":
-          type: depth_lcam_front
+          type: depth_rcam_bottom
           cacher_size: [160, 160]
           length: 1
         "acc":

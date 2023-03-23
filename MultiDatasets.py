@@ -160,7 +160,7 @@ if __name__ == '__main__':
     from .ConfigParser import ConfigParser
     from .utils import visflow, visdepth
     import cv2
-    dataset_specfile = 'data_cacher/dataspec/flowvo_train_local_new.yaml'
+    dataset_specfile = 'data_cacher/dataspec/flowvo_train_local_v1.yaml'
     # configparser = ConfigParser()
     # dataconfigs = configparser.parse_from_fp(dataset_specfile)
     batch = 3
@@ -175,7 +175,7 @@ if __name__ == '__main__':
         sample = trainDataloader.load_sample()
         print(sample.keys())
         # time.sleep(0.02)
-        import ipdb;ipdb.set_trace()
+        # import ipdb;ipdb.set_trace()
         for b in range(batch):
             ss=sample['img0'][b][0].numpy()
             ss2=sample['depth0'][b][0].numpy()
@@ -184,7 +184,7 @@ if __name__ == '__main__':
             flowvis = visflow(ss3)
             disp = cv2.hconcat((ss, depthvis, flowvis))
             cv2.imshow('img', disp)
-            cv2.waitKey(10)
+            cv2.waitKey(100)
 
     print((time.time()-tic))
     trainDataloader.stop_cachers()

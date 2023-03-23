@@ -1,2 +1,3 @@
 from .ModBase import FrameModBase, SimpleModBase
-import .tartanair_types 
+from .tartanair_types import RGBModBase
+from .tartanairv1_types import RGBModBase

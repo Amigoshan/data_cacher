@@ -24,24 +24,9 @@ class ConfigParser(object):
                                     'load_traj' # load one trajectory into the cacher at one time
                                 ]
 
-        self.transform_paramlist = ['data_augment', # whether use data augmentation
-                                    'resize_factor', # data augment: RCR
-                                    'input_size', # size for the training
-                                    'rand_hsv', # data augment
-                                    'flow_norm_factor',
-                                    'rgb_norm', # normalize rgb for flow training
-                                    'inverse_depth_factor',
-                                    'stereo_norm_factor',
-                                    'uncertainty' # augment uncertainty mask for flow or stereo
-                                    ]
-
-        self.dataset_paramlist = ['imu_freq',
-                                  'intrinsics',
-                                  'intrinsics_scale',
-                                  'blxfx',
-                                  'frame_skip',
+        self.dataset_paramlist = ['frame_skip',
                                   'seq_stride',
-                                  'random_blur']
+                                 ]
 
     def parse_from_fp(self, fp):
         x = yaml.safe_load(open(fp, 'r'))
@@ -84,7 +69,6 @@ class ConfigParser(object):
         
         default_modality_params = self.parse_sub_global_param(spec, "modality", self.modality_paramlist)
         default_cacher_params = self.parse_sub_global_param(spec, "cacher", self.cacher_paramlist)
-        default_transform_params = self.parse_sub_global_param(spec, "transform", self.transform_paramlist)
         default_dataset_params = self.parse_sub_global_param(spec, "dataset", self.dataset_paramlist)
 
         data_config = {}
@@ -100,9 +84,6 @@ class ConfigParser(object):
 
             cacher_params = self.parse_sub_data_param(params, "cacher", self.cacher_paramlist, default_cacher_params)
             all_params['cacher'] = cacher_params
-
-            trans_params = self.parse_sub_data_param(params, "transform", self.transform_paramlist, default_transform_params)
-            all_params['transform'] = trans_params
 
             dataset_params = self.parse_sub_data_param(params, "dataset", self.dataset_paramlist, default_dataset_params)
             all_params['dataset'] = dataset_params

@@ -69,6 +69,13 @@ class RGBModBase(FrameModBase):
             img = cv2.resize(img, (self.w, self.h), interpolation=cv2.INTER_LINEAR )
         return img
 
+    def framestr2filename(self, framestr):
+        '''
+        This is very dataset specific
+        Basically it handles how each dataset naming the frames and organizing the data
+        '''
+        return join(self.folder_name, framestr + '_' + self.file_suffix + '.png')
+
 class DepthModBase(FrameModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
@@ -89,6 +96,13 @@ class DepthModBase(FrameModBase):
         if h != self.h or w != self.w:
             depth = cv2.resize(depth, (self.w, self.h), interpolation=cv2.INTER_LINEAR )
         return depth
+
+    def framestr2filename(self, framestr):
+        '''
+        This is very dataset specific
+        Basically it handles how each dataset naming the frames and organizing the data
+        '''
+        return join(self.folder_name, framestr + '_' + self.file_suffix + '.png')
 
 class FlowModBase(FrameModBase):
     def __init__(self, datashape):
@@ -114,6 +128,15 @@ class FlowModBase(FrameModBase):
             flow = cv2.resize(flow, (self.w, self.h), interpolation=cv2.INTER_LINEAR )
         return flow
 
+    def framestr2filename(self, framestr):
+        '''
+        This is very dataset specific
+        Basically it handles how each dataset naming the frames and organizing the data
+        '''
+        framenum = int(framestr)
+        framestr2 = str(framenum + 1).zfill(6)
+        return join(self.folder_name, framestr + '_' + framestr2 + '_' + self.file_suffix + '.png')
+
 class SegModBase(FrameModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
@@ -133,6 +156,13 @@ class SegModBase(FrameModBase):
             seg = cv2.resize(seg, (self.w, self.h), interpolation=cv2.INTER_LINEAR )
         return seg
 
+    def framestr2filename(self, framestr):
+        '''
+        This is very dataset specific
+        Basically it handles how each dataset naming the frames and organizing the data
+        '''
+        return join(self.folder_name, framestr + '_' + self.file_suffix + '.png')
+
 @register(TYPEDICT)
 class rgb_lcam_front(RGBModBase):
     def __init__(self, datashape):
@@ -140,13 +170,6 @@ class rgb_lcam_front(RGBModBase):
         self.folder_name = "image_lcam_front"
         self.file_suffix = "lcam_front"
     
-    def framestr2filename(self, framestr):
-        '''
-        This is very dataset specific
-        Basically it handles how each dataset naming the frames and organizing the data
-        '''
-        return join(self.folder_name, framestr + '_' + self.file_suffix + '.png')
-
 @register(TYPEDICT)
 class depth_lcam_front(DepthModBase):
     def __init__(self, datashape):
@@ -154,13 +177,6 @@ class depth_lcam_front(DepthModBase):
         self.folder_name = "depth_lcam_front"
         self.file_suffix = "lcam_front_depth"
     
-    def framestr2filename(self, framestr):
-        '''
-        This is very dataset specific
-        Basically it handles how each dataset naming the frames and organizing the data
-        '''
-        return join(self.folder_name, framestr + '_' + self.file_suffix + '.png')
-
 @register(TYPEDICT)
 class seg_lcam_front(SegModBase):
     def __init__(self, datashape):
@@ -168,13 +184,6 @@ class seg_lcam_front(SegModBase):
         self.folder_name = "seg_lcam_front"
         self.file_suffix = "lcam_front_seg"
     
-    def framestr2filename(self, framestr):
-        '''
-        This is very dataset specific
-        Basically it handles how each dataset naming the frames and organizing the data
-        '''
-        return join(self.folder_name, framestr + '_' + self.file_suffix + '.png')
-
 @register(TYPEDICT)
 class flow_lcam_front(FlowModBase):
     def __init__(self, datashape):
@@ -183,15 +192,6 @@ class flow_lcam_front(FlowModBase):
         self.file_suffix = "flow"
         self.drop_last = 1 # the flow is one frame shorter than other modalities
     
-    def framestr2filename(self, framestr):
-        '''
-        This is very dataset specific
-        Basically it handles how each dataset naming the frames and organizing the data
-        '''
-        framenum = int(framestr)
-        framestr2 = str(framenum + 1).zfill(6)
-        return join(self.folder_name, framestr + '_' + framestr2 + '_' + self.file_suffix + '.png')
-
 @register(TYPEDICT)
 class imu_acc(IMUBase):
     '''

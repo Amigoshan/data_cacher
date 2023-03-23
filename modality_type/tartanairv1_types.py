@@ -2,6 +2,7 @@ import cv2
 from .ModBase import SimpleModBase, FrameModBase, register, TYPEDICT
 from os.path import join
 import numpy as np
+from .ply_io import read_ply
 
 '''
 In the low level, each modality corresponds to a folder in the traj folder
@@ -29,25 +30,6 @@ class IMUBase(SimpleModBase):
     def data_padding(self):
         return np.zeros((10,3), dtype=np.float32)
 
-class LiDARBase(FrameModBase):
-    def __init__(self, datashape):
-        super().__init__(datashape) # point dimention, e.g. 3 for tartanvo, 6 if rgb is included
-        self.data_shape = (57600, 3) # 57600 is the maximun points for Velodyn 16 where there are 16x3600 points
-        self.data_type = np.float32
-
-    def load_frame(self, filename):
-        if filename.endswith('npy'):
-            data = np.load(filename)
-        elif filename.endswith('ply'):
-            data = read_ply(filename)
-        else:
-            assert False, "Unknow file type for LiDAR {}".format(filename)
-        assert data.shape[0] <= self.data_shape[0], "The number of LiDAR points {} exeeds the maximum size {}".format(data.shape[0], self.data_shape[0])
-        return data
-
-    def resize_data(self, lidar):
-        return lidar
-
 class RGBModBase(FrameModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
@@ -67,6 +49,13 @@ class RGBModBase(FrameModBase):
         if h != self.h or w != self.w:
             img = cv2.resize(img, (self.w, self.h), interpolation=cv2.INTER_LINEAR )
         return img
+
+    def framestr2filename(self, framestr):
+        '''
+        This is very dataset specific
+        Basically it handles how each dataset naming the frames and organizing the data
+        '''
+        return join(self.folder_name, framestr + '_' + self.file_suffix + '.png')
 
 class DepthModBase(FrameModBase):
     def __init__(self, datashape):
@@ -88,6 +77,13 @@ class DepthModBase(FrameModBase):
         if h != self.h or w != self.w:
             depth = cv2.resize(depth, (self.w, self.h), interpolation=cv2.INTER_LINEAR )
         return depth
+
+    def framestr2filename(self, framestr):
+        '''
+        This is very dataset specific
+        Basically it handles how each dataset naming the frames and organizing the data
+        '''
+        return join(self.folder_name, framestr + '_' + self.file_suffix + '.png')
 
 class FlowModBase(FrameModBase):
     def __init__(self, datashape):
@@ -113,6 +109,15 @@ class FlowModBase(FrameModBase):
             flow = cv2.resize(flow, (self.w, self.h), interpolation=cv2.INTER_LINEAR )
         return flow
 
+    def framestr2filename(self, framestr):
+        '''
+        This is very dataset specific
+        Basically it handles how each dataset naming the frames and organizing the data
+        '''
+        framenum = int(framestr)
+        framestr2 = str(framenum + 1).zfill(6)
+        return join(self.folder_name, framestr + '_' + framestr2 + '_' + self.file_suffix + '.png')
+
 class SegModBase(FrameModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
@@ -132,13 +137,6 @@ class SegModBase(FrameModBase):
             seg = cv2.resize(seg, (self.w, self.h), interpolation=cv2.INTER_LINEAR )
         return seg
 
-@register(TYPEDICT)
-class rgb_lcam_front(RGBModBase):
-    def __init__(self, datashape):
-        super().__init__(datashape)
-        self.folder_name = "image_lcam_front"
-        self.file_suffix = "lcam_front"
-    
     def framestr2filename(self, framestr):
         '''
         This is very dataset specific
@@ -147,70 +145,80 @@ class rgb_lcam_front(RGBModBase):
         return join(self.folder_name, framestr + '_' + self.file_suffix + '.png')
 
 @register(TYPEDICT)
-class depth_lcam_front(DepthModBase):
+class image_left(RGBModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
-        self.folder_name = "depth_lcam_front"
-        self.file_suffix = "lcam_front_depth"
-    
-    def framestr2filename(self, framestr):
-        '''
-        This is very dataset specific
-        Basically it handles how each dataset naming the frames and organizing the data
-        '''
-        return join(self.folder_name, framestr + '_' + self.file_suffix + '.png')
+        self.folder_name = "image_left"
+        self.file_suffix = "left"
 
 @register(TYPEDICT)
-class seg_lcam_front(SegModBase):
+class image_left_blur(RGBModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
-        self.folder_name = "seg_lcam_front"
-        self.file_suffix = "lcam_front_seg"
-    
-    def framestr2filename(self, framestr):
-        '''
-        This is very dataset specific
-        Basically it handles how each dataset naming the frames and organizing the data
-        '''
-        return join(self.folder_name, framestr + '_' + self.file_suffix + '.png')
+        self.folder_name = "image_left_blur_0.5"
+        self.file_suffix = "left"
 
 @register(TYPEDICT)
-class flow_lcam_front(FlowModBase):
+class image_right(RGBModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
-        self.folder_name = "flow_lcam_front"
+        self.folder_name = "image_right"
+        self.file_suffix = "right"
+
+@register(TYPEDICT)
+class depth_left(DepthModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "depth_left"
+        self.file_suffix = "left_depth"
+
+@register(TYPEDICT)
+class depth_right(DepthModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "depth_right"
+        self.file_suffix = "right_depth"
+    
+@register(TYPEDICT)
+class seg_left(SegModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "seg_left"
+        self.file_suffix = "left_seg"
+
+@register(TYPEDICT)
+class seg_right(SegModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "seg_right"
+        self.file_suffix = "right_seg"
+
+@register(TYPEDICT)
+class flow_left(FlowModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "flow"
         self.file_suffix = "flow"
         self.drop_last = 1 # the flow is one frame shorter than other modalities
-    
-    def framestr2filename(self, framestr):
-        '''
-        This is very dataset specific
-        Basically it handles how each dataset naming the frames and organizing the data
-        '''
-        framenum = int(framestr)
-        framestr2 = str(framenum + 1).zfill(6)
-        return join(self.folder_name, framestr + '_' + framestr2 + '_' + self.file_suffix + '.png')
 
 @register(TYPEDICT)
-class imu_acc(IMUBase):
-    '''
-    This defines modality that is light-weight
-    such as IMU, pose, wheel_encoder
-    '''
-    def get_filename(self):
-        return join(self.folder_name, 'acc.npy')
+class flow2_left(FlowModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "flow2"
+        self.file_suffix = "flow"
+        self.drop_last = 2 # the flow is one frame shorter than other modalities
 
 @register(TYPEDICT)
-class imu_gyro(IMUBase):
-    '''
-    This defines modality that is light-weight
-    such as IMU, pose, wheel_encoder
-    '''
-    def get_filename(self):
-        return join(self.folder_name, 'gyro.npy')
+class flow4_left(FlowModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "flow4"
+        self.file_suffix = "flow"
+        self.drop_last = 4 # the flow is one frame shorter than other modalities
 
 @register(TYPEDICT)
-class pose_lcam_front(SimpleModBase):
+class pose_left(SimpleModBase):
     '''
     This defines modality that is light-weight
     such as IMU, pose, wheel_encoder
@@ -220,17 +228,24 @@ class pose_lcam_front(SimpleModBase):
         self.data_shape = (7,)
 
     def get_filename(self):
-        return 'pose_lcam_front.txt'
+        return 'pose_left.txt'
 
     def data_padding(self):
         return None
 
 @register(TYPEDICT)
-class lidar(LiDARBase):
+class motion_left(SimpleModBase):
+    '''
+    This defines modality that is light-weight
+    such as IMU, pose, wheel_encoder
+    '''
     def __init__(self, datashape):
         super().__init__(datashape)
-        self.folder_name = 'lidar'
-        self.file_suffix = 'lcam_front_lidar'
+        self.data_shape = (6,)
+        self.drop_last = 1
 
-    def framestr2filename(self, framestr):
-        return join(self.folder_name, framestr + '_' + self.file_suffix + '.ply')
+    def get_filename(self):
+        return 'motion_left.npy'
+
+    def data_padding(self):
+        return None

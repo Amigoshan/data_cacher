@@ -19,7 +19,9 @@ TYPEDICT = dict()
 
 def register(dst):
     def dec_register(cls):
-        dst[cls.__name__] = cls
+        clsname = cls.__name__
+        assert clsname not in dst, "Register error: type name {} duplicated".format(clsname)
+        dst[clsname] = cls
         return cls
     return dec_register
 

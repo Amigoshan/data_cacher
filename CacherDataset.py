@@ -2,8 +2,6 @@ from torch.utils.data import Dataset
 import numpy as np
 from os.path import join
 
-# TODO: Pad some modality such as flow and motion
-
 class CacherDataset(Dataset):
     '''
     Design choice: one dataset is used for one modality

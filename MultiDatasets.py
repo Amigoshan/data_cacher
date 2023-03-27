@@ -113,11 +113,11 @@ class MultiDatasets(object):
 
         # load sample from the dataloader
         try:
-            sample = self.dataiters[datasetInd].next()
+            sample = next(self.dataiters[datasetInd])
             if sample[list(sample.keys())[0]].shape[0] < self.batch and (fullbatch is True): # the imcomplete batch is thrown away
                 # self.dataiters[datasetInd] = iter(self.dataloaders[datasetInd])
                 # sample = self.dataiters[datasetInd].next()
-                sample = self.dataiters[datasetInd].next()
+                sample = next(self.dataiters[datasetInd])
         except StopIteration:
             # import ipdb;ipdb.set_trace()
             if notrepeat: # wait for the new buffer ready, do not repeat the current buffer
@@ -134,7 +134,7 @@ class MultiDatasets(object):
                 self.dataloaders[datasetInd] = DataLoader(self.datasets[datasetInd], batch_size=self.batch, shuffle=self.shuffle, num_workers=self.workernum)
                 self.subsetrepeat[datasetInd] = -1
             self.dataiters[datasetInd] = iter(self.dataloaders[datasetInd])
-            sample = self.dataiters[datasetInd].next()
+            sample = next(self.dataiters[datasetInd])
             new_buffer = True
             self.subsetrepeat[datasetInd] += 1
             print('==> Working on {} for the {} time'.format(self.datafiles[datasetInd], self.subsetrepeat[datasetInd]))

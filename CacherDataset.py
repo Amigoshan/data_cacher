@@ -115,4 +115,3 @@ if __name__=="__main__":
         disp = cv2.hconcat((ss, depthvis, flowvis))
         cv2.imshow('img', disp)
         cv2.waitKey(0)
-    import ipdb;ipdb.set_trace()

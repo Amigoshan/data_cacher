@@ -156,7 +156,7 @@ class DataCacher(object):
         while not self.stop_flag: # this loops forever unless the stop flag is set
             if not self.new_buffer_available:
                 try:
-                    sample = self.dataiter.next()
+                    sample = next(self.dataiter)
                     datanp = sample.numpy()
                     self.loading_buffer.insert_frame_one_mod(self.modind, self.active_modname, datanp)
                     self.modind += self.batch_size

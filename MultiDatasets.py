@@ -1,3 +1,4 @@
+import os
 from torch.utils.data import DataLoader
 import numpy as np
 from os.path import isfile
@@ -23,9 +24,14 @@ class MultiDatasets(object):
         dataconfigs: 'modality', 'cacher', 'transform', 'dataset'
 
         '''
-        assert isfile(dataset_specfile), "MultiDatasetsBase: Cannot find spec file {}".format(dataset_specfile)
+
         configparser = ConfigParser()
-        dataconfigs = configparser.parse_from_fp(dataset_specfile)
+        if isinstance(dataset_specfile, str):
+            assert isfile(dataset_specfile), "MultiDatasetsBase: Cannot find spec file {}".format(dataset_specfile)
+            dataconfigs = configparser.parse_from_fp(dataset_specfile)
+
+        elif isinstance(dataset_specfile, dict):
+            dataconfigs = configparser.parse_from_dict(dataset_specfile)
 
         self.datasetNum = len(dataconfigs['data'])
 
@@ -64,8 +70,16 @@ class MultiDatasets(object):
             cacher_param = params['cacher']
             dataset_param = params['dataset']
 
-            data_root_key = cacher_param['data_root_key']
-            data_root = DataRoot[self.platform][data_root_key]
+            # Allow to pass a data root path directly via config.
+            # TODO(yoraish): is this a good idea? I feel like overrides may be dangerous.
+            if 'data_root_path_override' in cacher_param and cacher_param['data_root_path_override'] is not None:
+                # Check path integrity. Check if the path is to a directory.
+                assert os.path.exists(cacher_param['data_root_path_override']), "MultiDatasets: Cannot find data root path provided as override {}".format(cacher_param['data_root_path_override'])
+                data_root = cacher_param['data_root_path_override']
+
+            else:
+                data_root_key = cacher_param['data_root_key']
+                data_root = DataRoot[self.platform][data_root_key]
 
             modality_types, modality_lengths = self.parse_modality_types(modality_param)
             self.modalitylengths.append(modality_lengths)
@@ -162,28 +176,92 @@ if __name__ == '__main__':
     import cv2
     # dataset_specfile = 'data_cacher/dataspec/flowvo_train_local_v1.yaml'
     dataset_specfile = 'data_cacher/dataspec/flowvo_train_local_v2.yaml'
+
+    dataset_specdict = \
+{
+    'task': 'flowvo', 
+    'transform_data_augment': True, 
+    'transform_flow_norm_factor': 0.05, 
+    'transform_uncertainty': True, 
+    'transform_input_size': [160, 160], 
+    'dataset_frame_skip': 0, 
+    'dataset_seq_stride': 1, 
+    'data': {
+        '/media/yoraish/overflow/data/tartanair-v2/HQWesternSaloonExposure/analyze/data_HQWesternSaloonExposure_Data_easy_P000.txt': 
+        {
+        'modality': {
+            'img0': {
+            'type': 'rgb_lcam_front', 'cacher_size': [160, 160], 'length': 3}, 
+            'lcam_left': {
+            'type': 'rgb_lcam_left', 'cacher_size': [160, 160], 'length': 3}, 
+            'lcam_back': {
+            'type': 'rgb_lcam_back', 'cacher_size': [160, 160], 'length': 3}, 
+            'lcam_right': {
+            'type': 'rgb_lcam_right', 'cacher_size': [160, 160], 'length': 3}, 
+            'lcam_top': {
+            'type': 'rgb_lcam_top', 'cacher_size': [160, 160], 'length': 3}, 
+            'lcam_bottom': {
+            'type': 'rgb_lcam_bottom', 'cacher_size': [160, 160], 'length': 3}, 
+            'depth0': {
+            'type': 'depth_lcam_bottom', 'cacher_size': [160, 160], 'length': 1}}, 
+        'cacher': {
+            'data_root_key': 'tartan2', 
+            'subset_framenum': 120, 
+            'worker_num': 2}, 
+            'transform': {'resize_factor': 2.5}, 
+            'dataset': None},
+            
+        '/media/yoraish/overflow/data/tartanair-v2/HQWesternSaloonExposure/analyze/data_HQWesternSaloonExposure_Data_easy_P001.txt': 
+        {
+        'modality': {
+            'img0': {
+            'type': 'rgb_lcam_front', 'cacher_size': [160, 160], 'length': 3}, 
+            'lcam_left': {
+            'type': 'rgb_lcam_left', 'cacher_size': [160, 160], 'length': 3}, 
+            'lcam_back': {
+            'type': 'rgb_lcam_back', 'cacher_size': [160, 160], 'length': 3}, 
+            'lcam_right': {
+            'type': 'rgb_lcam_right', 'cacher_size': [160, 160], 'length': 3}, 
+            'lcam_top': {
+            'type': 'rgb_lcam_top', 'cacher_size': [160, 160], 'length': 3}, 
+            'lcam_bottom': {
+            'type': 'rgb_lcam_bottom', 'cacher_size': [160, 160], 'length': 3}, 
+            'depth0': {
+            'type': 'depth_lcam_bottom', 'cacher_size': [160, 160], 'length': 1}}, 
+        'cacher': {
+            'data_root_key': 'tartan2', 
+            'subset_framenum': 120, 
+            'worker_num': 2}, 
+            'transform': {'resize_factor': 2.5}, 
+            'dataset': None}}}
+
     # configparser = ConfigParser()
     # dataconfigs = configparser.parse_from_fp(dataset_specfile)
-    batch = 3
-    trainDataloader = MultiDatasets(dataset_specfile, 
+    batch = 32
+    trainDataloader = MultiDatasets(dataset_specdict, 
                        'local', 
                        batch=batch, 
-                       workernum=0, 
-                       shuffle=False)
+                       workernum=4, 
+                       shuffle=True)
     tic = time.time()
     num = 100                       
     for k in range(num):
+        print("\n\n\n")
         sample = trainDataloader.load_sample()
         print(sample.keys())
+        print(sample['img0'].shape)
+        print(sample['depth0'].shape)
         # time.sleep(0.02)
-        # import ipdb;ipdb.set_trace()
+        import ipdb;ipdb.set_trace()
         for b in range(batch):
             ss=sample['img0'][b][0].numpy()
+            ss1 = sample['img0'][b][1].numpy()
             ss2=sample['depth0'][b][0].numpy()
-            ss3=sample['flow'][b][0].numpy()
+            # ss3=sample['flow'][b][0].numpy()
             depthvis = visdepth(80./ss2)
-            flowvis = visflow(ss3)
-            disp = cv2.hconcat((ss, depthvis, flowvis))
+            # flowvis = visflow(ss3)
+            # disp = cv2.hconcat((ss, depthvis, flowvis))
+            disp = cv2.hconcat((ss, ss1, depthvis))
             cv2.imshow('img', disp)
             cv2.waitKey(100)
 

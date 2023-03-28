@@ -458,8 +458,7 @@ class imu_gyro(IMUBase):
 @register(TYPEDICT)
 class pose_lcam_front(SimpleModBase):
     '''
-    This defines modality that is light-weight
-    such as IMU, pose, wheel_encoder
+    The pose of the left front camera.
     '''
     def __init__(self, datashape):
         super().__init__(datashape)
@@ -467,6 +466,172 @@ class pose_lcam_front(SimpleModBase):
 
     def get_filename(self):
         return 'pose_lcam_front.txt'
+
+    def data_padding(self):
+        return None
+
+@register(TYPEDICT)
+class pose_lcam_right(SimpleModBase):
+    '''
+    The pose of the left right-facing camera.
+    '''
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.data_shape = (7,)
+
+    def get_filename(self):
+        return 'pose_lcam_right.txt'
+
+    def data_padding(self):
+        return None
+
+@register(TYPEDICT)
+class pose_lcam_back(SimpleModBase):
+    '''
+    The pose of the left back-facing camera.
+    '''
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.data_shape = (7,)
+
+    def get_filename(self):
+        return 'pose_lcam_back.txt'
+
+    def data_padding(self):
+        return None
+
+@register(TYPEDICT)
+class pose_lcam_left(SimpleModBase):
+    '''
+    The pose of the left left-facing camera.
+    '''
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.data_shape = (7,)
+
+    def get_filename(self):
+        return 'pose_lcam_left.txt'
+
+    def data_padding(self):
+        return None
+
+@register(TYPEDICT)
+class pose_lcam_top(SimpleModBase):
+    '''
+    The pose of the left top-facing camera.
+    '''
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.data_shape = (7,)
+
+    def get_filename(self):
+        return 'pose_lcam_top.txt'
+
+    def data_padding(self):
+        return None
+
+@register(TYPEDICT)
+class pose_lcam_bottom(SimpleModBase):
+    '''
+    The pose of the left bottom-facing camera.
+    '''
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.data_shape = (7,)
+
+    def get_filename(self):
+        return 'pose_lcam_bottom.txt'
+
+    def data_padding(self):
+        return None
+
+
+@register(TYPEDICT)
+class pose_rcam_front(SimpleModBase):
+    '''
+    The pose of the left front camera.
+    '''
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.data_shape = (7,)
+
+    def get_filename(self):
+        return 'pose_rcam_front.txt'
+
+    def data_padding(self):
+        return None
+
+@register(TYPEDICT)
+class pose_rcam_right(SimpleModBase):
+    '''
+    The pose of the left right-facing camera.
+    '''
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.data_shape = (7,)
+
+    def get_filename(self):
+        return 'pose_rcam_right.txt'
+
+    def data_padding(self):
+        return None
+
+@register(TYPEDICT)
+class pose_rcam_back(SimpleModBase):
+    '''
+    The pose of the left back-facing camera.
+    '''
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.data_shape = (7,)
+
+    def get_filename(self):
+        return 'pose_rcam_back.txt'
+
+    def data_padding(self):
+        return None
+
+@register(TYPEDICT)
+class pose_rcam_left(SimpleModBase):
+    '''
+    The pose of the left left-facing camera.
+    '''
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.data_shape = (7,)
+
+    def get_filename(self):
+        return 'pose_rcam_left.txt'
+
+    def data_padding(self):
+        return None
+
+@register(TYPEDICT)
+class pose_rcam_top(SimpleModBase):
+    '''
+    The pose of the left top-facing camera.
+    '''
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.data_shape = (7,)
+
+    def get_filename(self):
+        return 'pose_rcam_top.txt'
+
+    def data_padding(self):
+        return None
+
+@register(TYPEDICT)
+class pose_rcam_bottom(SimpleModBase):
+    '''
+    The pose of the left bottom-facing camera.
+    '''
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.data_shape = (7,)
+
+    def get_filename(self):
+        return 'pose_rcam_bottom.txt'
 
     def data_padding(self):
         return None

@@ -19,7 +19,8 @@ class MultiDatasets(object):
                        platform, 
                        batch, 
                        workernum, 
-                       shuffle=True):
+                       shuffle=True, 
+                       verbose=False):
         '''
         dataconfigs: 'modality', 'cacher', 'transform', 'dataset'
 
@@ -39,6 +40,7 @@ class MultiDatasets(object):
         self.batch = batch
         self.workernum = workernum
         self.shuffle = shuffle
+        self.verbose = verbose
 
         self.datafiles = []
         self.datacachers = [ ] 
@@ -92,7 +94,7 @@ class MultiDatasets(object):
             
             workernum = cacher_param['worker_num']
             load_traj = cacher_param['load_traj'] if 'load_traj' in cacher_param else False
-            datacacher = DataCacher(modality_types, data_splitter, data_root, workernum, batch_size=1, load_traj=load_traj) # TODO: test if batch_size here matters
+            datacacher = DataCacher(modality_types, data_splitter, data_root, workernum, batch_size=1, load_traj=load_traj, verbose = self.verbose) # TODO: test if batch_size here matters
             self.datacachers.append(datacacher)
 
             # parameters for the RAMDataset
@@ -109,7 +111,8 @@ class MultiDatasets(object):
             dataset = RAMDataset(self.datacachers[k], \
                                  self.modalitytypes[k], \
                                  self.modalitylengths[k], \
-                                 **self.datasetparams[k]
+                                 **self.datasetparams[k],
+                                 verbose=self.verbose
                                 )
             dataloader = DataLoader(dataset, batch_size=self.batch, shuffle=self.shuffle, num_workers=self.workernum)
             self.datasets[k] = dataset
@@ -137,7 +140,7 @@ class MultiDatasets(object):
             if notrepeat: # wait for the new buffer ready, do not repeat the current buffer
                 while not self.datacachers[datasetInd].new_buffer_available:
                     time.sleep(1.0)
-                    print('Wait for the next buffer...')
+                    self.vprint('Wait for the next buffer...')
             if self.datacachers[datasetInd].new_buffer_available : 
                 self.datacachers[datasetInd].switch_buffer()
                 self.datasets[datasetInd] = RAMDataset(self.datacachers[datasetInd], \
@@ -151,7 +154,7 @@ class MultiDatasets(object):
             sample = next(self.dataiters[datasetInd])
             new_buffer = True
             self.subsetrepeat[datasetInd] += 1
-            print('==> Working on {} for the {} time'.format(self.datafiles[datasetInd], self.subsetrepeat[datasetInd]))
+            self.vprint('==> Working on {} for the {} time'.format(self.datafiles[datasetInd], self.subsetrepeat[datasetInd]))
         sample['new_buffer'] = new_buffer
         # print("sample time: {}".format(time.time()-cachertime))
         return sample
@@ -159,6 +162,10 @@ class MultiDatasets(object):
     def stop_cachers(self):
         for datacacher in self.datacachers:
             datacacher.stop_cache()
+
+    def vprint(self, *args, **kwargs):
+        if self.verbose:
+            print(*args, **kwargs)
 
 if __name__ == '__main__':
 
@@ -176,92 +183,28 @@ if __name__ == '__main__':
     import cv2
     # dataset_specfile = 'data_cacher/dataspec/flowvo_train_local_v1.yaml'
     dataset_specfile = 'data_cacher/dataspec/flowvo_train_local_v2.yaml'
-
-    dataset_specdict = \
-{
-    'task': 'flowvo', 
-    'transform_data_augment': True, 
-    'transform_flow_norm_factor': 0.05, 
-    'transform_uncertainty': True, 
-    'transform_input_size': [160, 160], 
-    'dataset_frame_skip': 0, 
-    'dataset_seq_stride': 1, 
-    'data': {
-        '/media/yoraish/overflow/data/tartanair-v2/HQWesternSaloonExposure/analyze/data_HQWesternSaloonExposure_Data_easy_P000.txt': 
-        {
-        'modality': {
-            'img0': {
-            'type': 'rgb_lcam_front', 'cacher_size': [160, 160], 'length': 3}, 
-            'lcam_left': {
-            'type': 'rgb_lcam_left', 'cacher_size': [160, 160], 'length': 3}, 
-            'lcam_back': {
-            'type': 'rgb_lcam_back', 'cacher_size': [160, 160], 'length': 3}, 
-            'lcam_right': {
-            'type': 'rgb_lcam_right', 'cacher_size': [160, 160], 'length': 3}, 
-            'lcam_top': {
-            'type': 'rgb_lcam_top', 'cacher_size': [160, 160], 'length': 3}, 
-            'lcam_bottom': {
-            'type': 'rgb_lcam_bottom', 'cacher_size': [160, 160], 'length': 3}, 
-            'depth0': {
-            'type': 'depth_lcam_bottom', 'cacher_size': [160, 160], 'length': 1}}, 
-        'cacher': {
-            'data_root_key': 'tartan2', 
-            'subset_framenum': 120, 
-            'worker_num': 2}, 
-            'transform': {'resize_factor': 2.5}, 
-            'dataset': None},
-            
-        '/media/yoraish/overflow/data/tartanair-v2/HQWesternSaloonExposure/analyze/data_HQWesternSaloonExposure_Data_easy_P001.txt': 
-        {
-        'modality': {
-            'img0': {
-            'type': 'rgb_lcam_front', 'cacher_size': [160, 160], 'length': 3}, 
-            'lcam_left': {
-            'type': 'rgb_lcam_left', 'cacher_size': [160, 160], 'length': 3}, 
-            'lcam_back': {
-            'type': 'rgb_lcam_back', 'cacher_size': [160, 160], 'length': 3}, 
-            'lcam_right': {
-            'type': 'rgb_lcam_right', 'cacher_size': [160, 160], 'length': 3}, 
-            'lcam_top': {
-            'type': 'rgb_lcam_top', 'cacher_size': [160, 160], 'length': 3}, 
-            'lcam_bottom': {
-            'type': 'rgb_lcam_bottom', 'cacher_size': [160, 160], 'length': 3}, 
-            'depth0': {
-            'type': 'depth_lcam_bottom', 'cacher_size': [160, 160], 'length': 1}}, 
-        'cacher': {
-            'data_root_key': 'tartan2', 
-            'subset_framenum': 120, 
-            'worker_num': 2}, 
-            'transform': {'resize_factor': 2.5}, 
-            'dataset': None}}}
-
     # configparser = ConfigParser()
     # dataconfigs = configparser.parse_from_fp(dataset_specfile)
-    batch = 32
-    trainDataloader = MultiDatasets(dataset_specdict, 
+    batch = 3
+    trainDataloader = MultiDatasets(dataset_specfile, 
                        'local', 
                        batch=batch, 
-                       workernum=4, 
-                       shuffle=True)
+                       workernum=0, 
+                       shuffle=False)
     tic = time.time()
     num = 100                       
     for k in range(num):
-        print("\n\n\n")
         sample = trainDataloader.load_sample()
         print(sample.keys())
-        print(sample['img0'].shape)
-        print(sample['depth0'].shape)
         # time.sleep(0.02)
-        import ipdb;ipdb.set_trace()
+        # import ipdb;ipdb.set_trace()
         for b in range(batch):
             ss=sample['img0'][b][0].numpy()
-            ss1 = sample['img0'][b][1].numpy()
             ss2=sample['depth0'][b][0].numpy()
-            # ss3=sample['flow'][b][0].numpy()
+            ss3=sample['flow'][b][0].numpy()
             depthvis = visdepth(80./ss2)
-            # flowvis = visflow(ss3)
-            # disp = cv2.hconcat((ss, depthvis, flowvis))
-            disp = cv2.hconcat((ss, ss1, depthvis))
+            flowvis = visflow(ss3)
+            disp = cv2.hconcat((ss, depthvis, flowvis))
             cv2.imshow('img', disp)
             cv2.waitKey(100)
 

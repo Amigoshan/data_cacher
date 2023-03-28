@@ -37,6 +37,7 @@ class RAMDataset(Dataset):
         transform = None, \
         frame_skip = 0, \
         seq_stride = 1, \
+        verbose = False
         ):  
 
         super(RAMDataset, self).__init__()
@@ -72,7 +73,13 @@ class RAMDataset(Dataset):
 
         self.is_epoch_complete = False # flag is set to true after all the data is sampled
 
-        print('Loaded {} sequences from the RAM, which contains {} frames...'.format(self.N, self.framenumFromFile))
+        self.verbose = verbose
+
+        self.vprint('Loaded {} sequences from the RAM, which contains {} frames...'.format(self.N, self.framenumFromFile))
+
+    def vprint(self, *args, **kwargs):
+        if self.verbose:
+            print(*args, **kwargs)
 
     def parse_seqnum(self):
         seqnumlist = []

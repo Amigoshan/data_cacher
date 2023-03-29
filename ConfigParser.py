@@ -26,6 +26,7 @@ class ConfigParser(object):
 
         self.dataset_paramlist = ['frame_skip',
                                   'seq_stride',
+                                  'frame_dir'
                                  ]
 
     def parse_from_fp(self, fp):

@@ -25,7 +25,7 @@
           type: imu_acc
           cacher_size: [3]
           length: 10
-        "pose":
+        "pose":e
           type: pose_lcam_front
           cacher_size: [7]
           length: 1

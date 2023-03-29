@@ -37,6 +37,7 @@ class RAMDataset(Dataset):
         transform = None, \
         frame_skip = 0, \
         seq_stride = 1, \
+        frame_dir = False
         ):  
 
         super(RAMDataset, self).__init__()
@@ -54,6 +55,7 @@ class RAMDataset(Dataset):
 
         self.frame_skip = frame_skip # sample not consequtively, skip a few frames within a sequences
         self.seq_stride = seq_stride # sample less sequence, skip a few frames between two sequences 
+        self.frame_dir = frame_dir # return the trajdir and framestr if set to True
 
         # initialize the trajectories and figure out the seqlen
         assert datacacher.ready_buffer.full, "Databuffer in RAM is not ready! "
@@ -123,7 +125,7 @@ class RAMDataset(Dataset):
             "End-frameind {}, trajlen {}. Sample a sequence cross two trajectories! This should never happen! ".format( \
                 end_frameind - self.acc_trajlen[trajind], self.trajlenlist[trajind]* mod_freq_mult)
 
-        return slice(start_frameind, end_frameind, self.frame_skip+1)
+        return slice(start_frameind, end_frameind, self.frame_skip+1), trajind, frameind
 
     def __len__(self):
         return self.N
@@ -138,20 +140,18 @@ class RAMDataset(Dataset):
         # import ipdb;ipdb.set_trace()
         # sample = self.datacacher[ramslice]
         sample = {}
-        # TODO: add motion and imu
         for key, modlen, modtype in zip(self.modkeylist, self.modlenlist, self.modtypelist):
 
         # for datatype, datalen in self.modalities_lengths.items(): 
             # parse the idx to trajstr
             mod_freqmult = modtype.freq_mult
-            ramslice = self.idx2slice(idx, mod_freqmult, modlen)
+            ramslice, trajind, frameind = self.idx2slice(idx, mod_freqmult, modlen)
             # print(key, ramslice)
             sample[key] = self.datacacher.ready_buffer.get_frame(key, ramslice)
 
-            # elif datatype == 'trajdir':
-            #     sample[datatype] = self.dataroot + '/' + self.trajlist[traj_ind] + '/' + self.framelist[traj_ind][frameind]
-            # else:
-            #     print('Unknow Datatype {}'.format(datatype))
+        if self.frame_dir:
+            ramslice, trajind, frameind = self.idx2slice(idx, 1, 1)
+            sample['trajdir'] = self.dataroot + '/' + self.trajlist[trajind] + '/' + self.framelist[trajind][frameind]
 
         # Transform.
         if ( self.transform is not None):

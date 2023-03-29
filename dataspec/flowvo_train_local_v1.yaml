@@ -2,25 +2,34 @@
   task: flowvo
   dataset_frame_skip: 0
   dataset_seq_stride: 1
+  dataset_frame_dir: true
   data:
     "/home/amigo/workspace/pytorch/geometry_vision/data/tartan_train_local.txt":
       modality: 
         "flow":
           type: flow_left
-          cacher_size: [160, 160]
-          length: 6
+          cacher_size: [480, 640]
+          length: 1
         "img0":
           type: image_left
-          cacher_size: [160, 160]
+          cacher_size: [480, 640]
           length: 3
+        "img1":
+          type: image_right
+          cacher_size: [480, 640]
+          length: 1
         "depth0":
           type: depth_left
-          cacher_size: [160, 160]
-          length: 1
+          cacher_size: [480, 640]
+          length: 2
         "acc":
           type: imu_acc
           cacher_size: [3]
-          length: 10
+          length: 20
+        "gyro":
+          type: imu_gyro
+          cacher_size: [3]
+          length: 20
         "pose":
           type: pose_left
           cacher_size: [7]
@@ -28,13 +37,13 @@
         "motion":
           type: motion_left
           cacher_size: [7]
-          length: 1
+          length: 3
         "seg0":
           type: seg_left
-          cacher_size: [160, 160]
+          cacher_size: [480, 640]
           length: 2
       cacher:
         data_root_key: tartan
-        subset_framenum: 12
+        subset_framenum: 51
         worker_num: 2
       dataset:

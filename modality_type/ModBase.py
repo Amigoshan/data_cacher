@@ -79,6 +79,27 @@ class SimpleModBase(ModBase):
     '''
     This defines modality that is light-weight
     such as IMU, pose, wheel_encoder
+
+    Note that we assume that there is one-to-one mapping between the framestr and the index of the frames in the modality
+    The frame can be cropped in the datafile, but not really cropped in the data folder on the hard drive
+    We will find the cooresponding frame by the framestr, instead of the frame index in the datafile
+
+    For example, in the data folder, we have a trajectory of 100 frames. 
+    It contains image folders with 100 images in each, and IMU numpy arrays that are with 100 in lengh
+    We can crop the trajectory "virtually" in the datafile into two trajectories just by defining a datafile like this:
+    --- datafile ---
+    trajstr 30
+    000000
+    000001
+    ...
+    000029
+    trajstr 40
+    000050
+    000051
+    ...
+    000089
+    --- end of datafile ---
+    If the second trajectory is loaded into the cache, we need to make sure the starting frame of that trajectory for IMU or motion is 50, instead of 0. 
     '''
     def __init__(self, datashape):
         super().__init__(datashape)
@@ -90,7 +111,14 @@ class SimpleModBase(ModBase):
     def data_padding(self):
         raise NotImplementedError
 
-    def load_data(self, trajdir):
+    def crop_trajectory(self, data, framestrlist):
+        raise NotImplementedError
+
+    def load_data(self, trajdir, framestrlist):
+        '''
+        The startingframe indicates the starting frame of this modality
+        It is used in the case that the trajectory is cropped into pieces and the current trajectory is not start from the first frame
+        '''
         filename = self.get_filename()
         if filename.endswith('.npy'):
             data = np.load(join(trajdir, filename)) # this assume the data is stored as np file, this can be changed in the future
@@ -98,6 +126,8 @@ class SimpleModBase(ModBase):
             data = np.loadtxt(join(trajdir, filename))
         else:
             assert False, "File format is not supported {}".format(filename)
+        # crop the trajectory based on the starting and ending frames
+        data = self.crop_trajectory(data, framestrlist)
         padding = self.data_padding()
         if padding is not None:
             data = np.concatenate((data, padding), axis=0)

@@ -59,7 +59,6 @@ class DataCacher(object):
         self.loading_b = False
         self.loading_a = True
         self.loading_buffer = self.buffer_a
-        self.framenum, self.trajlist, self.trajlenlist, self.framelist, self.startendlist = 0, [], [], [], []
         self.reset_buffer() # this will allocate the memory
 
         # run datacacher in a sperate thread
@@ -67,9 +66,10 @@ class DataCacher(object):
         th.start()
 
     def load_simple_mod(self, modname, modality):
-        simpleloader = SimpleDataloader(modality, self.trajlist, self.trajlenlist, self.startendlist, datarootdir=self.data_root)
+        simpleloader = SimpleDataloader(modality, self.loading_buffer.trajlist, self.loading_buffer.trajlenlist, 
+                                        self.loading_buffer.framelist, datarootdir=self.data_root)
         startind = 0
-        for k in range(len(self.trajlenlist)):
+        for k in range(len(self.loading_buffer.trajlenlist)):
             datanp = simpleloader.load_data(k)
             self.loading_buffer.insert_all_one_mode(modname, datanp, startind)
             startind += datanp.shape[0]
@@ -94,7 +94,8 @@ class DataCacher(object):
 
         else:
             assert isinstance(modobj, FrameModBase), "Unknow modality type {}".format(self.active_modname)
-            cacher_dataset = CacherDataset(modobj, self.trajlist, self.trajlenlist, self.framelist, datarootdir=self.data_root)
+            cacher_dataset = CacherDataset(modobj, self.loading_buffer.trajlist, self.loading_buffer.trajlenlist, 
+                                            self.loading_buffer.framelist, datarootdir=self.data_root)
             dataloader = DataLoader(cacher_dataset, batch_size=self.batch_size, shuffle=False, num_workers=self.num_worker)#, persistent_workers=True)
             self.dataiter = iter(dataloader)
             self.modind = 0
@@ -104,8 +105,8 @@ class DataCacher(object):
         '''
         This function allocates the shared memory
         '''
-        self.trajlist, self.trajlenlist, self.framelist, self.startendlist, self.framenum = self.splitter_func()
-        self.loading_buffer.reset(self.framenum, self.trajlist, self.trajlenlist, self.framelist)
+        trajlist, trajlenlist, framelist, framenum = self.splitter_func()
+        self.loading_buffer.reset(framenum, trajlist, trajlenlist, framelist)
 
         self.active_mod = -1
         self.active_modname = ""
@@ -141,7 +142,7 @@ class DataCacher(object):
         '''
         control which modality currently is working on
         '''
-        while True:
+        while True: # loop until a FrameMod is found
             if self.active_mod+1 == self.modnum: # all modalities have been loaded
                 assert self.loading_buffer.is_full, "Datacacher: the buffer is not full"
                 self.new_buffer_available = True
@@ -159,7 +160,7 @@ class DataCacher(object):
                     sample = next(self.dataiter)
                     datanp = sample.numpy()
                     self.loading_buffer.insert_frame_one_mod(self.modind, self.active_modname, datanp)
-                    self.modind += self.batch_size
+                    self.modind += datanp.shape[0]
                 except StopIteration:
                     print('  type {} loaded: traj {}, frame {}, time {}'.format(self.active_modname, len(self.loading_buffer.trajlist),len(self.loading_buffer), time.time()-self.starttime))
                     self.loading_buffer.set_full(self.active_modname)

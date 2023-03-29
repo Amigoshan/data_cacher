@@ -26,7 +26,7 @@ class DataSplitter(object):
         self.trajinds = np.arange(self.trajnum, dtype=np.int32)
         self.curind = -1
         self.leftover = [] # [traj, framelist, startind]
-        self.subtrajlist, self.subtrajlenlist, self.subframelist, self.startendlist = [], [], [], []
+        self.subtrajlist, self.subtrajlenlist, self.subframelist = [], [], []
 
     def add_traj(self, framecount, trajstr, trajlen, framelist, startind):
         self.subtrajlist.append(trajstr)
@@ -34,20 +34,18 @@ class DataSplitter(object):
             addnum = self.framenum - framecount
             self.subtrajlenlist.append(addnum)
             self.subframelist.append(framelist[:addnum])
-            self.startendlist.append([startind, startind + addnum])
             framecount += addnum
             self.leftover = [trajstr, framelist[addnum:], startind + addnum]
         else:
             self.subtrajlenlist.append(trajlen)
             self.subframelist.append(framelist)
-            self.startendlist.append([startind, startind + trajlen])
             framecount += trajlen
             self.leftover = []
         return framecount
 
     def get_next_split(self):
         framecount = 0 
-        self.subtrajlist, self.subtrajlenlist, self.subframelist, self.startendlist = [], [], [], []
+        self.subtrajlist, self.subtrajlenlist, self.subframelist = [], [], []
 
         # append the remaining traj from last time
         if len(self.leftover) > 0:
@@ -70,13 +68,12 @@ class DataSplitter(object):
             framecount = self.add_traj(framecount, trajstr, trajlen, framelist, 0)
 
 
-        return self.subtrajlist, self.subtrajlenlist, self.subframelist, self.startendlist, self.framenum
+        return self.subtrajlist, self.subtrajlenlist, self.subframelist, self.framenum
 
     def get_next_trajectory(self):
         self.curind = (self.curind + 1) % self.trajnum
         subtrajlist = [self.trajlist[self.curind]]
         subtrajlenlist = [self.trajlenlist[self.curind]]
         subframelist = [self.framelist[self.curind]]
-        startendlist = [0, self.trajlenlist[self.curind]]
 
-        return subtrajlist, subtrajlenlist, subframelist, startendlist, self.trajlenlist[self.curind]
+        return subtrajlist, subtrajlenlist, subframelist, self.trajlenlist[self.curind]

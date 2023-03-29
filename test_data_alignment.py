@@ -77,11 +77,6 @@ if __name__ == '__main__':
             ss=sample['img0'][b][0].numpy()
             ss2=sample['depth0'][b][0].numpy()
             ss3=sample['flow'][b][0].numpy()
-            depthvis = visdepth(80./ss2)
-            flowvis = visflow(ss3)
-            disp = cv2.hconcat((ss, depthvis, flowvis))
-            cv2.imshow('img', disp)
-            cv2.waitKey(10)
 
             trajframestr = sample['trajdir'][b]
             trajstr, framestr = split(trajframestr)
@@ -90,21 +85,32 @@ if __name__ == '__main__':
             sss2=sample2['depth0']
             sss3=sample2['flow']
 
+            # import ipdb;ipdb.set_trace()
+            match = True
+            match = match and check_same(ss,sss)
+            match = match and check_same(ss2, sss2)
+            match = match and check_same(ss3, sss3)
+
+            mmm = sample2['motion']
+            imu2 = sample2['imu']
+            match = match and check_same(mm[b][0],mmm)
+            match = match and check_same(imu[b][0], imu2)
+
+            if not match:
+                import ipdb;ipdb.set_trace()
+
+            depthvis = visdepth(80./ss2)
+            flowvis = visflow(ss3)
+            disp = cv2.hconcat((ss, depthvis, flowvis))
+            cv2.imshow('img', disp)
+            cv2.waitKey(10)
+
             depthvis = visdepth(80./sss2)
             flowvis = visflow(sss3)
             disp = cv2.hconcat((sss, depthvis, flowvis))
             cv2.imshow('img2', disp)
-            cv2.waitKey(0)
+            cv2.waitKey(10)
 
-            import ipdb;ipdb.set_trace()
-            check_same(ss,sss)
-            check_same(ss2, sss2)
-            check_same(ss3, sss3)
-
-            mmm = sample2['motion']
-            imu2 = sample2['imu']
-            check_same(mm[b][0],mmm)
-            check_same(imu[b][0], imu2)
 
         # import ipdb;ipdb.set_trace()
 

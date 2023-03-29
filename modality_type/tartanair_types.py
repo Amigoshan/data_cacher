@@ -27,7 +27,19 @@ class IMUBase(SimpleModBase):
 
         self.folder_name = 'imu'
 
+    def crop_trajectory(self, data, framestrlist):
+        startind = int(framestrlist[0]) * self.freq_mult
+        endind = int(framestrlist[-1]) * self.freq_mult # IMU len = (N-1)*10, where N is the number of images
+        datalen = data.shape[0]
+        assert startind < datalen and endind <= datalen, "Error in loading IMU, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
+        return data[startind: endind]
+
     def data_padding(self):
+        '''
+        In TartanAir, the lengh of IMU seq is (N-1)*10
+        We would like the data be aligned, which means the nominal lengh should be N*10
+        That's why we pad the data with 10 frames
+        '''
         return np.zeros((10,3), dtype=np.float32)
 
 class LiDARBase(FrameModBase):
@@ -465,6 +477,13 @@ class pose_lcam_front(SimpleModBase):
         super().__init__(datashape)
         self.data_shape = (7,)
 
+    def crop_trajectory(self, data, framestrlist):
+        startind = int(framestrlist[0])
+        endind = int(framestrlist[-1]) + 1
+        datalen = data.shape[0]
+        assert startind < datalen and endind <= datalen, "Error in loading pose, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
+        return data[startind: endind]
+
     def get_filename(self):
         return 'pose_lcam_front.txt'
 
@@ -481,11 +500,18 @@ class motion_lcam_front(SimpleModBase):
         super().__init__(datashape)
         self.data_shape = (6,)
 
+    def crop_trajectory(self, data, framestrlist):
+        startind = int(framestrlist[0])
+        endind = int(framestrlist[-1]) # motion len = N -1 , where N is the number of images
+        datalen = data.shape[0]
+        assert startind < datalen and endind < datalen, "Error in loading motion, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
+        return data[startind: endind]
+
     def get_filename(self):
         return 'motion_lcam_front.npy'
 
     def data_padding(self):
-        return None
+        return np.zeros((1,6), dtype=np.float32)
 
 @register(TYPEDICT)
 class lidar(LiDARBase):

@@ -59,18 +59,17 @@ class SimpleDataloader(object):
     Design choice: one dataset is used for one modality
     Load the data from hard drive to RAM
     This is similar to the original TartanAirDataset, but without considering sequencing, frame skipping, data augmentation, normalization, etc. 
-    Only image-like data are supported, including image, depth and flow
-    Resize the data if necessary
-    Note if the flow or disp is resized, the pixel value won't be changed! 
+    This is for loading the low dimention data such as IMU, motion and wheel encoder
+    Note that since the data is in low dimention, we won't use pytorch dataloader
     '''
-    def __init__(self, modality, trajlist, trajlenlist, startendlist, datarootdir=""):
+    def __init__(self, modality, trajlist, trajlenlist, framelist, datarootdir=""):
         '''
         modality: the object of the modality_type, e.g. rgb_lcam_front
         '''
         self.modality = modality
         self.trajlist = trajlist
         self.trajlenlist = trajlenlist
-        self.startendlist = startendlist
+        self.framelist = framelist
         self.dataroot = datarootdir
         self.trajnum = len(trajlist)
         self.framenum = sum(trajlenlist)
@@ -81,14 +80,13 @@ class SimpleDataloader(object):
     def load_data(self, trajidx):
         # load numpy file for each trajectory and concate them together
         assert trajidx<self.trajnum, "Traj {} exceeds the total number of trajectories {}".format(trajidx, self.trajnum)
-        startind, endind = self.startendlist[trajidx]
-        startind = startind * self.modality.freq_mult
-        endind = endind * self.modality.freq_mult
         trajstr = self.trajlist[trajidx]
         trajdir = join(self.dataroot, trajstr)
-        data = self.modality.load_data(trajdir)
-        assert endind <= len(data), "End index {} exceeds the total lengh of the data {}".format(endind, len(data))
-        return data[startind:endind, :]
+        data = self.modality.load_data(trajdir, self.framelist[trajidx])
+        assert data.shape[0] == self.trajlenlist[trajidx]*self.modality.freq_mult, \
+            "Traj {} mod {} data loaded size {} different from the required size {}".format(trajdir, 
+            self.modality.name, data.shape[0], self.trajlenlist[trajidx])
+        return data
 
 if __name__=="__main__":
     from .modality_type.tartanair_types import rgb_lcam_front, depth_lcam_front, flow_lcam_front

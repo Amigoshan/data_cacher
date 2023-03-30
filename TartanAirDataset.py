@@ -11,13 +11,16 @@ class TartanAirDataset(object):
         self.modlist = modlist
 
     def load_motion(self, trajstr, framenum):
-        motionfile = join(trajstr, 'motion_left.npy')
+        # motionfile = join(trajstr, 'motion_left.npy')
+        motionfile = join(trajstr, 'motion_lcam_front.npy')
         motion = np.load(motionfile)
         return motion[framenum]
 
     def load_imu(self, trajstr, framenum):
-        accfile = join(trajstr, 'imu', 'accel_left.npy')
-        gyrofile = join(trajstr, 'imu', 'gyro_left.npy')
+        # accfile = join(trajstr, 'imu', 'accel_left.npy')
+        # gyrofile = join(trajstr, 'imu', 'gyro_left.npy')
+        accfile = join(trajstr, 'imu', 'acc.npy')
+        gyrofile = join(trajstr, 'imu', 'gyro.npy')
         acc = np.load(accfile)
         gyro = np.load(gyrofile)
         return np.concatenate((acc[framenum*10], gyro[framenum*10]), axis=-1)
@@ -49,7 +52,7 @@ class TartanAirDataset(object):
                 print('Unknow Datatype {}'.format(datatype))
         return sample
 
-    def getDataPath(self, trajstr, framestr, datatype):
+    def getDataPath_v1(self, trajstr, framestr, datatype):
         '''
         return the file path name wrt the data type and framestr
         '''
@@ -65,6 +68,25 @@ class TartanAirDataset(object):
         if datatype == 'flow':
             flownum = 1
             flowfolder = 'flow'
+            framestr2 = str(int(framestr) + flownum).zfill(len(framestr))
+            return trajstr + '/' + flowfolder + '/' + framestr + '_' + framestr2 + '_flow.png'
+
+    def getDataPath(self, trajstr, framestr, datatype):
+        '''
+        return the file path name wrt the data type and framestr
+        '''
+        if datatype == 'img0':
+            return trajstr + '/image_lcam_front/' + framestr + '_lcam_front.png'
+        if datatype == 'img1':
+            return trajstr + '/image_rcam_front/' + framestr + '_rcam_front.png'
+        if datatype == 'disp0' or datatype == 'depth0':
+            return trajstr + '/depth_lcam_front/' + framestr + '_lcam_front_depth.png'
+        if datatype == 'disp1' or datatype == 'depth1':
+            return trajstr + '/depth_rcam_front/' + framestr + '_rcam_front_depth.png'
+
+        if datatype == 'flow':
+            flownum = 1
+            flowfolder = 'flow_lcam_front'
             framestr2 = str(int(framestr) + flownum).zfill(len(framestr))
             return trajstr + '/' + flowfolder + '/' + framestr + '_' + framestr2 + '_flow.png'
 

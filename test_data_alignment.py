@@ -28,7 +28,7 @@ if __name__ == '__main__':
     # rootdir = '/home/amigo/tmp/data/tartan'
     # framefile = 'data/tartan_train_local.txt'
     typestr = "depth0,img0,img1,imu,motion,flow"#,imu,motion
-    modalitylens = [2,3,1,20,3,1] #,100,10
+    modalitylens = [5,3,1,20,3,1] #,100,10
     frame_skip = 1
     frame_stride = 2
     batch = 32
@@ -36,8 +36,8 @@ if __name__ == '__main__':
 
     dataset = TartanAirDataset(modlist=typestr.split(','))
 
-    dataset_specfile = 'data_cacher/dataspec/flowvo_train_local_v1.yaml'
-    # dataset_specfile = 'data_cacher/dataspec/flowvo_train_local_v2.yaml'
+    # dataset_specfile = 'data_cacher/dataspec/flowvo_train_local_v1.yaml'
+    dataset_specfile = 'data_cacher/dataspec/flowvo_train_local_v2.yaml'
     trainDataloader = MultiDatasets(dataset_specfile, 
                        'psc', 
                        batch=batch, 
@@ -85,14 +85,14 @@ if __name__ == '__main__':
 
             # import ipdb;ipdb.set_trace()
             match = True
-            match = match and check_same(ss,sss,'img0')
-            match = match and check_same(ss2, sss2, 'depth0')
-            match = match and check_same(ss3, sss3, 'flow')
+            match = check_same(ss,sss,'img0') and match 
+            match = check_same(ss2, sss2, 'depth0') and match 
+            match = check_same(ss3, sss3, 'flow') and match 
 
             mmm = sample2['motion']
             imu2 = sample2['imu']
-            match = match and check_same(mm[b][0],mmm, 'motion')
-            match = match and check_same(imu[b][0], imu2, 'imu')
+            match = check_same(mm[b][0],mmm, 'motion') and match 
+            match = check_same(imu[b][0], imu2, 'imu') and match 
 
             if not match:
                 import ipdb;ipdb.set_trace()

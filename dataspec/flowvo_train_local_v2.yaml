@@ -1,46 +1,49 @@
 ---
   task: flowvo
-  transform_data_augment: true
-  transform_flow_norm_factor: 0.05
-  transform_uncertainty: true
-  transform_input_size: [160, 160]
   dataset_frame_skip: 0
   dataset_seq_stride: 1
+  dataset_frame_dir: true
   data:
-    "/home/amigo/tmp/test_root/coalmine/analyze/data_coalmine_Data_easy_P000.txt":
+    "/ocean/projects/cis220039p/wenshanw/workspace/data_cacher/data/data_tartanairv2.txt":
       modality: 
         "flow":
           type: flow_lcam_front
-          cacher_size: [160, 160]
-          length: 2
-        "img0":
-          type: rgb_lcam_left
-          cacher_size: [160, 160]
-          length: 3
-        "depth0":
-          type: depth_rcam_bottom
-          cacher_size: [160, 160]
+          cacher_size: [640, 640]
           length: 1
+        "img0":
+          type: rgb_lcam_front
+          cacher_size: [640, 640]
+          length: 3
+        "img1":
+          type: rgb_rcam_left
+          cacher_size: [640, 640]
+          length: 1
+        "depth0":
+          type: depth_lcam_front
+          cacher_size: [640, 640]
+          length: 5
         "acc":
           type: imu_acc
           cacher_size: [3]
-          length: 10
-        "pose":e
+          length: 20
+        "gyro":
+          type: imu_gyro
+          cacher_size: [3]
+          length: 20
+        "pose":
           type: pose_lcam_front
           cacher_size: [7]
           length: 1
-        "lidar":
-          type: lidar
-          cacher_size: [3]
-          length: 1
+        "motion":
+          type: motion_lcam_front
+          cacher_size: [6]
+          length: 3
         "seg0":
           type: seg_lcam_front
-          cacher_size: [160, 160]
+          cacher_size: [640, 640]
           length: 2
       cacher:
         data_root_key: tartan2 
-        subset_framenum: 12
-        worker_num: 2
-      transform:
-        resize_factor: 2.5
+        subset_framenum: 500
+        worker_num: 8
       dataset:

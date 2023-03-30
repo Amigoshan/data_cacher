@@ -36,7 +36,7 @@
           length: 1
         "motion":
           type: motion_left
-          cacher_size: [7]
+          cacher_size: [6]
           length: 3
         "seg0":
           type: seg_left

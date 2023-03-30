@@ -12,7 +12,7 @@ from .CacherDataset import CacherDataset, SimpleDataloader
 
 class DataCacher(object):
 
-    def __init__(self, modality_dict, data_splitter, data_root, num_worker, batch_size=1, load_traj=False):
+    def __init__(self, modality_dict, data_splitter, data_root, num_worker, batch_size=1, load_traj=False, verbose=False):
         '''
         modality_dict: {mod_name: modality, ..} 
                         mod_name: the key of the sample dict, e.g. img0
@@ -23,6 +23,8 @@ class DataCacher(object):
         The sizes defined in the modalities_sizes are are the sizes required for training, 
         if the loaded data is in different shape with what defined in modalities_sizes, the data will be resized
         '''
+        self.verbose = verbose
+
         # self.modalities_sizes = modalities_sizes
         # self.datatypes = list(self.modalities_sizes.keys())
         self.modality_dict = modality_dict
@@ -51,8 +53,8 @@ class DataCacher(object):
         self.mod_ind = 0
         self.dataiter = None
         # This following lines won't allocate RAM memory yet
-        self.buffer_a = TrajBuffer(self.modnames, self.modalities)
-        self.buffer_b = TrajBuffer(self.modnames, self.modalities)
+        self.buffer_a = TrajBuffer(self.modnames, self.modalities, verbose)
+        self.buffer_b = TrajBuffer(self.modnames, self.modalities, verbose)
 
         # initialize a dataloader
         self.stop_flag = False
@@ -75,8 +77,7 @@ class DataCacher(object):
             startind += datanp.shape[0]
         assert startind == self.loading_buffer.framenum * modality.freq_mult, \
             "Load simple mod {} for {} frames, which does not match {}".format(modname, startind, self.loading_buffer.framelist * modality.freq_mult)
-        print('  type {} loaded: traj {} frames {}'.format(self.active_modname, 
-                                len(self.loading_buffer.trajlist), startind))
+        self.vprint('  type {} loaded: traj {} frames {}'.format(self.active_modname, len(self.loading_buffer.trajlist), startind))
         self.loading_buffer.set_full(self.active_modname)
 
     def set_load_mod(self, k): 
@@ -146,7 +147,7 @@ class DataCacher(object):
             if self.active_mod+1 == self.modnum: # all modalities have been loaded
                 assert self.loading_buffer.is_full, "Datacacher: the buffer is not full"
                 self.new_buffer_available = True
-                print('Buffer loaded: traj {}, frame {}, time {}'.format(len(self.loading_buffer.trajlist),len(self.loading_buffer), time.time()-self.starttime))
+                self.vprint('Buffer loaded: traj {}, frame {}, time {}'.format(len(self.loading_buffer.trajlist),len(self.loading_buffer), time.time()-self.starttime))
                 break
             else: # load the next modality
                 if self.set_load_mod(self.active_mod + 1):
@@ -162,7 +163,7 @@ class DataCacher(object):
                     self.loading_buffer.insert_frame_one_mod(self.modind, self.active_modname, datanp)
                     self.modind += datanp.shape[0]
                 except StopIteration:
-                    print('  type {} loaded: traj {}, frame {}, time {}'.format(self.active_modname, len(self.loading_buffer.trajlist),len(self.loading_buffer), time.time()-self.starttime))
+                    self.vprint('  type {} loaded: traj {}, frame {}, time {}'.format(self.active_modname, len(self.loading_buffer.trajlist),len(self.loading_buffer), time.time()-self.starttime))
                     self.loading_buffer.set_full(self.active_modname)
                     self.update_mod()
             else:
@@ -170,6 +171,10 @@ class DataCacher(object):
 
     def stop_cache(self):
         self.stop_flag = True
+    
+    def vprint(self, *args, **kwargs):
+        if self.verbose:
+            print(*args, **kwargs)
 
 # python -m Datacacher.DataCacher
 if __name__=="__main__":

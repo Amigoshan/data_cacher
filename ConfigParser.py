@@ -19,6 +19,7 @@ class ConfigParser(object):
                                   ]
 
         self.cacher_paramlist = [   'data_root_key',
+                                    'data_root_path_override', # override the default data root path with this one.
                                     'subset_framenum', # frame number in cacher
                                     'worker_num', # how many works for the cacher
                                     'load_traj' # load one trajectory into the cacher at one time
@@ -31,6 +32,9 @@ class ConfigParser(object):
 
     def parse_from_fp(self, fp):
         x = yaml.safe_load(open(fp, 'r'))
+        return self.parse(x)
+
+    def parse_from_dict(self, x):
         return self.parse(x)
 
     def parse_sub_global_param(self, spec, param_name, paramlist):

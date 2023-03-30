@@ -1,3 +1,4 @@
+import os
 from torch.utils.data import DataLoader
 import numpy as np
 from os.path import isfile
@@ -18,14 +19,20 @@ class MultiDatasets(object):
                        platform, 
                        batch, 
                        workernum, 
-                       shuffle=True):
+                       shuffle=True, 
+                       verbose=False):
         '''
         dataconfigs: 'modality', 'cacher', 'transform', 'dataset'
 
         '''
-        assert isfile(dataset_specfile), "MultiDatasetsBase: Cannot find spec file {}".format(dataset_specfile)
+
         configparser = ConfigParser()
-        dataconfigs = configparser.parse_from_fp(dataset_specfile)
+        if isinstance(dataset_specfile, str):
+            assert isfile(dataset_specfile), "MultiDatasetsBase: Cannot find spec file {}".format(dataset_specfile)
+            dataconfigs = configparser.parse_from_fp(dataset_specfile)
+
+        elif isinstance(dataset_specfile, dict):
+            dataconfigs = configparser.parse_from_dict(dataset_specfile)
 
         self.datasetNum = len(dataconfigs['data'])
 
@@ -33,6 +40,7 @@ class MultiDatasets(object):
         self.batch = batch
         self.workernum = workernum
         self.shuffle = shuffle
+        self.verbose = verbose
 
         self.datafiles = []
         self.datacachers = [ ] 
@@ -64,8 +72,16 @@ class MultiDatasets(object):
             cacher_param = params['cacher']
             dataset_param = params['dataset']
 
-            data_root_key = cacher_param['data_root_key']
-            data_root = DataRoot[self.platform][data_root_key]
+            # Allow to pass a data root path directly via config.
+            # TODO(yoraish): is this a good idea? I feel like overrides may be dangerous.
+            if 'data_root_path_override' in cacher_param and cacher_param['data_root_path_override'] is not None:
+                # Check path integrity. Check if the path is to a directory.
+                assert os.path.exists(cacher_param['data_root_path_override']), "MultiDatasets: Cannot find data root path provided as override {}".format(cacher_param['data_root_path_override'])
+                data_root = cacher_param['data_root_path_override']
+
+            else:
+                data_root_key = cacher_param['data_root_key']
+                data_root = DataRoot[self.platform][data_root_key]
 
             modality_types, modality_lengths = self.parse_modality_types(modality_param)
             self.modalitylengths.append(modality_lengths)
@@ -78,7 +94,7 @@ class MultiDatasets(object):
             
             workernum = cacher_param['worker_num']
             load_traj = cacher_param['load_traj'] if 'load_traj' in cacher_param else False
-            datacacher = DataCacher(modality_types, data_splitter, data_root, workernum, batch_size=1, load_traj=load_traj) # TODO: test if batch_size here matters
+            datacacher = DataCacher(modality_types, data_splitter, data_root, workernum, batch_size=1, load_traj=load_traj, verbose = self.verbose) # TODO: test if batch_size here matters
             self.datacachers.append(datacacher)
 
             # parameters for the RAMDataset
@@ -95,7 +111,8 @@ class MultiDatasets(object):
             dataset = RAMDataset(self.datacachers[k], \
                                  self.modalitytypes[k], \
                                  self.modalitylengths[k], \
-                                 **self.datasetparams[k]
+                                 **self.datasetparams[k],
+                                 verbose=self.verbose
                                 )
             dataloader = DataLoader(dataset, batch_size=self.batch, shuffle=self.shuffle, num_workers=self.workernum)
             self.datasets[k] = dataset
@@ -123,7 +140,7 @@ class MultiDatasets(object):
             if notrepeat: # wait for the new buffer ready, do not repeat the current buffer
                 while not self.datacachers[datasetInd].new_buffer_available:
                     time.sleep(1.0)
-                    print('Wait for the next buffer...')
+                    self.vprint('Wait for the next buffer...')
             if self.datacachers[datasetInd].new_buffer_available : 
                 self.datacachers[datasetInd].switch_buffer()
                 self.datasets[datasetInd] = RAMDataset(self.datacachers[datasetInd], \
@@ -137,7 +154,7 @@ class MultiDatasets(object):
             sample = next(self.dataiters[datasetInd])
             new_buffer = True
             self.subsetrepeat[datasetInd] += 1
-            print('==> Working on {} for the {} time'.format(self.datafiles[datasetInd], self.subsetrepeat[datasetInd]))
+            self.vprint('==> Working on {} for the {} time'.format(self.datafiles[datasetInd], self.subsetrepeat[datasetInd]))
         sample['new_buffer'] = new_buffer
         # print("sample time: {}".format(time.time()-cachertime))
         return sample
@@ -145,6 +162,10 @@ class MultiDatasets(object):
     def stop_cachers(self):
         for datacacher in self.datacachers:
             datacacher.stop_cache()
+
+    def vprint(self, *args, **kwargs):
+        if self.verbose:
+            print(*args, **kwargs)
 
 if __name__ == '__main__':
 

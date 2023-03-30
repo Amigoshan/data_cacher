@@ -10,7 +10,7 @@ class TrajBuffer(object):
     mod_datatypes: list of data types
     mod_sizes: list of data sizes
     '''
-    def __init__(self, keylist, modtypelist):
+    def __init__(self, keylist, modtypelist, verbose=False):
         assert len(keylist) == len(modtypelist), "The keylist length {} and modlist length {} don't match".format(len(keylist), len(modtypelist))
         self.mod_names = keylist
         self.modtypelist = modtypelist
@@ -22,7 +22,7 @@ class TrajBuffer(object):
         for modname, modtype in zip(self.mod_names, self.modtypelist):
             self.mod_datatypes.append(modtype.data_type)
             self.mod_sizes.append(modtype.data_shape)
-            self.buffer[modname] = RAMBufferBase(modtype.data_type)
+            self.buffer[modname] = RAMBufferBase(modtype.data_type, verbose = verbose)
             self.full[modname] = False
 
         self.trajlist, self.trajlenlist, self.framelist = [],[],[]

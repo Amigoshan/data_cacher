@@ -16,7 +16,7 @@ def convert_type(nptype):
  
 class RAMBufferBase(object):
     # the buffer to store the sequential data
-    def __init__(self, datatype):
+    def __init__(self, datatype, verbose=False):
         '''
         datatype: np datatype
         datasize: a tuple
@@ -28,6 +28,11 @@ class RAMBufferBase(object):
         self.datatype = datatype
         self.datasize = (0)
         # self.reset(datasize)
+        self.verbose = verbose
+    
+    def vprint(self, *args, **kwargs):
+        if self.verbose:
+            print(*args, **kwargs)
 
     def reset(self, datasize):
         if datasize != self.datasize: # re-allocate the buffer only if the datasize changes
@@ -37,7 +42,7 @@ class RAMBufferBase(object):
             buffer_base = mp.Array(self.ctype, datanum)
             self.buffer = np.ctypeslib.as_array(buffer_base.get_obj())
             self.buffer = self.buffer.reshape(self.datasize)
-            print("RAM Buffer allocated size {}, mem {} G".format(datasize, datanum * self.databyte / 1000./1000./1000.))
+            self.vprint("RAM Buffer allocated size {}, mem {} G".format(datasize, datanum * self.databyte / 1000./1000./1000.))
 
     def insert(self, index, data):
         assert data.shape == self.datasize[1:], "Insert data shape error! Data shape {}, buffer shape {}".format(data.shape, self.datasize)

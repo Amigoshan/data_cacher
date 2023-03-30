@@ -4,7 +4,7 @@
   dataset_seq_stride: 1
   dataset_frame_dir: true
   data:
-    "/home/amigo/workspace/pytorch/geometry_vision/data/tartan_train_local.txt":
+    "/ocean/projects/cis220039p/wenshanw/workspace/geometry_vision/data/tartan_train.txt":
       modality: 
         "flow":
           type: flow_left
@@ -23,11 +23,11 @@
           cacher_size: [480, 640]
           length: 2
         "acc":
-          type: imu_acc
+          type: imu_acc_v1
           cacher_size: [3]
           length: 20
         "gyro":
-          type: imu_gyro
+          type: imu_gyro_v1
           cacher_size: [3]
           length: 20
         "pose":
@@ -44,6 +44,6 @@
           length: 2
       cacher:
         data_root_key: tartan
-        subset_framenum: 51
-        worker_num: 2
+        subset_framenum: 500
+        worker_num: 8
       dataset:

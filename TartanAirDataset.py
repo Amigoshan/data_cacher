@@ -16,8 +16,8 @@ class TartanAirDataset(object):
         return motion[framenum]
 
     def load_imu(self, trajstr, framenum):
-        accfile = join(trajstr, 'imu', 'acc.npy')
-        gyrofile = join(trajstr, 'imu', 'gyro.npy')
+        accfile = join(trajstr, 'imu', 'accel_left.npy')
+        gyrofile = join(trajstr, 'imu', 'gyro_left.npy')
         acc = np.load(accfile)
         gyro = np.load(gyrofile)
         return np.concatenate((acc[framenum*10], gyro[framenum*10]), axis=-1)

@@ -45,7 +45,8 @@ DataRoot['dgx'] = {
 }
 
 DataRoot['psc'] = {
-    
+                        'tartan':       '/jet/projects/cis210086p/tartanair_v1',
+                        'tartan2':      '/ocean/projects/cis220039p/shared/tartanair_v2',    
 }
 
 

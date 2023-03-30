@@ -504,7 +504,7 @@ class motion_lcam_front(SimpleModBase):
         startind = int(framestrlist[0])
         endind = int(framestrlist[-1]) # motion len = N -1 , where N is the number of images
         datalen = data.shape[0]
-        assert startind < datalen and endind < datalen, "Error in loading motion, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
+        assert startind < datalen and endind <= datalen, "Error in loading motion, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
         return data[startind: endind]
 
     def get_filename(self):

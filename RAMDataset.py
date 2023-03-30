@@ -111,21 +111,20 @@ class RAMDataset(Dataset):
         remainingframes = (idx-self.acc_seqlen[k]) * self.seq_stride
         return k, remainingframes
 
-    def idx2slice(self, idx, mod_freq_mult, mod_sample_len):
+    def idx2slice(self, mod_freq_mult, mod_sample_len, trajind, frameind):
         '''
         handle the stride and the skip
         return: a slice object for querying the RAM
         '''
-        trajind, frameind = self.idx2trajind(idx)
 
-        start_frameind = self.acc_trajlen[trajind] + frameind * self.seq_stride * mod_freq_mult
+        start_frameind = self.acc_trajlen[trajind] * mod_freq_mult + frameind * self.seq_stride * mod_freq_mult
         seqlen_w_skip = (self.frame_skip + 1) * mod_sample_len - self.frame_skip
         end_frameind = start_frameind + seqlen_w_skip
-        assert end_frameind - self.acc_trajlen[trajind] <= self.trajlenlist[trajind]* mod_freq_mult, \
+        assert end_frameind - self.acc_trajlen[trajind]* mod_freq_mult <= self.trajlenlist[trajind]* mod_freq_mult, \
             "End-frameind {}, trajlen {}. Sample a sequence cross two trajectories! This should never happen! ".format( \
                 end_frameind - self.acc_trajlen[trajind], self.trajlenlist[trajind]* mod_freq_mult)
 
-        return slice(start_frameind, end_frameind, self.frame_skip+1), trajind, frameind
+        return slice(start_frameind, end_frameind, self.frame_skip+1)
 
     def __len__(self):
         return self.N
@@ -140,17 +139,17 @@ class RAMDataset(Dataset):
         # import ipdb;ipdb.set_trace()
         # sample = self.datacacher[ramslice]
         sample = {}
+        trajind, frameind = self.idx2trajind(idx)
         for key, modlen, modtype in zip(self.modkeylist, self.modlenlist, self.modtypelist):
 
         # for datatype, datalen in self.modalities_lengths.items(): 
             # parse the idx to trajstr
             mod_freqmult = modtype.freq_mult
-            ramslice, trajind, frameind = self.idx2slice(idx, mod_freqmult, modlen)
+            ramslice = self.idx2slice(mod_freqmult, modlen, trajind, frameind)
             # print(key, ramslice)
             sample[key] = self.datacacher.ready_buffer.get_frame(key, ramslice)
 
         if self.frame_dir:
-            ramslice, trajind, frameind = self.idx2slice(idx, 1, 1)
             sample['trajdir'] = self.dataroot + '/' + self.trajlist[trajind] + '/' + self.framelist[trajind][frameind]
 
         # Transform.

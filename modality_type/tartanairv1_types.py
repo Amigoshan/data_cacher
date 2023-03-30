@@ -262,7 +262,7 @@ class motion_left(SimpleModBase):
         startind = int(framestrlist[0])
         endind = int(framestrlist[-1]) # motion len = N -1 , where N is the number of images
         datalen = data.shape[0]
-        assert startind < datalen and endind < datalen, "Error in loading motion, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
+        assert startind < datalen and endind <= datalen, "Error in loading motion, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
         return data[startind:endind]
 
     def get_filename(self):
@@ -270,3 +270,22 @@ class motion_left(SimpleModBase):
 
     def data_padding(self):
         return np.zeros((1,6), dtype=np.float32)
+
+@register(TYPEDICT)
+class imu_acc_v1(IMUBase):
+    '''
+    This defines modality that is light-weight
+    such as IMU, pose, wheel_encoder
+    '''
+    def get_filename(self):
+        return join(self.folder_name, 'accel_left.npy')
+
+@register(TYPEDICT)
+class imu_gyro_v1(IMUBase):
+    '''
+    This defines modality that is light-weight
+    such as IMU, pose, wheel_encoder
+    '''
+    def get_filename(self):
+        return join(self.folder_name, 'gyro_left.npy')
+

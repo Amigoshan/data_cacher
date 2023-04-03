@@ -52,6 +52,7 @@ class MultiDatasets(object):
         self.datasetparams = [] # the parameters used to create dataset
         self.modalitylengths = [] # the modality_length used to create the dataset
         self.modalitytypes = [] 
+        self.paramparams = [] # dataset parameters such as camera intrinsics
         self.subsetrepeat = [0,] * self.datasetNum # keep a track of how many times the subset is sampled
 
         self.init_datasets(dataconfigs)
@@ -71,6 +72,7 @@ class MultiDatasets(object):
             modality_param = params['modality']
             cacher_param = params['cacher']
             dataset_param = params['dataset']
+            parameter_param = params['parameter']
 
             # Allow to pass a data root path directly via config.
             # TODO(yoraish): is this a good idea? I feel like overrides may be dangerous.
@@ -98,8 +100,8 @@ class MultiDatasets(object):
             self.datacachers.append(datacacher)
 
             # parameters for the RAMDataset
-            dataset_param = params['dataset']
             self.datasetparams.append(dataset_param)
+            self.paramparams.append(parameter_param)
 
         self.accDataLens = np.cumsum(self.datalens).astype(np.float64)/np.sum(self.datalens)    
 
@@ -111,8 +113,9 @@ class MultiDatasets(object):
             dataset = RAMDataset(self.datacachers[k], \
                                  self.modalitytypes[k], \
                                  self.modalitylengths[k], \
-                                 **self.datasetparams[k],
-                                 verbose=self.verbose
+                                 **self.datasetparams[k], \
+                                 verbose=self.verbose, \
+                                 params = self.paramparams[k]
                                 )
             dataloader = DataLoader(dataset, batch_size=self.batch, shuffle=self.shuffle, num_workers=self.workernum)
             self.datasets[k] = dataset
@@ -197,7 +200,7 @@ if __name__ == '__main__':
         sample = trainDataloader.load_sample()
         print(sample.keys())
         # time.sleep(0.02)
-        # import ipdb;ipdb.set_trace()
+        import ipdb;ipdb.set_trace()
         for b in range(batch):
             ss=sample['img0'][b][0].numpy()
             ss2=sample['depth0'][b][0].numpy()

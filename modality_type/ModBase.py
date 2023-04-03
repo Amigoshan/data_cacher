@@ -80,7 +80,7 @@ class SimpleModBase(ModBase):
     This defines modality that is light-weight
     such as IMU, pose, wheel_encoder
 
-    Note that we assume that there is one-to-one mapping between the framestr and the index of the frames in the modality
+    Note that we assume there is a one-to-one mapping between the framestr and the index of the frames in the modality
     The frame can be cropped in the datafile, but not really cropped in the data folder on the hard drive
     We will find the cooresponding frame by the framestr, instead of the frame index in the datafile
 
@@ -132,4 +132,3 @@ class SimpleModBase(ModBase):
         if padding is not None:
             data = np.concatenate((data, padding), axis=0)
         return data
-

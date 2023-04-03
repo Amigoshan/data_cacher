@@ -47,3 +47,6 @@
         subset_framenum: 500
         worker_num: 8
       dataset:
+      parameter:
+        intrinsics: [640, 640, 320, 320, 320, 320]
+        intrinsics_scale: 1.0

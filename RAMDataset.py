@@ -38,7 +38,8 @@ class RAMDataset(Dataset):
         frame_skip = 0, \
         seq_stride = 1, \
         frame_dir = False, \
-        verbose = False
+        verbose = False, \
+        params = None
         ):  
 
         super(RAMDataset, self).__init__()
@@ -57,6 +58,7 @@ class RAMDataset(Dataset):
         self.frame_skip = frame_skip # sample not consequtively, skip a few frames within a sequences
         self.seq_stride = seq_stride # sample less sequence, skip a few frames between two sequences 
         self.frame_dir = frame_dir # return the trajdir and framestr if set to True
+        self.params = params
 
         # initialize the trajectories and figure out the seqlen
         assert datacacher.ready_buffer.full, "Databuffer in RAM is not ready! "
@@ -163,6 +165,12 @@ class RAMDataset(Dataset):
         if ( self.transform is not None):
             sample = self.transform(sample)
 
+        # import ipdb;ipdb.set_trace()
+        # Additional parameters
+        if self.params is not None:
+            for param, value in self.params.items():
+                sample[param] = np.array(value, dtype=np.float32)
+
         return sample
 
 if __name__ == '__main__':
@@ -198,7 +206,9 @@ if __name__ == '__main__':
                 modality_types, \
                 modalities_lengths, \
                 transform = None, \
-                frame_skip = skip, seq_stride = stride)
+                frame_skip = skip, \
+                seq_stride = stride, \
+                params={'aa':11, "bbb": [1,2,3.0]})
     dataloader = DataLoader(dataset, batch_size=1, shuffle=False, num_workers=0)
     dataiter = iter(dataloader)
 
@@ -214,7 +224,9 @@ if __name__ == '__main__':
                             modality_types, \
                             modalities_lengths, \
                             transform = None, \
-                            frame_skip = skip, seq_stride = stride)
+                            frame_skip = skip, \
+                            seq_stride = stride, \
+                            params={'aa':11, "bbb": [1,2,3.0]})
                 dataloader = DataLoader(dataset, batch_size=1, shuffle=False, num_workers=0)
                 subset_repeat_count = -1
             dataiter = iter(dataloader)

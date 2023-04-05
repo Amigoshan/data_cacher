@@ -498,6 +498,14 @@ class pose_lcam_right(SimpleModBase):
         super().__init__(datashape)
         self.data_shape = (7,)
 
+
+    def crop_trajectory(self, data, framestrlist):
+        startind = int(framestrlist[0])
+        endind = int(framestrlist[-1]) + 1
+        datalen = data.shape[0]
+        assert startind < datalen and endind <= datalen, "Error in loading pose, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
+        return data[startind: endind]
+        
     def get_filename(self):
         return 'pose_lcam_right.txt'
 
@@ -513,6 +521,14 @@ class pose_lcam_back(SimpleModBase):
         super().__init__(datashape)
         self.data_shape = (7,)
 
+
+    def crop_trajectory(self, data, framestrlist):
+        startind = int(framestrlist[0])
+        endind = int(framestrlist[-1]) + 1
+        datalen = data.shape[0]
+        assert startind < datalen and endind <= datalen, "Error in loading pose, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
+        return data[startind: endind]
+        
     def get_filename(self):
         return 'pose_lcam_back.txt'
 
@@ -528,6 +544,14 @@ class pose_lcam_left(SimpleModBase):
         super().__init__(datashape)
         self.data_shape = (7,)
 
+
+    def crop_trajectory(self, data, framestrlist):
+        startind = int(framestrlist[0])
+        endind = int(framestrlist[-1]) + 1
+        datalen = data.shape[0]
+        assert startind < datalen and endind <= datalen, "Error in loading pose, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
+        return data[startind: endind]
+        
     def get_filename(self):
         return 'pose_lcam_left.txt'
 
@@ -543,6 +567,14 @@ class pose_lcam_top(SimpleModBase):
         super().__init__(datashape)
         self.data_shape = (7,)
 
+
+    def crop_trajectory(self, data, framestrlist):
+        startind = int(framestrlist[0])
+        endind = int(framestrlist[-1]) + 1
+        datalen = data.shape[0]
+        assert startind < datalen and endind <= datalen, "Error in loading pose, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
+        return data[startind: endind]
+        
     def get_filename(self):
         return 'pose_lcam_top.txt'
 
@@ -558,6 +590,14 @@ class pose_lcam_bottom(SimpleModBase):
         super().__init__(datashape)
         self.data_shape = (7,)
 
+
+    def crop_trajectory(self, data, framestrlist):
+        startind = int(framestrlist[0])
+        endind = int(framestrlist[-1]) + 1
+        datalen = data.shape[0]
+        assert startind < datalen and endind <= datalen, "Error in loading pose, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
+        return data[startind: endind]
+        
     def get_filename(self):
         return 'pose_lcam_bottom.txt'
 

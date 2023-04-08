@@ -65,7 +65,7 @@ class RGBModBase(FrameModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         (self.h, self.w) = datashape # (h, w)
-        self.data_shape = (self.h, self.w, 3)
+        self.data_shape = (3, self.h, self.w)
         self.data_type = np.uint8
 
     def load_frame(self, filename):
@@ -80,6 +80,9 @@ class RGBModBase(FrameModBase):
         if h != self.h or w != self.w:
             img = cv2.resize(img, (self.w, self.h), interpolation=cv2.INTER_LINEAR )
         return img
+
+    def transpose(self, img):
+        return img.transpose(2,0,1)
 
     def framestr2filename(self, framestr):
         '''
@@ -109,6 +112,9 @@ class DepthModBase(FrameModBase):
             depth = cv2.resize(depth, (self.w, self.h), interpolation=cv2.INTER_LINEAR )
         return depth
 
+    def transpose(self, depth):
+        return depth
+
     def framestr2filename(self, framestr):
         '''
         This is very dataset specific
@@ -120,7 +126,7 @@ class FlowModBase(FrameModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         (self.h, self.w) = datashape # (h, w)
-        self.data_shape = (self.h, self.w, 2)
+        self.data_shape = (2, self.h, self.w)
         self.data_type = np.float32
 
     def load_frame(self, filename):
@@ -139,6 +145,9 @@ class FlowModBase(FrameModBase):
         if h != self.h or w != self.w:
             flow = cv2.resize(flow, (self.w, self.h), interpolation=cv2.INTER_LINEAR )
         return flow
+
+    def transpose(self, flow):
+        return flow.transpose(2,0,1)
 
     def framestr2filename(self, framestr):
         '''
@@ -166,6 +175,9 @@ class SegModBase(FrameModBase):
         (h, w) = seg.shape
         if h != self.h or w != self.w:
             seg = cv2.resize(seg, (self.w, self.h), interpolation=cv2.INTER_LINEAR )
+        return seg
+
+    def transpose(self, seg):
         return seg
 
     def framestr2filename(self, framestr):

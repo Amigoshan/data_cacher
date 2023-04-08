@@ -4,7 +4,7 @@
   dataset_seq_stride: 1
   dataset_frame_dir: true
   data:
-    "/ocean/projects/cis220039p/wenshanw/workspace/geometry_vision/data/tartan_train.txt":
+    "/home/wenshan/workspace/pytorch/geometry_vision/data_cacher/data/data_tartanairv2_local.txt":
       modality: 
         "flow":
           type: flow_left
@@ -44,7 +44,7 @@
           length: 2
       cacher:
         data_root_key: tartan
-        subset_framenum: 500
+        subset_framenum: 200
         worker_num: 8
       dataset:
       parameter:

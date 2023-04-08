@@ -61,15 +61,19 @@ class FrameModBase(ModBase):
         filename = self.framestr2filename(framestr)
         if ind_env > self.drop_last:
             data = self.load_frame(join(trajdir, filename))
+            data = self.resize_data(data)
+            data = self.transpose(data)
         else: # the frame does not exist, create a dummy frame
             data = np.zeros(self.data_shape, dtype=self.data_type)
-        data = self.resize_data(data)
         return data 
 
     def framestr2filename(self, framestr):
         raise NotImplementedError
     
     def resize_data(self, ):
+        raise NotImplementedError
+
+    def transpose(self, ):
         raise NotImplementedError
 
     def load_frame(self, filename):

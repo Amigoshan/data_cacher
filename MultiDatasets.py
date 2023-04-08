@@ -10,6 +10,8 @@ from .DataCacher import DataCacher
 from .RAMDataset import RAMDataset
 from .ConfigParser import ConfigParser
 from .input_parser import parse_inputfile
+import torch 
+import numbers
 
 class MultiDatasets(object):
     '''
@@ -101,6 +103,7 @@ class MultiDatasets(object):
 
             # parameters for the RAMDataset
             self.datasetparams.append(dataset_param)
+            # this is the parameters returned in each sample
             self.paramparams.append(parameter_param)
 
         self.accDataLens = np.cumsum(self.datalens).astype(np.float64)/np.sum(self.datalens)    
@@ -115,7 +118,6 @@ class MultiDatasets(object):
                                  self.modalitylengths[k], \
                                  **self.datasetparams[k], \
                                  verbose=self.verbose, \
-                                 params = self.paramparams[k]
                                 )
             dataloader = DataLoader(dataset, batch_size=self.batch, shuffle=self.shuffle, num_workers=self.workernum)
             self.datasets[k] = dataset
@@ -159,6 +161,13 @@ class MultiDatasets(object):
             self.subsetrepeat[datasetInd] += 1
             self.vprint('==> Working on {} for the {} time'.format(self.datafiles[datasetInd], self.subsetrepeat[datasetInd]))
         sample['new_buffer'] = new_buffer
+        params = self.paramparams[datasetInd]
+        for param, value in params.items():
+            if isinstance(value, numbers.Number):
+                sample[param] = value
+            elif isinstance(value, list):
+                sample[param] = torch.Tensor(value).float()
+
         # print("sample time: {}".format(time.time()-cachertime))
         return sample
 
@@ -193,18 +202,19 @@ if __name__ == '__main__':
                        'local', 
                        batch=batch, 
                        workernum=0, 
-                       shuffle=False)
+                       shuffle=False,
+                       verbose=True)
     tic = time.time()
     num = 100                       
     for k in range(num):
         sample = trainDataloader.load_sample()
         print(sample.keys())
         # time.sleep(0.02)
-        import ipdb;ipdb.set_trace()
+        # import ipdb;ipdb.set_trace()
         for b in range(batch):
-            ss=sample['img0'][b][0].numpy()
+            ss=sample['img0'][b][0].numpy().transpose(1,2,0)
             ss2=sample['depth0'][b][0].numpy()
-            ss3=sample['flow'][b][0].numpy()
+            ss3=sample['flow'][b][0].numpy().transpose(1,2,0)
             depthvis = visdepth(80./ss2)
             flowvis = visflow(ss3)
             disp = cv2.hconcat((ss, depthvis, flowvis))

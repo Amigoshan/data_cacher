@@ -83,7 +83,7 @@ class ConfigParser(object):
         default_modality_params = self.parse_sub_global_param(spec, "modality", self.modality_paramlist)
         default_cacher_params = self.parse_sub_global_param(spec, "cacher", self.cacher_paramlist)
         default_dataset_params = self.parse_sub_global_param(spec, "dataset", self.dataset_paramlist)
-        default_parameter_params = self.parse_sub_global_param(spec, "parameter", self.dataset_paramlist)
+        default_parameter_params = self.parse_sub_global_param(spec, "parameter", self.parameter_paramlist)
 
         data_config = {}
         for datafile, params in spec['data'].items():

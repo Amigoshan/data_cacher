@@ -15,11 +15,11 @@ DataRoot['local'] = {
 
 
 DataRoot['cluster'] = {
-                        'sceneflow':    '/data/datasets/yaoyuh/StereoData/SceneFlow',
-                        'tartan':       '/data/datasets/wenshanw/tartan_data',
-                        'tartan-c':     '/project/learningvo/tartanair_v1_5',
+                        'sceneflow':    '/data2/datasets/yaoyuh/StereoData/SceneFlow',
+                        'tartan':       '/project/learningvo/tartanair_v1_5',
+                        'tartan2':      '',
                         'chairs':       '/project/learningvo/flowdata/FlyingChairs_release',
-                        'flying':       '/data/datasets/yaoyuh/StereoData/SceneFlow',
+                        'flying':       '/data2/datasets/yaoyuh/StereoData/SceneFlow',
                         'sintel':       '/project/learningvo/flowdata/sintel/training',
                         'euroc':        '/project/learningvo/euroc',
                         'kitti-stereo': '/project/learningvo/stereo_data/kitti/training', 

@@ -8,15 +8,15 @@
         modality: 
           "img0":
             type: image_left
-            cacher_size: [640, 640]
+            cacher_size: [480, 640]
             length: 1
           "img1":
             type: image_right
-            cacher_size: [640, 640]
+            cacher_size: [480, 640]
             length: 1
           "depth0":
             type: depth_left
-            cacher_size: [640, 640]
+            cacher_size: [480, 640]
             length: 1
         cacher:
           data_root_key: tartan 

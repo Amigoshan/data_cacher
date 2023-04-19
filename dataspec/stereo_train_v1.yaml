@@ -20,7 +20,7 @@
             length: 1
         cacher:
           data_root_key: tartan 
-          subset_framenum: 300
+          subset_framenum: 3000
           worker_num: 8
         dataset:
         parameter:
@@ -40,7 +40,7 @@
             length: 1
         cacher:
           data_root_key: sceneflow 
-          subset_framenum: 300
+          subset_framenum: 3000
           worker_num: 8
         dataset:
         parameter:
@@ -60,7 +60,7 @@
             length: 1
         cacher:
           data_root_key: sceneflow 
-          subset_framenum: 300
+          subset_framenum: 3000
           worker_num: 8
         dataset:
         parameter:

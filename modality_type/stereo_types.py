@@ -52,7 +52,7 @@ class RGBModBase(FrameModBase):
 
     def load_frame(self, filename):
         # read image
-        img = cv2.imread(filename, cv2.IMREAD_UNCHANGED)
+        img = cv2.imread(filename)
         assert img is not None, "Error loading RGB {}".format(filename)
         return img
 
@@ -136,7 +136,7 @@ class sceneflow_disp(FrameModBase):
         return depth
 
     def transpose(self, disp):
-        return disp
+        return disp.copy() # this handles the discontinutity issue
 
     def framestr2filename(self, framestr):
         '''
@@ -151,8 +151,18 @@ class kitti_left(RGBModBase):
         super().__init__(datashape)
         self.folder_name = "colored_0"
         self.file_suffix = "10"
-        self.drop_last = 1 # the flow is one frame shorter than other modalities
     
+    def load_frame(self, filename):
+        img = cv2.imread(filename, cv2.IMREAD_UNCHANGED)
+        assert img is not None, "Error loading image {}".format(filename)
+        # the kitti stereo image comes in different sizes
+        # clip the data, because the cacher buffer cannot deal with difference sizes
+        imgh, imgw, _ = img.shape
+        imgx = (imgh-370)//2
+        imgy = (imgw - 1224)//2
+        img = img[imgx:imgx+370, imgy:imgy+1224,:]
+        return img
+
     def framestr2filename(self, framestr):
         '''
         This is very dataset specific
@@ -166,7 +176,17 @@ class kitti_right(RGBModBase):
         super().__init__(datashape)
         self.folder_name = "colored_1"
         self.file_suffix = "10"
-        self.drop_last = 1 # the flow is one frame shorter than other modalities
+
+    def load_frame(self, filename):
+        img = cv2.imread(filename, cv2.IMREAD_UNCHANGED)
+        assert img is not None, "Error loading image {}".format(filename)
+        # the kitti stereo image comes in different sizes
+        # clip the data, because the cacher buffer cannot deal with difference sizes
+        imgh, imgw, _ = img.shape
+        imgx = (imgh-370)//2
+        imgy = (imgw - 1224)//2
+        img = img[imgx:imgx+370, imgy:imgy+1224,:]
+        return img
     
     def framestr2filename(self, framestr):
         '''
@@ -183,12 +203,16 @@ class kitti_disp(FrameModBase):
         self.data_shape = (self.h, self.w)
         self.folder_name = "disp_occ"
         self.file_suffix = "10"
-        self.drop_last = 1 # the flow is one frame shorter than other modalities
+        self.data_type = np.float32
 
 
     def load_frame(self, filename):
-        dispImg = cv2.imread(filename, cv2.IMREAD_UNCHANGED)
+        dispImg = cv2.imread(filename)
         assert dispImg is not None, "Error loading depth {}".format(filename)
+        imgh, imgw, _ = dispImg.shape
+        imgx = (imgh-370)//2
+        imgy = (imgw - 1224)//2
+        dispImg = dispImg[imgx:imgx+370, imgy:imgy+1224, 0].astype(np.float32)
         return dispImg
 
     def resize_data(self, depth):

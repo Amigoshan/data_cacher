@@ -12,14 +12,14 @@
             length: 1
           "img1":
             type: kitti_right
-            cacher_size: [640, 640]
+            cacher_size: [370, 1224]
             length: 1
-          "depth0":
+          "disp0":
             type: kitti_disp
-            cacher_size: [640, 640]
+            cacher_size: [370, 1224]
             length: 1
         cacher:
-          data_root_key: kitti 
+          data_root_key: kitti-stereo 
           subset_framenum: 394
           worker_num: 1
         dataset:

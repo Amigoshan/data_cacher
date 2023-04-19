@@ -7,20 +7,20 @@
       "data/tartan_stereo.txt":
         modality: 
           "img0":
-            type: rgb_lcam_front
+            type: image_left
             cacher_size: [640, 640]
             length: 1
           "img1":
-            type: rgb_rcam_front
+            type: image_right
             cacher_size: [640, 640]
             length: 1
           "depth0":
-            type: depth_rcam_front
+            type: depth_left
             cacher_size: [640, 640]
             length: 1
         cacher:
           data_root_key: tartan 
-          subset_framenum: 5000
+          subset_framenum: 300
           worker_num: 8
         dataset:
         parameter:
@@ -34,33 +34,33 @@
             type: sceneflow_right
             cacher_size: [540, 960]
             length: 1
-          "depth0":
+          "disp0":
             type: sceneflow_disp
             cacher_size: [540, 960]
             length: 1
         cacher:
           data_root_key: sceneflow 
-          subset_framenum: 5000
+          subset_framenum: 300
           worker_num: 8
         dataset:
         parameter:
       "data/sceneflow_stereo_final.txt":
         modality: 
           "img0":
-            type: rgb_lcam_front
+            type: sceneflow_left
             cacher_size: [540, 960]
             length: 1
           "img1":
-            type: rgb_rcam_front
+            type: sceneflow_right
             cacher_size: [540, 960]
             length: 1
-          "depth0":
-            type: depth_rcam_front
+          "disp0":
+            type: sceneflow_disp
             cacher_size: [540, 960]
             length: 1
         cacher:
           data_root_key: sceneflow 
-          subset_framenum: 5000
+          subset_framenum: 300
           worker_num: 8
         dataset:
         parameter:

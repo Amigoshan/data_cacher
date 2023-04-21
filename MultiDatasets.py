@@ -194,7 +194,8 @@ if __name__ == '__main__':
     from .utils import visflow, visdepth
     import cv2
     # dataset_specfile = 'data_cacher/dataspec/flowvo_train_local_v1.yaml'
-    dataset_specfile = 'data_cacher/dataspec/flowvo_train_local_v2.yaml'
+    # dataset_specfile = 'data_cacher/dataspec/flowvo_train_local_v2.yaml'
+    dataset_specfile = 'data_cacher/dataspec/test_yorai.yaml'
     # configparser = ConfigParser()
     # dataconfigs = configparser.parse_from_fp(dataset_specfile)
     batch = 3
@@ -210,16 +211,16 @@ if __name__ == '__main__':
         sample = trainDataloader.load_sample()
         print(sample.keys())
         # time.sleep(0.02)
-        # import ipdb;ipdb.set_trace()
-        for b in range(batch):
-            ss=sample['img0'][b][0].numpy().transpose(1,2,0)
-            ss2=sample['depth0'][b][0].numpy()
-            ss3=sample['flow'][b][0].numpy().transpose(1,2,0)
-            depthvis = visdepth(80./ss2)
-            flowvis = visflow(ss3)
-            disp = cv2.hconcat((ss, depthvis, flowvis))
-            cv2.imshow('img', disp)
-            cv2.waitKey(100)
+        import ipdb;ipdb.set_trace()
+        # for b in range(batch):
+            # ss=sample['img0'][b][0].numpy().transpose(1,2,0)
+            # ss2=sample['depth0'][b][0].numpy()
+            # ss3=sample['flow'][b][0].numpy().transpose(1,2,0)
+            # depthvis = visdepth(80./ss2)
+            # flowvis = visflow(ss3)
+            # disp = cv2.hconcat((ss, depthvis, flowvis))
+            # cv2.imshow('img', disp)
+            # cv2.waitKey(100)
 
     print((time.time()-tic))
     trainDataloader.stop_cachers()

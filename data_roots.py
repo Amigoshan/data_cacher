@@ -1,7 +1,7 @@
 DataRoot = {}
 DataRoot['local'] = {
                         'sceneflow':    '/home/amigo/tmp/data/sceneflow',
-                        'tartan':       '/home/amigo/tmp/data/tartan',
+                        'tartan':       '/home/wenshan/tmp/tartanair',
                         'tartan2':      '/home/wenshan/tmp/tartanair_v2',
                         'shibuya':      '/prague/tartanvo_data/AirDOS_shibuya',
                         'tartan-cvpr':  '/cairo/tartanair_test_cvpr',

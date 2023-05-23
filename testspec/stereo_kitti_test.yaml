@@ -21,6 +21,6 @@
         cacher:
           data_root_key: kitti-stereo 
           subset_framenum: 394
-          worker_num: 1
+          worker_num: 2
         dataset:
         parameter:

@@ -20,27 +20,27 @@
             length: 1
         cacher:
           data_root_key: tartan2
-          subset_framenum: 3000
+          subset_framenum: 1500
           worker_num: 8
         dataset:
         parameter:
       "data/tartanv2/tartan2_stereo_back.txt":
         modality: 
           "img0":
-            type: rgb_lcam_back
-            cacher_size: [640, 640]
-            length: 1
-          "img1":
             type: rgb_rcam_back
             cacher_size: [640, 640]
             length: 1
+          "img1":
+            type: rgb_lcam_back
+            cacher_size: [640, 640]
+            length: 1
           "depth0":
-            type: depth_lcam_back
+            type: depth_rcam_back
             cacher_size: [640, 640]
             length: 1
         cacher:
           data_root_key: tartan2
-          subset_framenum: 3000
+          subset_framenum: 1500
           worker_num: 8
         dataset:
         parameter:
@@ -60,7 +60,7 @@
             length: 1
         cacher:
           data_root_key: tartan2
-          subset_framenum: 2000
+          subset_framenum: 1000
           worker_num: 8
         dataset:
         parameter:
@@ -80,7 +80,7 @@
             length: 1
         cacher:
           data_root_key: sceneflow 
-          subset_framenum: 1000
+          subset_framenum: 500
           worker_num: 8
         dataset:
         parameter:
@@ -100,7 +100,7 @@
             length: 1
         cacher:
           data_root_key: sceneflow 
-          subset_framenum: 1000
+          subset_framenum: 500
           worker_num: 8
         dataset:
         parameter:

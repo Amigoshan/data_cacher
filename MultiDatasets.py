@@ -200,18 +200,18 @@ if __name__ == '__main__':
     # dataconfigs = configparser.parse_from_fp(dataset_specfile)
     batch = 3
     trainDataloader = MultiDatasets(dataset_specfile, 
-                       'local', 
+                       'psc', 
                        batch=batch, 
                        workernum=0, 
                        shuffle=False,
                        verbose=True)
     tic = time.time()
-    num = 100                       
+    num = 100000                       
     for k in range(num):
         sample = trainDataloader.load_sample()
-        print(sample.keys())
+        print(k, sample.keys(), sample['depth_lcam_front'].shape)
         # time.sleep(0.02)
-        import ipdb;ipdb.set_trace()
+        # import ipdb;ipdb.set_trace()
         # for b in range(batch):
             # ss=sample['img0'][b][0].numpy().transpose(1,2,0)
             # ss2=sample['depth0'][b][0].numpy()

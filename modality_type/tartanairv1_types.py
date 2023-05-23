@@ -1,6 +1,6 @@
 import cv2
 from .ModBase import SimpleModBase, register, TYPEDICT
-from .tartanair_types import RGBModBase, DepthModBase, SegModBase, IMUBase, FlowModBase
+from .tartanair_types import RGBModBase, DepthModBase, SegModBase, IMUBase, FlowModBase, MotionModBase
 from os.path import join
 import numpy as np
 
@@ -124,80 +124,47 @@ class pose_left(SimpleModBase):
     def get_filename(self):
         return 'pose_left.txt'
 
-    def data_padding(self):
+    def data_padding(self, trajlen):
         return None
 
 @register(TYPEDICT)
-class motion_left(SimpleModBase):
+class motion_left(MotionModBase):
     '''
     This defines modality that is light-weight
     such as IMU, pose, wheel_encoder
     '''
     def __init__(self, datashape):
         super().__init__(datashape)
-        self.data_shape = (6,)
         self.drop_last = 1
-
-    def crop_trajectory(self, data, framestrlist):
-        startind = int(framestrlist[0])
-        endind = int(framestrlist[-1]) # motion len = N -1 , where N is the number of images
-        datalen = data.shape[0]
-        assert startind < datalen and endind <= datalen, "Error in loading motion, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
-        return data[startind:endind]
 
     def get_filename(self):
         return 'motion_left.npy'
 
-    def data_padding(self):
-        return np.zeros((1,6), dtype=np.float32)
-
 @register(TYPEDICT)
-class motion2_left(SimpleModBase):
+class motion2_left(MotionModBase):
     '''
     This defines modality that is light-weight
     such as IMU, pose, wheel_encoder
     '''
     def __init__(self, datashape):
         super().__init__(datashape)
-        self.data_shape = (6,)
         self.drop_last = 2
-
-    def crop_trajectory(self, data, framestrlist):
-        startind = int(framestrlist[0])
-        endind = int(framestrlist[-1]) # motion len = N -1 , where N is the number of images
-        datalen = data.shape[0]
-        assert startind < datalen and endind <= datalen, "Error in loading motion, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
-        return data[startind:endind]
 
     def get_filename(self):
         return 'motion_left2.npy'
 
-    def data_padding(self):
-        return np.zeros((1,6), dtype=np.float32)
-
 @register(TYPEDICT)
-class motion4_left(SimpleModBase):
+class motion4_left(MotionModBase):
     '''
     This defines modality that is light-weight
     such as IMU, pose, wheel_encoder
     '''
     def __init__(self, datashape):
         super().__init__(datashape)
-        self.data_shape = (6,)
         self.drop_last = 4
-
-    def crop_trajectory(self, data, framestrlist):
-        startind = int(framestrlist[0])
-        endind = int(framestrlist[-1]) # motion len = N -1 , where N is the number of images
-        datalen = data.shape[0]
-        assert startind < datalen and endind <= datalen, "Error in loading motion, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
-        return data[startind:endind]
 
     def get_filename(self):
         return 'motion_left4.npy'
-
-    def data_padding(self):
-        return np.zeros((1,6), dtype=np.float32)
 
 @register(TYPEDICT)
 class imu_acc_v1(IMUBase):

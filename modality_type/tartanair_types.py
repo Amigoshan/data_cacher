@@ -34,7 +34,7 @@ class IMUBase(SimpleModBase):
         assert startind < datalen and endind <= datalen, "Error in loading IMU, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
         return data[startind: endind]
 
-    def data_padding(self):
+    def data_padding(self, trajlen):
         '''
         In TartanAir, the lengh of IMU seq is (N-1)*10
         We would like the data be aligned, which means the nominal lengh should be N*10
@@ -199,7 +199,27 @@ class PoseModBase(SimpleModBase):
         assert startind < datalen and endind <= datalen, "Error in loading pose, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
         return data[startind: endind]
 
+    def data_padding(self, trajlen):
+        return None
 
+class MotionModBase(SimpleModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.data_shape = (6,)
+
+    def crop_trajectory(self, data, framestrlist):
+        startind = int(framestrlist[0])
+        endind = int(framestrlist[-1]) + 1 - self.drop_last # motion len = N -1 , where N is the number of images
+        datalen = data.shape[0]
+        if startind >= datalen: # the traj starts at very later part of the trajectory where there's no motion
+            # import ipdb;ipdb.set_trace()
+            return np.zeros((0, 6), dtype=np.float32)
+        assert endind <= datalen, "Error in loading motion, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
+        return data[startind: endind]
+
+    def data_padding(self, trajlen):
+        padding_len = min(trajlen, self.drop_last)
+        return np.zeros((padding_len, 6), dtype=np.float32)
 
 # === lcam_front ===
 @register(TYPEDICT)
@@ -498,192 +518,412 @@ class pose_lcam_front(PoseModBase):
     '''
     The pose of the left front camera.
     '''
-    def __init__(self, datashape):
-        super().__init__(datashape)
-
     def get_filename(self):
         return 'pose_lcam_front.txt'
-
-    def data_padding(self):
-        return None
 
 @register(TYPEDICT)
 class pose_lcam_right(PoseModBase):
     '''
     The pose of the left right-facing camera.
     '''
-    def __init__(self, datashape):
-        super().__init__(datashape)
-
     def get_filename(self):
         return 'pose_lcam_right.txt'
-
-    def data_padding(self):
-        return None
 
 @register(TYPEDICT)
 class pose_lcam_back(PoseModBase):
     '''
     The pose of the left back-facing camera.
     '''
-    def __init__(self, datashape):
-        super().__init__(datashape)
-
     def get_filename(self):
         return 'pose_lcam_back.txt'
-
-    def data_padding(self):
-        return None
 
 @register(TYPEDICT)
 class pose_lcam_left(PoseModBase):
     '''
     The pose of the left left-facing camera.
     '''
-    def __init__(self, datashape):
-        super().__init__(datashape)
-
     def get_filename(self):
         return 'pose_lcam_left.txt'
-
-    def data_padding(self):
-        return None
 
 @register(TYPEDICT)
 class pose_lcam_top(PoseModBase):
     '''
     The pose of the left top-facing camera.
     '''
-    def __init__(self, datashape):
-        super().__init__(datashape)
-
     def get_filename(self):
         return 'pose_lcam_top.txt'
-
-    def data_padding(self):
-        return None
 
 @register(TYPEDICT)
 class pose_lcam_bottom(PoseModBase):
     '''
     The pose of the left bottom-facing camera.
     '''
-    def __init__(self, datashape):
-        super().__init__(datashape)
-
     def get_filename(self):
         return 'pose_lcam_bottom.txt'
-
-    def data_padding(self):
-        return None
-
 
 @register(TYPEDICT)
 class pose_rcam_front(PoseModBase):
     '''
-    The pose of the left front camera.
+    The pose of the right front-facing camera.
     '''
-    def __init__(self, datashape):
-        super().__init__(datashape)
-
     def get_filename(self):
         return 'pose_rcam_front.txt'
-
-    def data_padding(self):
-        return None
 
 @register(TYPEDICT)
 class pose_rcam_right(PoseModBase):
     '''
-    The pose of the left right-facing camera.
+    The pose of the right right-facing camera.
     '''
-    def __init__(self, datashape):
-        super().__init__(datashape)
-
     def get_filename(self):
         return 'pose_rcam_right.txt'
-
-    def data_padding(self):
-        return None
 
 @register(TYPEDICT)
 class pose_rcam_back(PoseModBase):
     '''
-    The pose of the left back-facing camera.
+    The pose of the right back-facing camera.
     '''
-    def __init__(self, datashape):
-        super().__init__(datashape)
-
     def get_filename(self):
         return 'pose_rcam_back.txt'
-
-    def data_padding(self):
-        return None
 
 @register(TYPEDICT)
 class pose_rcam_left(PoseModBase):
     '''
-    The pose of the left left-facing camera.
+    The pose of the right left-facing camera.
     '''
-    def __init__(self, datashape):
-        super().__init__(datashape)
-
     def get_filename(self):
         return 'pose_rcam_left.txt'
-
-    def data_padding(self):
-        return None
 
 @register(TYPEDICT)
 class pose_rcam_top(PoseModBase):
     '''
-    The pose of the left top-facing camera.
+    The pose of the right top-facing camera.
     '''
-    def __init__(self, datashape):
-        super().__init__(datashape)
-
     def get_filename(self):
         return 'pose_rcam_top.txt'
 
-    def data_padding(self):
+    def data_padding(self, trajlen):
         return None
 
 @register(TYPEDICT)
 class pose_rcam_bottom(PoseModBase):
     '''
-    The pose of the left bottom-facing camera.
+    The pose of the right bottom-facing camera.
     '''
-    def __init__(self, datashape):
-        super().__init__(datashape)
-
     def get_filename(self):
         return 'pose_rcam_bottom.txt'
 
-    def data_padding(self):
-        return None
 
 @register(TYPEDICT)
-class motion_lcam_front(SimpleModBase):
-    '''
-    This defines modality that is light-weight
-    such as IMU, pose, wheel_encoder
-    '''
+class motion_lcam_front(MotionModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
-        self.data_shape = (6,)
-
-    def crop_trajectory(self, data, framestrlist):
-        startind = int(framestrlist[0])
-        endind = int(framestrlist[-1]) # motion len = N -1 , where N is the number of images
-        datalen = data.shape[0]
-        assert startind < datalen and endind <= datalen, "Error in loading motion, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
-        return data[startind: endind]
+        self.drop_last = 1 # this is used to let the loader know how much frames are short
 
     def get_filename(self):
         return 'motion_lcam_front.npy'
 
-    def data_padding(self):
-        return np.zeros((1,6), dtype=np.float32)
+@register(TYPEDICT)
+class motion2_lcam_front(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 2 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion_lcam_front2.npy'
+
+class motion4_lcam_front(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 4 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion_lcam_front4.npy'
+
+@register(TYPEDICT)
+class motion_lcam_back(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 1 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion_lcam_back.npy'
+
+@register(TYPEDICT)
+class motion2_lcam_back(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 2 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion_lcam_back2.npy'
+
+class motion4_lcam_back(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 4 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion_lcam_back4.npy'
+
+@register(TYPEDICT)
+class motion_lcam_left(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 1 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion_lcam_left.npy'
+
+@register(TYPEDICT)
+class motion2_lcam_left(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 2 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion_lcam_left2.npy'
+
+class motion4_lcam_left(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 4 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion_lcam_left4.npy'
+
+@register(TYPEDICT)
+class motion_lcam_right(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 1 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion_lcam_right.npy'
+
+@register(TYPEDICT)
+class motion2_lcam_right(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 2 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion_lcam_right2.npy'
+
+class motion4_lcam_right(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 4 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion_lcam_right4.npy'
+
+@register(TYPEDICT)
+class motion_lcam_up(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 1 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion_lcam_up.npy'
+
+@register(TYPEDICT)
+class motion2_lcam_up(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 2 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion_lcam_up2.npy'
+
+class motion4_lcam_up(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 4 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion_lcam_up4.npy'
+
+@register(TYPEDICT)
+class motion_lcam_bottom(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 1 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion_lcam_bottom.npy'
+
+@register(TYPEDICT)
+class motion2_lcam_bottom(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 2 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion_lcam_bottom2.npy'
+
+class motion4_lcam_bottom(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 4 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion_lcam_bottom4.npy'
+
+@register(TYPEDICT)
+class motion_rcam_front(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 1 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion_rcam_front.npy'
+
+@register(TYPEDICT)
+class motion2_rcam_front(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 2 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion_rcam_front2.npy'
+
+class motion4_rcam_front(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 4 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion_rcam_front4.npy'
+
+@register(TYPEDICT)
+class motion_rcam_back(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 1 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion_rcam_back.npy'
+
+@register(TYPEDICT)
+class motion2_rcam_back(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 2 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion_rcam_back2.npy'
+
+class motion4_rcam_back(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 4 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion_rcam_back4.npy'
+
+@register(TYPEDICT)
+class motion_rcam_left(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 1 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion_rcam_left.npy'
+
+@register(TYPEDICT)
+class motion2_rcam_left(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 2 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion_rcam_left2.npy'
+
+class motion4_rcam_left(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 4 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion_rcam_left4.npy'
+
+@register(TYPEDICT)
+class motion_rcam_right(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 1 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion_rcam_right.npy'
+
+@register(TYPEDICT)
+class motion2_rcam_right(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 2 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion_rcam_right2.npy'
+
+class motion4_rcam_right(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 4 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion_rcam_right4.npy'
+
+@register(TYPEDICT)
+class motion_rcam_up(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 1 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion_rcam_up.npy'
+
+@register(TYPEDICT)
+class motion2_rcam_up(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 2 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion_rcam_up2.npy'
+
+class motion4_rcam_up(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 4 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion_rcam_up4.npy'
+
+@register(TYPEDICT)
+class motion_rcam_bottom(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 1 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion_rcam_bottom.npy'
+
+@register(TYPEDICT)
+class motion2_rcam_bottom(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 2 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion_rcam_bottom2.npy'
+
+class motion4_rcam_bottom(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 4 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion_rcam_bottom4.npy'
 
 @register(TYPEDICT)
 class lidar(LiDARBase):

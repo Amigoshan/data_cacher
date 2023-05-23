@@ -86,10 +86,13 @@ class ConfigParser(object):
         default_parameter_params = self.parse_sub_global_param(spec, "parameter", self.parameter_paramlist)
 
         data_config = {}
-        for datafile, params in spec['data'].items():
+        for datasetind, params in spec['data'].items():
             all_params = {}
+            assert 'file' in params, 'ConfigParser: Missing filename in the spec data/{}'.format(datasetind)
+            datafile = params['file']
+            all_params['file'] = datafile
 
-            assert 'modality' in params, 'ConfigParser: Missing modality in the spec {}'.format(datafile)
+            assert 'modality' in params, 'ConfigParser: Missing modality in the data/{}'.format(datasetind)
             all_modality_params = {}
             for modkey in params['modality']:
                 modality_params = self.parse_sub_data_param(params['modality'], modkey, self.modality_paramlist, default_modality_params)
@@ -105,14 +108,16 @@ class ConfigParser(object):
             parameter_params = self.parse_sub_data_param(params, "parameter", self.parameter_paramlist, default_parameter_params)
             all_params['parameter'] = parameter_params
 
-            data_config[datafile] = all_params
+            data_config[datasetind] = all_params
 
         dataset_config['data'] = data_config
         return dataset_config
 
 
 if __name__ == "__main__":
-    fp = open('dataspec/flowvo_train_local_new.yaml')
+    # fp = open('dataspec/flowvo_train_local_new.yaml')
+    dataset_specfile = '/home/wenshan/workspace/pytorch/geometry_vision/specs/dataspec/flowvo_train_local_v2.yaml'
+    fp = open(dataset_specfile)
     d = yaml.safe_load(fp)
     print(d)
     print(type(d))

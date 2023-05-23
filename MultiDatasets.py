@@ -69,7 +69,8 @@ class MultiDatasets(object):
 
     def init_datasets(self, dataconfigs):
         # modalities = dataconfigs['modalities']
-        for datafile, params in dataconfigs['data'].items():
+        for datafileind, params in dataconfigs['data'].items():
+            datafile = params['file']
             self.datafiles.append(datafile)
             modality_param = params['modality']
             cacher_param = params['cacher']
@@ -125,7 +126,13 @@ class MultiDatasets(object):
             self.dataiters[k] = iter(dataloader)
             self.subsetrepeat[k] = 0
 
-    def load_sample(self, fullbatch=True, notrepeat=False):
+    def load_sample(self, fullbatch=True, notrepeat=False, maxrepeatnum=3):
+        '''
+        fullbatch: set to true to discard the imcomplete batch at the end of the epoch
+        notrepeat: set to true if you don't want to repeat training on the ready buffer
+                    the code will just wait there until the next buffer is filled
+        maxrepeatnum: set the maximum repeat number to avoid overfitting on current buffer too much
+        '''
         # Randomly pick the dataset in the list
         randnum = np.random.rand()
         datasetInd = 0 
@@ -142,7 +149,7 @@ class MultiDatasets(object):
                 sample = next(self.dataiters[datasetInd])
         except StopIteration:
             # import ipdb;ipdb.set_trace()
-            if notrepeat: # wait for the new buffer ready, do not repeat the current buffer
+            if notrepeat or self.subsetrepeat[datasetInd] > maxrepeatnum: # wait for the new buffer ready, do not repeat the current buffer
                 while not self.datacachers[datasetInd].new_buffer_available:
                     time.sleep(1.0)
                     self.vprint('Wait for the next buffer...')
@@ -195,7 +202,8 @@ if __name__ == '__main__':
     import cv2
     # dataset_specfile = 'data_cacher/dataspec/flowvo_train_local_v1.yaml'
     # dataset_specfile = 'data_cacher/dataspec/flowvo_train_local_v2.yaml'
-    dataset_specfile = 'data_cacher/dataspec/test_yorai.yaml'
+    # dataset_specfile = 'data_cacher/dataspec/test_yorai.yaml'
+    dataset_specfile = '/home/wenshan/workspace/pytorch/geometry_vision/specs/dataspec/flowvo_train_local_v2.yaml'
     # configparser = ConfigParser()
     # dataconfigs = configparser.parse_from_fp(dataset_specfile)
     batch = 3

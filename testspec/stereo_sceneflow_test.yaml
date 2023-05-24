@@ -20,7 +20,7 @@
             length: 1
         cacher:
           data_root_key: sceneflow 
-          subset_framenum: 5000
-          worker_num: 2
+          subset_framenum: 4000
+          worker_num: 4
         dataset:
         parameter:

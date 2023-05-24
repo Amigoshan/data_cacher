@@ -20,7 +20,7 @@
             length: 1
         cacher:
           data_root_key: tartan 
-          subset_framenum: 2000
-          worker_num: 8
+          subset_framenum: 4000
+          worker_num: 4
         dataset:
         parameter:

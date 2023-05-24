@@ -20,8 +20,8 @@
             length: 1
         cacher:
           data_root_key: tartan2
-          subset_framenum: 1000
-          worker_num: 4
+          subset_framenum: 1500
+          worker_num: 8
         dataset:
         parameter:
       "data/tartanv2/tartan2_stereo_back.txt":
@@ -35,13 +35,13 @@
             cacher_size: [640, 640]
             length: 1
           "depth0":
-            type: depth_lcam_back
+            type: depth_rcam_back
             cacher_size: [640, 640]
             length: 1
         cacher:
           data_root_key: tartan2
-          subset_framenum: 1000
-          worker_num: 4
+          subset_framenum: 1500
+          worker_num: 8
         dataset:
         parameter:
       "data/tartanv2/tartan2_stereo_bottom.txt":
@@ -60,8 +60,8 @@
             length: 1
         cacher:
           data_root_key: tartan2
-          subset_framenum: 700
-          worker_num: 4
+          subset_framenum: 1000
+          worker_num: 8
         dataset:
         parameter:
       "data/sceneflow_stereo.txt":
@@ -80,8 +80,8 @@
             length: 1
         cacher:
           data_root_key: sceneflow 
-          subset_framenum: 350
-          worker_num: 4
+          subset_framenum: 500
+          worker_num: 8
         dataset:
         parameter:
       "data/sceneflow_stereo_final.txt":
@@ -100,7 +100,7 @@
             length: 1
         cacher:
           data_root_key: sceneflow 
-          subset_framenum: 350
-          worker_num: 4
+          subset_framenum: 500
+          worker_num: 8
         dataset:
         parameter:

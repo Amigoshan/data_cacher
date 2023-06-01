@@ -112,10 +112,16 @@ class SimpleModBase(ModBase):
     def get_filename(self, trajdir):
         raise NotImplementedError
 
-    def data_padding(self, trajlen):
+    def data_padding(self):
+        '''
+        Pad the entire trajectory to compensate the dropped frames
+        '''
         raise NotImplementedError
 
     def crop_trajectory(self, data, framestrlist):
+        '''
+        The trajecotry can start from the middle of the trajectory
+        '''
         raise NotImplementedError
 
     def load_data(self, trajdir, framestrlist):
@@ -131,9 +137,9 @@ class SimpleModBase(ModBase):
         else:
             assert False, "File format is not supported {}".format(filename)
         # crop the trajectory based on the starting and ending frames
-        data = self.crop_trajectory(data, framestrlist)
-        padding = self.data_padding(len(framestrlist))
+        padding = self.data_padding()
         if padding is not None:
             data = np.concatenate((data, padding), axis=0)
-            assert len(data) == len(framestrlist), "Error Loading {}, data len {}, framestr len {}".format(self.name, len(data), len(framestrlist))
+        data = self.crop_trajectory(data, framestrlist)
+        assert len(data) == len(framestrlist), "Error Loading {}, data len {}, framestr len {}".format(self.name, len(data), len(framestrlist))
         return data

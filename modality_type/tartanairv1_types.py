@@ -124,7 +124,7 @@ class pose_left(SimpleModBase):
     def get_filename(self):
         return 'pose_left.txt'
 
-    def data_padding(self, trajlen):
+    def data_padding(self):
         return None
 
 @register(TYPEDICT)

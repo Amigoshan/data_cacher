@@ -34,7 +34,7 @@ class IMUBase(SimpleModBase):
         assert startind < datalen and endind <= datalen, "Error in loading IMU, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
         return data[startind: endind]
 
-    def data_padding(self, trajlen):
+    def data_padding(self):
         '''
         In TartanAir, the lengh of IMU seq is (N-1)*10
         We would like the data be aligned, which means the nominal lengh should be N*10
@@ -199,7 +199,7 @@ class PoseModBase(SimpleModBase):
         assert startind < datalen and endind <= datalen, "Error in loading pose, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
         return data[startind: endind]
 
-    def data_padding(self, trajlen):
+    def data_padding(self):
         return None
 
 class MotionModBase(SimpleModBase):
@@ -209,17 +209,13 @@ class MotionModBase(SimpleModBase):
 
     def crop_trajectory(self, data, framestrlist):
         startind = int(framestrlist[0])
-        endind = int(framestrlist[-1]) + 1 - self.drop_last # motion len = N -1 , where N is the number of images
+        endind = int(framestrlist[-1]) + 1 # motion len = N -1 , where N is the number of images
         datalen = data.shape[0]
-        if startind >= datalen: # the traj starts at very later part of the trajectory where there's no motion
-            # import ipdb;ipdb.set_trace()
-            return np.zeros((0, 6), dtype=np.float32)
-        assert endind <= datalen, "Error in loading motion, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
+        assert startind < datalen and endind <= datalen, "Error in loading motion, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
         return data[startind: endind]
 
-    def data_padding(self, trajlen):
-        padding_len = min(trajlen, self.drop_last)
-        return np.zeros((padding_len, 6), dtype=np.float32)
+    def data_padding(self):
+        return np.zeros((self.drop_last, 6), dtype=np.float32)
 
 # === lcam_front ===
 @register(TYPEDICT)
@@ -601,7 +597,7 @@ class pose_rcam_top(PoseModBase):
     def get_filename(self):
         return 'pose_rcam_top.txt'
 
-    def data_padding(self, trajlen):
+    def data_padding(self):
         return None
 
 @register(TYPEDICT)

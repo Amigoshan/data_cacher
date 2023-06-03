@@ -8,7 +8,7 @@ DataRoot['local'] = {
                         'chairs':       '/home/amigo/tmp/data/flyingchairs',
                         'flying':       '/home/amigo/tmp/data/sceneflow',
                         'sintel':       '/home/amigo/tmp/data/sintel/training',
-                        'euroc':        '/prague/tartanvo_data/euroc',
+                        'euroc':        '/home/wenshan/tmp/vo_data/euroc',
                         'kitti-stereo': '/prague/tartanvo_data/kitti/stereo', 
                         'kitti-vo':     '/prague/tartanvo_data/kitti/vo'
 }

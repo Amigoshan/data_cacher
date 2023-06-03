@@ -203,7 +203,8 @@ if __name__ == '__main__':
     # dataset_specfile = 'data_cacher/dataspec/flowvo_train_local_v1.yaml'
     # dataset_specfile = 'data_cacher/dataspec/flowvo_train_local_v2.yaml'
     # dataset_specfile = 'data_cacher/dataspec/test_yorai.yaml'
-    dataset_specfile = '/home/wenshan/workspace/pytorch/geometry_vision/specs/dataspec/flowvo_train_local_v2.yaml'
+    # dataset_specfile = '/home/wenshan/workspace/pytorch/geometry_vision/specs/dataspec/flowvo_train_local_v2.yaml'
+    dataset_specfile = '/home/wenshan/workspace/pytorch/geometry_vision/specs/trajspec/flowvo_euroc.yaml'
     # configparser = ConfigParser()
     # dataconfigs = configparser.parse_from_fp(dataset_specfile)
     batch = 3

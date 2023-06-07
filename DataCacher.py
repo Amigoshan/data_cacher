@@ -106,7 +106,7 @@ class DataCacher(object):
         '''
         This function allocates the shared memory
         '''
-        trajlist, trajlenlist, framelist, framenum = self.splitter_func()
+        trajlist, trajlenlist, framelist, framenum, new_epoch = self.splitter_func()
         self.loading_buffer.reset(framenum, trajlist, trajlenlist, framelist)
 
         self.active_mod = -1
@@ -115,6 +115,8 @@ class DataCacher(object):
 
         self.new_buffer_available = False
         self.starttime = time.time()
+
+        return new_epoch
 
     def switch_buffer(self):
         if (self.loading_b and self.buffer_b.full):
@@ -134,7 +136,8 @@ class DataCacher(object):
         else:
             return
 
-        self.reset_buffer()
+        new_epoch = self.reset_buffer()
+        return new_epoch
 
     def __getitem__(self, index):
         return self.ready_buffer[index]

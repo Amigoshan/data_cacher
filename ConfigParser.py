@@ -34,8 +34,8 @@ class ConfigParser(object):
         # such as camera intrinsics and stereo baseline     
         # These params can be used in RANDataset, 
         # which will utilizing these values or directly return them for up-level class   
-        self.parameter_paramlist = ['intrinsics',
-                                    'intrinsics_scale',
+        self.parameter_paramlist = ['intrinsics', # [w, h, fx, fy, ox, oy] - w corresponds to x and h cooresponds to y
+                                    'intrinsics_scale', #[scale_x, scale_y] - note that the order of x and y are is different from the way in cacher_size
                                    ]
 
     def parse_from_fp(self, fp):

@@ -25,6 +25,9 @@ class MultiDatasets(object):
                        verbose=False):
         '''
         dataconfigs: 'modality', 'cacher', 'transform', 'dataset'
+        shuffle: if the load_traj is set to true, two things will happen, 
+                 the multiple datacacher will be called in sequential order
+                 in each datacacher, the data will be returned in sequential order
 
         '''
 
@@ -57,6 +60,10 @@ class MultiDatasets(object):
         self.paramparams = [] # dataset parameters such as camera intrinsics
         self.subsetrepeat = [0,] * self.datasetNum # keep a track of how many times the subset is sampled
 
+        self.current_dataset_ind = 0 # keep track of the dataset being loaded in the case of sequential way of data loading (shuffle = False)
+        self.new_epoch = [False, ] * self.datasetNum
+        self.epoch_count = [0, ] * self.datasetNum
+
         self.init_datasets(dataconfigs)
 
     def parse_modality_types(self, modality_param):
@@ -66,6 +73,22 @@ class MultiDatasets(object):
             modality_types[modkey] = modtype_class(modparam['cacher_size'])
             modality_lengths[modkey] = modparam['length']
         return modality_types, modality_lengths
+
+    def update_dataloader(self, k):
+        '''
+        the dataset/loader/iter needs to be updated, when the datacacher buffer is switched
+        '''
+        dataset = RAMDataset(self.datacachers[k], \
+                            self.modalitytypes[k], \
+                            self.modalitylengths[k], \
+                            **self.datasetparams[k], \
+                            verbose=self.verbose, \
+                            )
+        dataloader = DataLoader(dataset, batch_size=self.batch, shuffle=self.shuffle, num_workers=self.workernum)
+        self.datasets[k] = dataset
+        self.dataloaders[k] = dataloader
+        self.dataiters[k] = iter(dataloader)
+        self.subsetrepeat[k] = 0
 
     def init_datasets(self, dataconfigs):
         # modalities = dataconfigs['modalities']
@@ -113,18 +136,8 @@ class MultiDatasets(object):
         for k, datacacher in enumerate(self.datacachers):
             while not datacacher.new_buffer_available:
                 time.sleep(1)
-            self.datacachers[k].switch_buffer()
-            dataset = RAMDataset(self.datacachers[k], \
-                                 self.modalitytypes[k], \
-                                 self.modalitylengths[k], \
-                                 **self.datasetparams[k], \
-                                 verbose=self.verbose, \
-                                )
-            dataloader = DataLoader(dataset, batch_size=self.batch, shuffle=self.shuffle, num_workers=self.workernum)
-            self.datasets[k] = dataset
-            self.dataloaders[k] = dataloader
-            self.dataiters[k] = iter(dataloader)
-            self.subsetrepeat[k] = 0
+            self.new_epoch[k] = self.datacachers[k].switch_buffer()
+            self.update_dataloader(k)
 
     def load_sample(self, fullbatch=True, notrepeat=False, maxrepeatnum=3):
         '''
@@ -133,42 +146,51 @@ class MultiDatasets(object):
                     the code will just wait there until the next buffer is filled
         maxrepeatnum: set the maximum repeat number to avoid overfitting on current buffer too much
         '''
-        # Randomly pick the dataset in the list
-        randnum = np.random.rand()
-        datasetInd = 0 
-        new_buffer = False
-        while randnum > self.accDataLens[datasetInd]: # 
-            datasetInd += 1
+        if self.shuffle:
+            # Randomly pick the dataset in the list
+            randnum = np.random.rand()
+            datasetind = 0 
+            while randnum > self.accDataLens[datasetind]: # 
+                datasetind += 1
+        else: # load the data in sequential order
+            datasetind = self.current_dataset_ind
 
+        new_buffer = False
         # load sample from the dataloader
         try:
-            sample = next(self.dataiters[datasetInd])
+            sample = next(self.dataiters[datasetind])
             if sample[list(sample.keys())[0]].shape[0] < self.batch and (fullbatch is True): # the imcomplete batch is thrown away
-                # self.dataiters[datasetInd] = iter(self.dataloaders[datasetInd])
-                # sample = self.dataiters[datasetInd].next()
-                sample = next(self.dataiters[datasetInd])
+                sample = next(self.dataiters[datasetind])
         except StopIteration:
-            # import ipdb;ipdb.set_trace()
-            if notrepeat or self.subsetrepeat[datasetInd] > maxrepeatnum: # wait for the new buffer ready, do not repeat the current buffer
-                while not self.datacachers[datasetInd].new_buffer_available:
-                    time.sleep(1.0)
-                    self.vprint('Wait for the next buffer...')
-            if self.datacachers[datasetInd].new_buffer_available : 
-                self.datacachers[datasetInd].switch_buffer()
-                self.datasets[datasetInd] = RAMDataset(self.datacachers[datasetInd], \
-                                                       self.modalitytypes[datasetInd], \
-                                                       self.modalitylengths[datasetInd], \
-                                                       **self.datasetparams[datasetInd]
-                                                      )
-                self.dataloaders[datasetInd] = DataLoader(self.datasets[datasetInd], batch_size=self.batch, shuffle=self.shuffle, num_workers=self.workernum)
-                self.subsetrepeat[datasetInd] = -1
-            self.dataiters[datasetInd] = iter(self.dataloaders[datasetInd])
-            sample = next(self.dataiters[datasetInd])
             new_buffer = True
-            self.subsetrepeat[datasetInd] += 1
-            self.vprint('==> Working on {} for the {} time'.format(self.datafiles[datasetInd], self.subsetrepeat[datasetInd]))
+
+            if not self.shuffle: # sequential loading
+                while not self.datacachers[datasetind].new_buffer_available:
+                    time.sleep(1.0) # in sequential way, we always want the next buffer be loaded
+                if self.new_epoch[datasetind]: # sequential loading, new epoch coming
+                    self.current_dataset_ind = (self.current_dataset_ind + 1) % self.datasetNum
+                self.new_epoch[datasetind] = self.datacachers[datasetind].switch_buffer()
+                self.update_dataloader(datasetind)
+                datasetind = self.current_dataset_ind
+
+            else: # in random order, both datasets and subsets should be shuffled
+                if notrepeat or self.subsetrepeat[datasetind] > maxrepeatnum: # wait for the new buffer ready, do not repeat the current buffer
+                    while not self.datacachers[datasetind].new_buffer_available:
+                        time.sleep(1.0)
+                        self.vprint('  Wait for the next buffer...')
+
+                if self.datacachers[datasetind].new_buffer_available : 
+                    self.new_epoch[datasetind] = self.datacachers[datasetind].switch_buffer()
+                    self.update_dataloader(datasetind)
+                else:
+                    self.dataiters[datasetind] = iter(self.dataloaders[datasetind])
+
+            sample = next(self.dataiters[datasetind])
+            self.subsetrepeat[datasetind] += 1
+            self.vprint('==> Working on {} for the {} time'.format(self.datafiles[self.current_dataset_ind], self.subsetrepeat[self.current_dataset_ind]))
+
         sample['new_buffer'] = new_buffer
-        params = self.paramparams[datasetInd]
+        params = self.paramparams[datasetind]
         for param, value in params.items():
             if isinstance(value, numbers.Number):
                 sample[param] = value
@@ -204,10 +226,11 @@ if __name__ == '__main__':
     # dataset_specfile = 'data_cacher/dataspec/flowvo_train_local_v2.yaml'
     # dataset_specfile = 'data_cacher/dataspec/test_yorai.yaml'
     # dataset_specfile = '/home/wenshan/workspace/pytorch/geometry_vision/specs/dataspec/flowvo_train_local_v2.yaml'
-    dataset_specfile = '/home/wenshan/workspace/pytorch/geometry_vision/specs/trajspec/flowvo_euroc.yaml'
+    # dataset_specfile = '/home/wenshan/workspace/pytorch/geometry_vision/specs/trajspec/flowvo_euroc.yaml'
+    dataset_specfile = '/home/wenshan/workspace/pytorch/geometry_vision/specs/trajspec/flowvo_kitti.yaml'
     # configparser = ConfigParser()
     # dataconfigs = configparser.parse_from_fp(dataset_specfile)
-    batch = 3
+    batch = 1
     trainDataloader = MultiDatasets(dataset_specfile, 
                        'local', 
                        batch=batch, 
@@ -215,12 +238,12 @@ if __name__ == '__main__':
                        shuffle=False,
                        verbose=True)
     tic = time.time()
-    num = 100                       
+    num = 23201                       
     for k in range(num):
-        sample = trainDataloader.load_sample()
-        print(sample.keys())
+        sample = trainDataloader.load_sample(notrepeat=True)
+        print(k, sample['trajdir'])
         # time.sleep(0.02)
-        import ipdb;ipdb.set_trace()
+        # import ipdb;ipdb.set_trace()
         # for b in range(batch):
             # ss=sample['img0'][b][0].numpy().transpose(1,2,0)
             # ss2=sample['depth0'][b][0].numpy()
@@ -228,8 +251,8 @@ if __name__ == '__main__':
             # depthvis = visdepth(80./ss2)
             # flowvis = visflow(ss3)
             # disp = cv2.hconcat((ss, depthvis, flowvis))
-            # cv2.imshow('img', disp)
-            # cv2.waitKey(100)
+            # cv2.imshow('img', flowvis)
+            # cv2.waitKey(10)
 
     print((time.time()-tic))
     trainDataloader.stop_cachers()

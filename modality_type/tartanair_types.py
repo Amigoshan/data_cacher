@@ -41,6 +41,56 @@ class IMUBase(SimpleModBase):
         That's why we pad the data with 10 frames
         '''
         return np.zeros((10,3), dtype=np.float32)
+    
+class IMUTimeBase(SimpleModBase):
+    '''
+    This defines modality that is light-weight
+    such as IMU, pose, wheel_encoder
+    '''
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.data_shape = (1,)
+
+        self.freq_mult = 10
+        self.drop_last = 10
+
+        self.folder_name = 'imu'
+
+    def crop_trajectory(self, data, framestrlist):
+        startind = int(framestrlist[0]) * self.freq_mult
+        endind = int(framestrlist[-1]) * self.freq_mult # IMU len = (N-1)*10, where N is the number of images
+        datalen = data.shape[0]
+        assert startind < datalen and endind <= datalen, "Error in loading IMU, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
+        return data[startind: endind]
+
+    def data_padding(self):
+        '''
+        In TartanAir, the length of IMU seq is (N-1)*10
+        We would like the data be aligned, which means the nominal lengh should be N*10
+        That's why we pad the data with 10 frames
+        '''
+        return np.zeros((10,1), dtype=np.float32)
+    
+    def load_data(self, trajdir, framestrlist):
+            '''
+            The startingframe indicates the starting frame of this modality
+            It is used in the case that the trajectory is cropped into pieces and the current trajectory is not start from the first frame
+            '''
+            filename = self.get_filename()
+            if filename.endswith('.npy'):
+                data = np.load(join(trajdir, filename)) # this assume the data is stored as np file, this can be changed in the future
+            elif filename.endswith('.txt'):
+                data = np.loadtxt(join(trajdir, filename))
+            else:
+                assert False, "File format is not supported {}".format(filename)
+            # crop the trajectory based on the starting and ending frames
+            data = self.crop_trajectory(data, framestrlist)
+            data = data.reshape(-1,1)
+            padding = self.data_padding()
+            if padding is not None:
+                data = np.concatenate((data, padding), axis=0)
+            return data
+
 
 class LiDARBase(FrameModBase):
     def __init__(self, datashape):
@@ -466,6 +516,15 @@ class imu_gyro(IMUBase):
     '''
     def get_filename(self):
         return join(self.folder_name, 'gyro.npy')
+    
+@register(TYPEDICT)
+class imu_time(IMUTimeBase):
+    '''
+    This defines modality that is light-weight
+    such as IMU, pose, wheel_encoder
+    '''
+    def get_filename(self):
+        return join(self.folder_name, 'imu_time.npy')
 
 @register(TYPEDICT)
 class pose_lcam_front(SimpleModBase):

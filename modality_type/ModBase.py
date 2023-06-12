@@ -61,15 +61,19 @@ class FrameModBase(ModBase):
         filename = self.framestr2filename(framestr)
         if ind_env > self.drop_last:
             data = self.load_frame(join(trajdir, filename))
+            data = self.resize_data(data)
+            data = self.transpose(data)
         else: # the frame does not exist, create a dummy frame
             data = np.zeros(self.data_shape, dtype=self.data_type)
-        data = self.resize_data(data)
         return data 
 
     def framestr2filename(self, framestr):
         raise NotImplementedError
     
     def resize_data(self, ):
+        raise NotImplementedError
+
+    def transpose(self, ):
         raise NotImplementedError
 
     def load_frame(self, filename):
@@ -80,7 +84,7 @@ class SimpleModBase(ModBase):
     This defines modality that is light-weight
     such as IMU, pose, wheel_encoder
 
-    Note that we assume that there is one-to-one mapping between the framestr and the index of the frames in the modality
+    Note that we assume there is a one-to-one mapping between the framestr and the index of the frames in the modality
     The frame can be cropped in the datafile, but not really cropped in the data folder on the hard drive
     We will find the cooresponding frame by the framestr, instead of the frame index in the datafile
 
@@ -132,4 +136,3 @@ class SimpleModBase(ModBase):
         if padding is not None:
             data = np.concatenate((data, padding), axis=0)
         return data
-

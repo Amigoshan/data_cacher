@@ -1,0 +1,26 @@
+---
+    task: stereo
+    dataset_frame_skip: 0
+    dataset_seq_stride: 1
+    dataset_frame_dir: false
+    data:
+      "data/sceneflow_stereo_final.txt":
+        modality: 
+          "img0":
+            type: sceneflow_left
+            cacher_size: [540, 960]
+            length: 1
+          "img1":
+            type: sceneflow_right
+            cacher_size: [540, 960]
+            length: 1
+          "disp0":
+            type: sceneflow_disp
+            cacher_size: [540, 960]
+            length: 1
+        cacher:
+          data_root_key: sceneflow 
+          subset_framenum: 4000
+          worker_num: 4
+        dataset:
+        parameter:

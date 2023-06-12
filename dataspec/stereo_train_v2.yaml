@@ -1,0 +1,106 @@
+---
+    task: stereo
+    dataset_frame_skip: 0
+    dataset_seq_stride: 1
+    dataset_frame_dir: false
+    data:
+      "data/tartanv2/tartan2_stereo_front.txt":
+        modality: 
+          "img0":
+            type: rgb_lcam_front
+            cacher_size: [640, 640]
+            length: 1
+          "img1":
+            type: rgb_rcam_front
+            cacher_size: [640, 640]
+            length: 1
+          "depth0":
+            type: depth_lcam_front
+            cacher_size: [640, 640]
+            length: 1
+        cacher:
+          data_root_key: tartan2
+          subset_framenum: 1500
+          worker_num: 8
+        dataset:
+        parameter:
+      "data/tartanv2/tartan2_stereo_back.txt":
+        modality: 
+          "img0":
+            type: rgb_rcam_back
+            cacher_size: [640, 640]
+            length: 1
+          "img1":
+            type: rgb_lcam_back
+            cacher_size: [640, 640]
+            length: 1
+          "depth0":
+            type: depth_rcam_back
+            cacher_size: [640, 640]
+            length: 1
+        cacher:
+          data_root_key: tartan2
+          subset_framenum: 1500
+          worker_num: 8
+        dataset:
+        parameter:
+      "data/tartanv2/tartan2_stereo_bottom.txt":
+        modality: 
+          "img0":
+            type: rgb_lcam_bottom
+            cacher_size: [640, 640]
+            length: 1
+          "img1":
+            type: rgb_rcam_bottom
+            cacher_size: [640, 640]
+            length: 1
+          "depth0":
+            type: depth_lcam_bottom
+            cacher_size: [640, 640]
+            length: 1
+        cacher:
+          data_root_key: tartan2
+          subset_framenum: 1000
+          worker_num: 8
+        dataset:
+        parameter:
+      "data/sceneflow_stereo.txt":
+        modality: 
+          "img0":
+            type: sceneflow_left
+            cacher_size: [540, 960]
+            length: 1
+          "img1":
+            type: sceneflow_right
+            cacher_size: [540, 960]
+            length: 1
+          "disp0":
+            type: sceneflow_disp
+            cacher_size: [540, 960]
+            length: 1
+        cacher:
+          data_root_key: sceneflow 
+          subset_framenum: 500
+          worker_num: 8
+        dataset:
+        parameter:
+      "data/sceneflow_stereo_final.txt":
+        modality: 
+          "img0":
+            type: sceneflow_left
+            cacher_size: [540, 960]
+            length: 1
+          "img1":
+            type: sceneflow_right
+            cacher_size: [540, 960]
+            length: 1
+          "disp0":
+            type: sceneflow_disp
+            cacher_size: [540, 960]
+            length: 1
+        cacher:
+          data_root_key: sceneflow 
+          subset_framenum: 500
+          worker_num: 8
+        dataset:
+        parameter:

@@ -10,6 +10,8 @@ from .DataCacher import DataCacher
 from .RAMDataset import RAMDataset
 from .ConfigParser import ConfigParser
 from .input_parser import parse_inputfile
+import torch 
+import numbers
 
 class MultiDatasets(object):
     '''
@@ -52,6 +54,7 @@ class MultiDatasets(object):
         self.datasetparams = [] # the parameters used to create dataset
         self.modalitylengths = [] # the modality_length used to create the dataset
         self.modalitytypes = [] 
+        self.paramparams = [] # dataset parameters such as camera intrinsics
         self.subsetrepeat = [0,] * self.datasetNum # keep a track of how many times the subset is sampled
 
         self.init_datasets(dataconfigs)
@@ -70,6 +73,7 @@ class MultiDatasets(object):
             modality_param = params['modality']
             cacher_param = params['cacher']
             dataset_param = params['dataset']
+            parameter_param = params['parameter']
 
             # Allow to pass a data root path directly via config.
             # TODO(yoraish): is this a good idea? I feel like overrides may be dangerous.
@@ -96,7 +100,6 @@ class MultiDatasets(object):
             self.datacachers.append(datacacher)
 
             # parameters for the RAMDataset
-            dataset_param = params['dataset']
             self.datasetparams.append(dataset_param)
         self.accDataLens = np.cumsum(self.datalens).astype(np.float64)/np.sum(self.datalens)    
 
@@ -108,8 +111,8 @@ class MultiDatasets(object):
             dataset = RAMDataset(self.datacachers[k], \
                                  self.modalitytypes[k], \
                                  self.modalitylengths[k], \
-                                 **self.datasetparams[k],
-                                 verbose=self.verbose
+                                 **self.datasetparams[k], \
+                                 verbose=self.verbose, \
                                 )
             dataloader = DataLoader(dataset, batch_size=self.batch, shuffle=self.shuffle, num_workers=self.workernum)
             self.datasets[k] = dataset
@@ -153,6 +156,13 @@ class MultiDatasets(object):
             self.subsetrepeat[datasetInd] += 1
             self.vprint('==> Working on {} for the {} time'.format(self.datafiles[datasetInd], self.subsetrepeat[datasetInd]))
         sample['new_buffer'] = new_buffer
+        params = self.paramparams[datasetInd]
+        for param, value in params.items():
+            if isinstance(value, numbers.Number):
+                sample[param] = value
+            elif isinstance(value, list):
+                sample[param] = torch.Tensor(value).float()
+
         # print("sample time: {}".format(time.time()-cachertime))
         return sample
 
@@ -179,31 +189,33 @@ if __name__ == '__main__':
     from .utils import visflow, visdepth
     import cv2
     # dataset_specfile = 'data_cacher/dataspec/flowvo_train_local_v1.yaml'
-    dataset_specfile = 'data_cacher/dataspec/flowvo_train_local_v2.yaml'
+    # dataset_specfile = 'data_cacher/dataspec/flowvo_train_local_v2.yaml'
+    dataset_specfile = 'data_cacher/dataspec/test_yorai.yaml'
     # configparser = ConfigParser()
     # dataconfigs = configparser.parse_from_fp(dataset_specfile)
     batch = 3
     trainDataloader = MultiDatasets(dataset_specfile, 
-                       'local', 
+                       'psc', 
                        batch=batch, 
                        workernum=0, 
-                       shuffle=False)
+                       shuffle=False,
+                       verbose=True)
     tic = time.time()
-    num = 100                       
+    num = 100000                       
     for k in range(num):
         sample = trainDataloader.load_sample()
-        print(sample.keys())
+        print(k, sample.keys(), sample['depth_lcam_front'].shape)
         # time.sleep(0.02)
         # import ipdb;ipdb.set_trace()
-        for b in range(batch):
-            ss=sample['img0'][b][0].numpy()
-            ss2=sample['depth0'][b][0].numpy()
-            ss3=sample['flow'][b][0].numpy()
-            depthvis = visdepth(80./ss2)
-            flowvis = visflow(ss3)
-            disp = cv2.hconcat((ss, depthvis, flowvis))
-            cv2.imshow('img', disp)
-            cv2.waitKey(100)
+        # for b in range(batch):
+            # ss=sample['img0'][b][0].numpy().transpose(1,2,0)
+            # ss2=sample['depth0'][b][0].numpy()
+            # ss3=sample['flow'][b][0].numpy().transpose(1,2,0)
+            # depthvis = visdepth(80./ss2)
+            # flowvis = visflow(ss3)
+            # disp = cv2.hconcat((ss, depthvis, flowvis))
+            # cv2.imshow('img', disp)
+            # cv2.waitKey(100)
 
     print((time.time()-tic))
     trainDataloader.stop_cachers()

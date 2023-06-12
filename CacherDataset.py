@@ -95,21 +95,44 @@ if __name__=="__main__":
     import cv2
     from .modality_type.ModBase import TYPEDICT
 
-    datafile = '/home/amigo/tmp/test_root/coalmine/analyze/data_coalmine_Data_easy_P000.txt'
+    # datafile = '/home/amigo/tmp/test_root/coalmine/analyze/data_coalmine_Data_easy_P000.txt'
+    # trajlist, trajlenlist, framelist, totalframenum = parse_inputfile(datafile)
+    # rgbtype = rgb_lcam_front((320, 320))
+    # depthtype = depth_lcam_front((320, 320))
+    # flowtype = flow_lcam_front((320, 320))
+    # dataset0 = CacherDataset(rgbtype, trajlist, trajlenlist, framelist, datarootdir="/home/amigo/tmp/test_root")
+    # dataset1 = CacherDataset(depthtype, trajlist, trajlenlist, framelist, datarootdir="/home/amigo/tmp/test_root")
+    # dataset2 = CacherDataset(flowtype, trajlist, trajlenlist, framelist, datarootdir="/home/amigo/tmp/test_root")
+    # for k in range(5,55,5):
+    #     print('frame',k)
+    #     ss=dataset0[k]
+    #     ss2=dataset1[k]
+    #     ss3=dataset2[k]
+    #     depthvis = visdepth(80./ss2)
+    #     flowvis = visflow(ss3)
+    #     disp = cv2.hconcat((ss, depthvis, flowvis))
+    #     cv2.imshow('img', disp)
+    #     cv2.waitKey(0)
+
+    # from .modality_type.stereo_types import sceneflow_left, sceneflow_right, sceneflow_disp
+    # datafile = '/home/amigo/workspace/pytorch/geometry_vision/data/sceneflow_stereo_local_test.txt'
+    from .modality_type.stereo_types import kitti_left, kitti_right, kitti_disp
+    datafile = '/home/amigo/workspace/pytorch/geometry_vision/data/kitti_stereo.txt'
     trajlist, trajlenlist, framelist, totalframenum = parse_inputfile(datafile)
-    rgbtype = rgb_lcam_front((320, 320))
-    depthtype = depth_lcam_front((320, 320))
-    flowtype = flow_lcam_front((320, 320))
-    dataset0 = CacherDataset(rgbtype, trajlist, trajlenlist, framelist, datarootdir="/home/amigo/tmp/test_root")
-    dataset1 = CacherDataset(depthtype, trajlist, trajlenlist, framelist, datarootdir="/home/amigo/tmp/test_root")
-    dataset2 = CacherDataset(flowtype, trajlist, trajlenlist, framelist, datarootdir="/home/amigo/tmp/test_root")
+    rgbtype = kitti_left((320, 320))
+    rgbtype2 = kitti_right((320, 320))
+    disptype = kitti_disp((320, 320))
+    dataset0 = CacherDataset(rgbtype, trajlist, trajlenlist, framelist, datarootdir="/bigdata/tartanvo_data/kitti/stereo")
+    dataset1 = CacherDataset(rgbtype2, trajlist, trajlenlist, framelist, datarootdir="/bigdata/tartanvo_data/kitti/stereo")
+    dataset2 = CacherDataset(disptype, trajlist, trajlenlist, framelist, datarootdir="/bigdata/tartanvo_data/kitti/stereo")
+
     for k in range(5,55,5):
         print('frame',k)
-        ss=dataset0[k]
-        ss2=dataset1[k]
+        ss=dataset0[k].transpose(1,2,0)
+        ss2=dataset1[k].transpose(1,2,0)
         ss3=dataset2[k]
-        depthvis = visdepth(80./ss2)
-        flowvis = visflow(ss3)
-        disp = cv2.hconcat((ss, depthvis, flowvis))
+        # import ipdb;ipdb.set_trace()
+        depthvis = visdepth(ss3)
+        disp = cv2.hconcat((ss, ss2, depthvis))
         cv2.imshow('img', disp)
         cv2.waitKey(0)

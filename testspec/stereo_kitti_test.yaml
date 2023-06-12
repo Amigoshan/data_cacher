@@ -1,0 +1,26 @@
+---
+    task: stereo
+    dataset_frame_skip: 0
+    dataset_seq_stride: 1
+    dataset_frame_dir: false
+    data:
+      "data/kitti_stereo.txt":
+        modality: 
+          "img0":
+            type: kitti_left
+            cacher_size: [370, 1224]
+            length: 1
+          "img1":
+            type: kitti_right
+            cacher_size: [370, 1224]
+            length: 1
+          "disp0":
+            type: kitti_disp
+            cacher_size: [370, 1224]
+            length: 1
+        cacher:
+          data_root_key: kitti-stereo 
+          subset_framenum: 394
+          worker_num: 2
+        dataset:
+        parameter:

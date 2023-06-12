@@ -1,0 +1,26 @@
+---
+    task: stereo
+    dataset_frame_skip: 0
+    dataset_seq_stride: 1
+    dataset_frame_dir: false
+    data:
+      "data/tartan_stereo.txt":
+        modality: 
+          "img0":
+            type: image_left
+            cacher_size: [480, 640]
+            length: 1
+          "img1":
+            type: image_right
+            cacher_size: [480, 640]
+            length: 1
+          "depth0":
+            type: depth_left
+            cacher_size: [480, 640]
+            length: 1
+        cacher:
+          data_root_key: tartan 
+          subset_framenum: 4000
+          worker_num: 4
+        dataset:
+        parameter:

@@ -115,7 +115,7 @@ class RGBModBase(FrameModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         (self.h, self.w) = datashape # (h, w)
-        self.data_shape = (self.h, self.w, 3)
+        self.data_shape = (3, self.h, self.w)
         self.data_type = np.uint8
 
     def load_frame(self, filename):
@@ -130,6 +130,9 @@ class RGBModBase(FrameModBase):
         if h != self.h or w != self.w:
             img = cv2.resize(img, (self.w, self.h), interpolation=cv2.INTER_LINEAR )
         return img
+
+    def transpose(self, img):
+        return img.transpose(2,0,1)
 
     def framestr2filename(self, framestr):
         '''
@@ -159,6 +162,9 @@ class DepthModBase(FrameModBase):
             depth = cv2.resize(depth, (self.w, self.h), interpolation=cv2.INTER_LINEAR )
         return depth
 
+    def transpose(self, depth):
+        return depth
+
     def framestr2filename(self, framestr):
         '''
         This is very dataset specific
@@ -170,7 +176,7 @@ class FlowModBase(FrameModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         (self.h, self.w) = datashape # (h, w)
-        self.data_shape = (self.h, self.w, 2)
+        self.data_shape = (2, self.h, self.w)
         self.data_type = np.float32
 
     def load_frame(self, filename):
@@ -189,6 +195,9 @@ class FlowModBase(FrameModBase):
         if h != self.h or w != self.w:
             flow = cv2.resize(flow, (self.w, self.h), interpolation=cv2.INTER_LINEAR )
         return flow
+
+    def transpose(self, flow):
+        return flow.transpose(2,0,1)
 
     def framestr2filename(self, framestr):
         '''
@@ -218,12 +227,29 @@ class SegModBase(FrameModBase):
             seg = cv2.resize(seg, (self.w, self.h), interpolation=cv2.INTER_LINEAR )
         return seg
 
+    def transpose(self, seg):
+        return seg
+
     def framestr2filename(self, framestr):
         '''
         This is very dataset specific
         Basically it handles how each dataset naming the frames and organizing the data
         '''
         return join(self.folder_name, framestr + '_' + self.file_suffix + '.png')
+
+class PoseModBase(SimpleModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.data_shape = (7,)
+
+    def crop_trajectory(self, data, framestrlist):
+        startind = int(framestrlist[0])
+        endind = int(framestrlist[-1]) + 1
+        datalen = data.shape[0]
+        assert startind < datalen and endind <= datalen, "Error in loading pose, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
+        return data[startind: endind]
+
+
 
 # === lcam_front ===
 @register(TYPEDICT)
@@ -527,20 +553,12 @@ class imu_time(IMUTimeBase):
         return join(self.folder_name, 'imu_time.npy')
 
 @register(TYPEDICT)
-class pose_lcam_front(SimpleModBase):
+class pose_lcam_front(PoseModBase):
     '''
     The pose of the left front camera.
     '''
     def __init__(self, datashape):
         super().__init__(datashape)
-        self.data_shape = (7,)
-
-    def crop_trajectory(self, data, framestrlist):
-        startind = int(framestrlist[0])
-        endind = int(framestrlist[-1]) + 1
-        datalen = data.shape[0]
-        assert startind < datalen and endind <= datalen, "Error in loading pose, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
-        return data[startind: endind]
 
     def get_filename(self):
         return 'pose_lcam_front.txt'
@@ -549,13 +567,12 @@ class pose_lcam_front(SimpleModBase):
         return None
 
 @register(TYPEDICT)
-class pose_lcam_right(SimpleModBase):
+class pose_lcam_right(PoseModBase):
     '''
     The pose of the left right-facing camera.
     '''
     def __init__(self, datashape):
         super().__init__(datashape)
-        self.data_shape = (7,)
 
 
     def crop_trajectory(self, data, framestrlist):
@@ -572,13 +589,12 @@ class pose_lcam_right(SimpleModBase):
         return None
 
 @register(TYPEDICT)
-class pose_lcam_back(SimpleModBase):
+class pose_lcam_back(PoseModBase):
     '''
     The pose of the left back-facing camera.
     '''
     def __init__(self, datashape):
         super().__init__(datashape)
-        self.data_shape = (7,)
 
 
     def crop_trajectory(self, data, framestrlist):
@@ -595,13 +611,12 @@ class pose_lcam_back(SimpleModBase):
         return None
 
 @register(TYPEDICT)
-class pose_lcam_left(SimpleModBase):
+class pose_lcam_left(PoseModBase):
     '''
     The pose of the left left-facing camera.
     '''
     def __init__(self, datashape):
         super().__init__(datashape)
-        self.data_shape = (7,)
 
 
     def crop_trajectory(self, data, framestrlist):
@@ -618,13 +633,12 @@ class pose_lcam_left(SimpleModBase):
         return None
 
 @register(TYPEDICT)
-class pose_lcam_top(SimpleModBase):
+class pose_lcam_top(PoseModBase):
     '''
     The pose of the left top-facing camera.
     '''
     def __init__(self, datashape):
         super().__init__(datashape)
-        self.data_shape = (7,)
 
 
     def crop_trajectory(self, data, framestrlist):
@@ -641,13 +655,12 @@ class pose_lcam_top(SimpleModBase):
         return None
 
 @register(TYPEDICT)
-class pose_lcam_bottom(SimpleModBase):
+class pose_lcam_bottom(PoseModBase):
     '''
     The pose of the left bottom-facing camera.
     '''
     def __init__(self, datashape):
         super().__init__(datashape)
-        self.data_shape = (7,)
 
 
     def crop_trajectory(self, data, framestrlist):
@@ -665,13 +678,12 @@ class pose_lcam_bottom(SimpleModBase):
 
 
 @register(TYPEDICT)
-class pose_rcam_front(SimpleModBase):
+class pose_rcam_front(PoseModBase):
     '''
     The pose of the left front camera.
     '''
     def __init__(self, datashape):
         super().__init__(datashape)
-        self.data_shape = (7,)
 
     def get_filename(self):
         return 'pose_rcam_front.txt'
@@ -680,13 +692,12 @@ class pose_rcam_front(SimpleModBase):
         return None
 
 @register(TYPEDICT)
-class pose_rcam_right(SimpleModBase):
+class pose_rcam_right(PoseModBase):
     '''
     The pose of the left right-facing camera.
     '''
     def __init__(self, datashape):
         super().__init__(datashape)
-        self.data_shape = (7,)
 
     def get_filename(self):
         return 'pose_rcam_right.txt'
@@ -695,13 +706,12 @@ class pose_rcam_right(SimpleModBase):
         return None
 
 @register(TYPEDICT)
-class pose_rcam_back(SimpleModBase):
+class pose_rcam_back(PoseModBase):
     '''
     The pose of the left back-facing camera.
     '''
     def __init__(self, datashape):
         super().__init__(datashape)
-        self.data_shape = (7,)
 
     def get_filename(self):
         return 'pose_rcam_back.txt'
@@ -710,13 +720,12 @@ class pose_rcam_back(SimpleModBase):
         return None
 
 @register(TYPEDICT)
-class pose_rcam_left(SimpleModBase):
+class pose_rcam_left(PoseModBase):
     '''
     The pose of the left left-facing camera.
     '''
     def __init__(self, datashape):
         super().__init__(datashape)
-        self.data_shape = (7,)
 
     def get_filename(self):
         return 'pose_rcam_left.txt'
@@ -725,13 +734,12 @@ class pose_rcam_left(SimpleModBase):
         return None
 
 @register(TYPEDICT)
-class pose_rcam_top(SimpleModBase):
+class pose_rcam_top(PoseModBase):
     '''
     The pose of the left top-facing camera.
     '''
     def __init__(self, datashape):
         super().__init__(datashape)
-        self.data_shape = (7,)
 
     def get_filename(self):
         return 'pose_rcam_top.txt'
@@ -740,13 +748,12 @@ class pose_rcam_top(SimpleModBase):
         return None
 
 @register(TYPEDICT)
-class pose_rcam_bottom(SimpleModBase):
+class pose_rcam_bottom(PoseModBase):
     '''
     The pose of the left bottom-facing camera.
     '''
     def __init__(self, datashape):
         super().__init__(datashape)
-        self.data_shape = (7,)
 
     def get_filename(self):
         return 'pose_rcam_bottom.txt'

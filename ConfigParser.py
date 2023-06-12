@@ -30,6 +30,14 @@ class ConfigParser(object):
                                   'frame_dir'
                                  ]
 
+        # This defines parameters that come with the dataset
+        # such as camera intrinsics and stereo baseline     
+        # These params can be used in RANDataset, 
+        # which will utilizing these values or directly return them for up-level class   
+        self.parameter_paramlist = ['intrinsics',
+                                    'intrinsics_scale',
+                                   ]
+
     def parse_from_fp(self, fp):
         x = yaml.safe_load(open(fp, 'r'))
         return self.parse(x)
@@ -75,6 +83,7 @@ class ConfigParser(object):
         default_modality_params = self.parse_sub_global_param(spec, "modality", self.modality_paramlist)
         default_cacher_params = self.parse_sub_global_param(spec, "cacher", self.cacher_paramlist)
         default_dataset_params = self.parse_sub_global_param(spec, "dataset", self.dataset_paramlist)
+        default_parameter_params = self.parse_sub_global_param(spec, "parameter", self.parameter_paramlist)
 
         data_config = {}
         for datafile, params in spec['data'].items():
@@ -92,6 +101,9 @@ class ConfigParser(object):
 
             dataset_params = self.parse_sub_data_param(params, "dataset", self.dataset_paramlist, default_dataset_params)
             all_params['dataset'] = dataset_params
+
+            parameter_params = self.parse_sub_data_param(params, "parameter", self.parameter_paramlist, default_parameter_params)
+            all_params['parameter'] = parameter_params
 
             data_config[datafile] = all_params
 

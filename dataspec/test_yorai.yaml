@@ -1,0 +1,86 @@
+---
+  task: "tartanair"
+  dataset_frame_skip: 0
+  dataset_seq_stride: 1
+  data:
+      "data_cacher/data/data_tartanairv2.txt":
+          modality:
+              "rgb_lcam_front":
+                  cacher_size: [640, 640]
+                  length: 2
+                  type: "rgb_lcam_front"
+              "rgb_lcam_left":
+                  cacher_size: [640, 640]
+                  length: 2
+                  type: "rgb_lcam_left"
+              "rgb_lcam_right":
+                  cacher_size: [640, 640]
+                  length: 2
+                  type: "rgb_lcam_right"
+              "rgb_lcam_back":
+                  cacher_size: [640, 640]
+                  length: 2
+                  type: "rgb_lcam_back"
+              "rgb_lcam_top":
+                  cacher_size: [640, 640]
+                  length: 2
+                  type: "rgb_lcam_top"
+              "rgb_lcam_bottom":
+                  cacher_size: [640, 640]
+                  length: 2
+                  type: "rgb_lcam_bottom"
+              "depth_lcam_front":
+                  cacher_size: [640, 640]
+                  length: 1
+                  type: "depth_lcam_front"
+              "depth_lcam_left":
+                  cacher_size: [640, 640]
+                  length: 1
+                  type: "depth_lcam_left"
+              "depth_lcam_right":
+                  cacher_size: [640, 640]
+                  length: 1
+                  type: "depth_lcam_right"
+              "depth_lcam_back":
+                  cacher_size: [640, 640]
+                  length: 1
+                  type: "depth_lcam_back"
+              "depth_lcam_top":
+                  cacher_size: [640, 640]
+                  length: 1
+                  type: "depth_lcam_top"
+              "depth_lcam_bottom":
+                  cacher_size: [640, 640]
+                  length: 1
+                  type: "depth_lcam_bottom"
+              "pose_lcam_front":
+                  cacher_size: [7]
+                  length: 2
+                  type: "pose_lcam_front"
+              "pose_lcam_left":
+                  cacher_size: [7]
+                  length: 2
+                  type: "pose_lcam_left"
+              "pose_lcam_right":
+                  cacher_size: [7]
+                  length: 2
+                  type: "pose_lcam_right"
+              "pose_lcam_back":
+                  cacher_size: [7]
+                  length: 2
+                  type: "pose_lcam_back"
+              "pose_lcam_top":
+                  cacher_size: [7]
+                  length: 2
+                  type: "pose_lcam_top"
+              "pose_lcam_bottom":
+                  cacher_size: [7]
+                  length: 2
+                  type: "pose_lcam_bottom"
+          cacher:
+              data_root_key: tartan2
+              subset_framenum: 1000
+              worker_num: 4
+          dataset: 
+          parameter:
+

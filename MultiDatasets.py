@@ -32,12 +32,12 @@ class MultiDatasets(object):
         if isinstance(dataset_specfile, str):
             assert isfile(dataset_specfile), "MultiDatasetsBase: Cannot find spec file {}".format(dataset_specfile)
             dataconfigs = configparser.parse_from_fp(dataset_specfile)
-
         elif isinstance(dataset_specfile, dict):
             dataconfigs = configparser.parse_from_dict(dataset_specfile)
+        else: 
+            raise TypeError("MultiDatasetsBase: dataset_specfile must be either a string or a dictionary")
 
         self.datasetNum = len(dataconfigs['data'])
-
         self.platform = platform
         self.batch = batch
         self.workernum = workernum
@@ -68,7 +68,6 @@ class MultiDatasets(object):
         return modality_types, modality_lengths
 
     def init_datasets(self, dataconfigs):
-        # modalities = dataconfigs['modalities']
         for datafile, params in dataconfigs['data'].items():
             self.datafiles.append(datafile)
             modality_param = params['modality']
@@ -80,9 +79,8 @@ class MultiDatasets(object):
             # TODO(yoraish): is this a good idea? I feel like overrides may be dangerous.
             if 'data_root_path_override' in cacher_param and cacher_param['data_root_path_override'] is not None:
                 # Check path integrity. Check if the path is to a directory.
-                assert os.path.exists(cacher_param['data_root_path_override']), "MultiDatasets: Cannot find data root path provided as override {}".format(cacher_param['data_root_path_override'])
+                assert os.path.exists(cacher_param['data_root_path_override']), f"MultiDatasets: Cannot find data root path provided as override {cacher_param['data_root_path_override']}"
                 data_root = cacher_param['data_root_path_override']
-
             else:
                 data_root_key = cacher_param['data_root_key']
                 data_root = DataRoot[self.platform][data_root_key]
@@ -91,7 +89,7 @@ class MultiDatasets(object):
             self.modalitylengths.append(modality_lengths)
             self.modalitytypes.append(modality_types)
 
-            trajlist, trajlenlist, framelist, framenum = parse_inputfile(datafile)
+            trajlist, trajlenlist, framelist, _ = parse_inputfile(datafile)
             subsetframenum = cacher_param['subset_framenum']
             self.datalens.append(subsetframenum)
             data_splitter = DataSplitter(trajlist, trajlenlist, framelist, subsetframenum, shuffle=True) 
@@ -103,9 +101,6 @@ class MultiDatasets(object):
 
             # parameters for the RAMDataset
             self.datasetparams.append(dataset_param)
-            # this is the parameters returned in each sample
-            self.paramparams.append(parameter_param)
-
         self.accDataLens = np.cumsum(self.datalens).astype(np.float64)/np.sum(self.datalens)    
 
         # wait for all datacacher being ready

@@ -17,7 +17,7 @@ DataRoot['local'] = {
 DataRoot['cluster'] = {
                         'sceneflow':    '/data2/datasets/yaoyuh/StereoData/SceneFlow',
                         'tartan':       '/project/learningvo/tartanair_v1_5',
-                        'tartan2':      '',
+                        'tartan2':      '/compute/zoidberg/tartanair_v2',
                         'chairs':       '/project/learningvo/flowdata/FlyingChairs_release',
                         'flying':       '/data2/datasets/yaoyuh/StereoData/SceneFlow',
                         'sintel':       '/project/learningvo/flowdata/sintel/training',
@@ -27,7 +27,8 @@ DataRoot['cluster'] = {
 
 DataRoot['zoidberg'] = {
                         'sceneflow':    '/scratch/learningvo/SceneFlow',
-                        'tartan-c':     '/scratch/learningvo/tartanair_v1_5',
+                        'tartan':       '/scratch/learningvo/tartanair_v1_5',
+                        'tartan2':	 '/scratch/tartanair_v2',
                         'chairs':       '/scratch/learningvo/flyingchairs',
                         'sintel':       '/scratch/learningvo/sintel/training',
                         'flying':       '/scratch/learningvo/SceneFlow',

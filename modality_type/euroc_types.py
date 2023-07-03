@@ -54,6 +54,8 @@ class DispModBase(FrameModBase):
         (h, w) = disparity.shape
         if h != self.h or w != self.w:
             disparity = cv2.resize(disparity, (self.w, self.h), interpolation=cv2.INTER_LINEAR )
+            scale_w = float(self.w) / w
+            disparity[:,:] = disparity[:,:] * scale_w
         return disparity
 
     def transpose(self, disparity):
@@ -88,7 +90,10 @@ class FlowModBase(FrameModBase):
         # resize image
         (h, w, _) = flow.shape
         if h != self.h or w != self.w:
+            scale_w, scale_h = float(self.w) / w, float(self.h) / h
             flow = cv2.resize(flow, (self.w, self.h), interpolation=cv2.INTER_LINEAR )
+            flow[:,:,0] = flow[:,:,0] * scale_w
+            flow[:,:,1] = flow[:,:,1] * scale_h
         return flow
 
     def transpose(self, flow):
@@ -126,6 +131,33 @@ class euroc_lmotion(MotionModBase):
 
     def get_filename(self):
         return 'motion.txt'
+
+@register(TYPEDICT)
+class euroc_lmotion2(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 2 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion2.npy'
+
+@register(TYPEDICT)
+class euroc_lmotion3(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 3 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion3.npy'
+
+@register(TYPEDICT)
+class euroc_lmotion4(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 4 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion4.npy'
 
 
 @register(TYPEDICT)

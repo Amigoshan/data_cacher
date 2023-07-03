@@ -117,7 +117,7 @@ class RAMDataset(Dataset):
             if idx < self.acc_seqlen[k+1]:
                 break
         # the frame is in the k-th trajectory
-        remainingframes = (idx-self.acc_seqlen[k]) * self.seq_stride
+        remainingframes = (idx-self.acc_seqlen[k]) #* self.seq_stride
         return k, remainingframes
 
     def idx2slice(self, mod_freq_mult, mod_sample_len, trajind, frameind):

@@ -154,6 +154,19 @@ class motion2_left(MotionModBase):
         return 'motion_left2.npy'
 
 @register(TYPEDICT)
+class motion3_left(MotionModBase):
+    '''
+    This defines modality that is light-weight
+    such as IMU, pose, wheel_encoder
+    '''
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 3
+
+    def get_filename(self):
+        return 'motion_left3.npy'
+
+@register(TYPEDICT)
 class motion4_left(MotionModBase):
     '''
     This defines modality that is light-weight

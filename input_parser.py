@@ -36,4 +36,4 @@ def parse_inputfile(inputfile):
     return trajlist, trajlenlist, framelist, totalframenum
 
 if __name__=="__main__":
-    pp = parse_inputfile("data/data_tartanairv2.txt")
+    pp = parse_inputfile("/home/wenshan/workspace/pytorch/geometry_vision/data/tartanairv2_train_easy.txt")

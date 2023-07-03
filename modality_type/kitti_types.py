@@ -11,6 +11,33 @@ class kitti_lmotion(MotionModBase):
         return 'motion.npy'
 
 @register(TYPEDICT)
+class kitti_lmotion2(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 2 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion2.npy'
+
+@register(TYPEDICT)
+class kitti_lmotion3(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 3 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion3.npy'
+
+@register(TYPEDICT)
+class kitti_lmotion4(MotionModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.drop_last = 4 # this is used to let the loader know how much frames are short
+
+    def get_filename(self):
+        return 'motion4.npy'
+
+@register(TYPEDICT)
 class kitti_lcam(RGBModBase):
     def __init__(self, datashape):
         super().__init__(datashape)

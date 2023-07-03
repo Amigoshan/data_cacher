@@ -111,7 +111,10 @@ class FlowModBase(FrameModBase):
         # resize image
         (h, w, _) = flow.shape
         if h != self.h or w != self.w:
+            scale_w, scale_h = float(self.w) / w, float(self.h) / h
             flow = cv2.resize(flow, (self.w, self.h), interpolation=cv2.INTER_LINEAR )
+            flow[0,:,:] = flow[0,:,:] * scale_w
+            flow[1,:,:] = flow[1,:,:] * scale_h
         return flow
 
 class SegModBase(FrameModBase):

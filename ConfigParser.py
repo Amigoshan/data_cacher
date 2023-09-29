@@ -14,7 +14,6 @@ class ConfigParser(object):
         self.global_paramlist = ['task']
 
         self.modality_paramlist = ['cacher_size', # (h, w) the size of the modality
-                                   'type', # the class type under modality_type
                                    'length', # the sequence lengh of one particular modality
                                   ]
 
@@ -47,14 +46,22 @@ class ConfigParser(object):
         return self.parse(x)
 
     def parse_sub_global_param(self, spec, param_name, paramlist):
+        '''
+        the global param list should be the same with the individual param list
+        this function simply reads the global params 
+        the missing param will be assigned with None
+        '''
         default_params = {}
         for param in paramlist:
-            key = param_name + '_'+ param
-            default_params[param] = spec[key] if key in spec else None
-
+            if not 'global' in spec or \
+                spec['global'] is None or (not param_name in spec['global']) or \
+                (spec['global'][param_name] is None) or (not param in spec['global'][param_name]):
+                default_params[param] = None 
+            else:
+                default_params[param] = spec['global'][param_name][param]
         return default_params
 
-    def parse_sub_data_param(self, params_spec, param_name, paramlist, default_params):
+    def parse_sub_data_param(self, subparams, paramlist, default_params):
         '''
         params_spec: the raw data from the file under one datafile
         param_name: modality/cacher/dataset
@@ -63,8 +70,8 @@ class ConfigParser(object):
         '''
 
         data_params = {}
-        assert param_name in params_spec, 'ConfigParser: Missing {} in the spec'.format(param_name)
-        subparams = params_spec[param_name]
+        # assert param_name in params_spec, 'ConfigParser: Missing {} in the spec'.format(param_name)
+        # subparams = params_spec[param_name]
         for param in paramlist:
             if subparams is not None and param in subparams: # use specific param
                 data_params[param] = subparams[param]
@@ -75,12 +82,14 @@ class ConfigParser(object):
 
     def parse(self, spec):
         dataset_config = OrderedDict()
+
+        # Check if the global params are available
         for param in self.global_paramlist:
             if param in spec: 
                 dataset_config[param] = spec[param]
             else:
                 assert False, "ConfigParser: Missing {} in the spec file".format(param)
-        
+
         default_modality_params = self.parse_sub_global_param(spec, "modality", self.modality_paramlist)
         default_cacher_params = self.parse_sub_global_param(spec, "cacher", self.cacher_paramlist)
         default_dataset_params = self.parse_sub_global_param(spec, "dataset", self.dataset_paramlist)
@@ -93,20 +102,28 @@ class ConfigParser(object):
             datafile = params['file']
             all_params['file'] = datafile
 
+            # import ipdb;ipdb.set_trace()
             assert 'modality' in params, 'ConfigParser: Missing modality in the data/{}'.format(datasetind)
             all_modality_params = {}
-            for modkey in params['modality']:
-                modality_params = self.parse_sub_data_param(params['modality'], modkey, self.modality_paramlist, default_modality_params)
-                all_modality_params[modkey] = modality_params
+            modality_list = params['modality']
+            for mod_type in modality_list: 
+                modtype_params = {}
+                for modkey in modality_list[mod_type]:
+                    modality_params = self.parse_sub_data_param(modality_list[mod_type][modkey], self.modality_paramlist, default_modality_params)
+                    modtype_params[modkey] = modality_params
+                all_modality_params[mod_type] = modtype_params
             all_params['modality'] = all_modality_params
 
-            cacher_params = self.parse_sub_data_param(params, "cacher", self.cacher_paramlist, default_cacher_params)
+            assert 'cacher' in params, 'ConfigParser: Missing cacher in the data/{}'.format(datasetind)
+            cacher_params = self.parse_sub_data_param(params["cacher"], self.cacher_paramlist, default_cacher_params)
             all_params['cacher'] = cacher_params
 
-            dataset_params = self.parse_sub_data_param(params, "dataset", self.dataset_paramlist, default_dataset_params)
+            assert 'dataset' in params, 'ConfigParser: Missing dataset in the data/{}'.format(datasetind)
+            dataset_params = self.parse_sub_data_param(params["dataset"], self.dataset_paramlist, default_dataset_params)
             all_params['dataset'] = dataset_params
 
-            parameter_params = self.parse_sub_data_param(params, "parameter", self.parameter_paramlist, default_parameter_params)
+            assert 'parameter' in params, 'ConfigParser: Missing parameter in the data/{}'.format(datasetind)
+            parameter_params = self.parse_sub_data_param(params["parameter"], self.parameter_paramlist, default_parameter_params)
             all_params['parameter'] = parameter_params
 
             data_config[datasetind] = all_params
@@ -117,7 +134,7 @@ class ConfigParser(object):
 
 if __name__ == "__main__":
     # fp = open('dataspec/flowvo_train_local_new.yaml')
-    dataset_specfile = '/home/wenshan/workspace/pytorch/geometry_vision/specs/dataspec/flowvo_train_local_v2.yaml'
+    dataset_specfile = '/home/amigo/workspace/pytorch/ss_costmap/data_cacher/dataspec/flowvo_test_local_v1.yaml'
     fp = open(dataset_specfile)
     d = yaml.safe_load(fp)
     print(d)

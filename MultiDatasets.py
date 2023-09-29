@@ -56,6 +56,8 @@ class MultiDatasets(object):
         self.datalens = [] # the framenum in each sub_dataset
         self.datasetparams = [] # the parameters used to create dataset
         self.modalitylengths = [] # the modality_length used to create the dataset
+        self.modalityfreqs = [] # the modality frequency used to create the dataset
+        self.modalitydroplast = [] # the modality drop_last used to create the dataset
         self.modalitytypes = [] 
         self.paramparams = [] # dataset parameters such as camera intrinsics
         self.subsetrepeat = [0,] * self.datasetNum # keep a track of how many times the subset is sampled
@@ -67,20 +69,65 @@ class MultiDatasets(object):
         self.init_datasets(dataconfigs)
 
     def parse_modality_types(self, modality_param):
-        modality_types, modality_lengths = {}, {}
-        for modkey, modparam in modality_param.items():
-            modtype_class = get_modality_type(modparam['type'])
-            modality_types[modkey] = modtype_class(modparam['cacher_size'])
-            modality_lengths[modkey] = modparam['length']
-        return modality_types, modality_lengths
+        '''
+        modality_dict: 
+        {   
+            mod_class_name0: 
+            {
+                mod_key0: 
+                {
+                    cacher_size: [w, h]
+                    length: k
+                }
+                mod_key1: 
+                {
+                    cacher_size: [w, h]
+                    length: k
+                }
+            }
+            mod_class_name1: 
+            {
+                ...
+            }
+        }    
+        The modality types are initialized here  
+        return 
+            Used by data_cacher: 
+                - modality_objs: [mod_obj, ...] 
+                - modality_keys: [[key0, key1], ...]
+            Used by the RanDataset:
+                - modality_length_dict: {modkey: modlen, ...}   
+                - modality_freq_mult: {modkey: freq_mult, ...}
+                - modality_drop_last: {modkey: drop_last, ...}
+        '''
+        modality_objs, modality_keys = [], []
+        modality_length_dict, modality_freq_mult, modality_drop_last = {}, {}, {}
+        for modtype_name, modparam in modality_param.items():
+            modtype_class = get_modality_type(modtype_name)
+            mod_shapes = [modparam[kk]['cacher_size'] for kk in modparam]
+            mod_obj = modtype_class(mod_shapes) # create a mod type
+            modality_objs.append(mod_obj)
+
+            modkeys = list(modparam.keys())
+            modality_keys.append(modkeys)
+
+            mod_lengths = [modparam[kk]['length'] for kk in modparam]
+
+            for modkey, modlen in zip(modkeys, mod_lengths):
+                modality_length_dict[modkey] = modlen
+                modality_freq_mult[modkey] = mod_obj.freq_mult
+                modality_drop_last[modkey] = mod_obj.drop_last
+
+        return modality_objs, modality_keys, modality_length_dict, modality_freq_mult, modality_drop_last
 
     def update_dataloader(self, k):
         '''
         the dataset/loader/iter needs to be updated, when the datacacher buffer is switched
         '''
         dataset = RAMDataset(self.datacachers[k], \
-                            self.modalitytypes[k], \
                             self.modalitylengths[k], \
+                            self.modalityfreqs[k], \
+                            self.modalitydroplast[k], \
                             **self.datasetparams[k], \
                             verbose=self.verbose, \
                             )
@@ -111,9 +158,11 @@ class MultiDatasets(object):
                 data_root_key = cacher_param['data_root_key']
                 data_root = DataRoot[self.platform][data_root_key]
 
-            modality_types, modality_lengths = self.parse_modality_types(modality_param)
+            modality_objs, modality_keys, modality_lengths, modality_freq_mult, modality_drop_last = self.parse_modality_types(modality_param)
             self.modalitylengths.append(modality_lengths)
-            self.modalitytypes.append(modality_types)
+            self.modalityfreqs.append(modality_freq_mult)
+            self.modalitydroplast.append(modality_drop_last)
+            self.modalitytypes.append(modality_objs)
 
             trajlist, trajlenlist, framelist, framenum = parse_inputfile(datafile)
             subsetframenum = cacher_param['subset_framenum']
@@ -122,7 +171,7 @@ class MultiDatasets(object):
             
             workernum = cacher_param['worker_num']
             load_traj = cacher_param['load_traj'] if 'load_traj' in cacher_param else False
-            datacacher = DataCacher(modality_types, data_splitter, data_root, workernum, batch_size=1, load_traj=load_traj, verbose = self.verbose) # TODO: test if batch_size here matters
+            datacacher = DataCacher(modality_objs, modality_keys, data_splitter, data_root, workernum, batch_size=1, load_traj=load_traj, verbose = self.verbose) # TODO: test if batch_size here matters
             self.datacachers.append(datacacher)
 
             # parameters for the RAMDataset
@@ -222,15 +271,17 @@ if __name__ == '__main__':
     from .ConfigParser import ConfigParser
     from .utils import visflow, visdepth
     import cv2
+    from .modality_type.tartandrive_types import get_vis_costmap, get_vis_heightmap
     # dataset_specfile = 'data_cacher/dataspec/flowvo_train_local_v1.yaml'
     # dataset_specfile = 'data_cacher/dataspec/flowvo_train_local_v2.yaml'
     # dataset_specfile = 'data_cacher/dataspec/test_yorai.yaml'
     # dataset_specfile = '/home/wenshan/workspace/pytorch/geometry_vision/specs/dataspec/flowvo_train_local_v2.yaml'
     # dataset_specfile = '/home/wenshan/workspace/pytorch/geometry_vision/specs/trajspec/flowvo_euroc.yaml'
-    dataset_specfile = '/home/wenshan/workspace/pytorch/geometry_vision/specs/trajspec/flowvo_kitti.yaml'
+    # dataset_specfile = '/home/wenshan/workspace/pytorch/geometry_vision/specs/trajspec/flowvo_kitti.yaml'
+    dataset_specfile = 'data_cacher/dataspec/test_tartandrive.yaml'
     # configparser = ConfigParser()
     # dataconfigs = configparser.parse_from_fp(dataset_specfile)
-    batch = 1
+    batch = 3
     trainDataloader = MultiDatasets(dataset_specfile, 
                        'local', 
                        batch=batch, 
@@ -241,18 +292,20 @@ if __name__ == '__main__':
     num = 23201                       
     for k in range(num):
         sample = trainDataloader.load_sample(notrepeat=True)
-        print(k, sample['trajdir'])
+        print(k, sample['trajdir'], sample.keys())
         # time.sleep(0.02)
         # import ipdb;ipdb.set_trace()
-        # for b in range(batch):
-            # ss=sample['img0'][b][0].numpy().transpose(1,2,0)
-            # ss2=sample['depth0'][b][0].numpy()
-            # ss3=sample['flow'][b][0].numpy().transpose(1,2,0)
-            # depthvis = visdepth(80./ss2)
-            # flowvis = visflow(ss3)
-            # disp = cv2.hconcat((ss, depthvis, flowvis))
-            # cv2.imshow('img', flowvis)
-            # cv2.waitKey(10)
+        for b in range(batch):
+            ss=sample['img0'][b][0].numpy()
+            ss = np.repeat(ss[...,np.newaxis], 3, axis=2)
+            ss2=sample['img1'][b][0].numpy().transpose(1,2,0)
+            ss3=sample['map'][b][0].numpy().transpose(1,2,0)
+            ss3 = get_vis_heightmap(ss3)
+            ss4=sample['costmap'][b][0].numpy()
+            ss4=get_vis_costmap(ss4)
+            disp = cv2.vconcat((ss, ss2, ss3, ss4))
+            cv2.imshow('img', disp)
+            cv2.waitKey(0)
 
     print((time.time()-tic))
     trainDataloader.stop_cachers()

@@ -32,8 +32,9 @@ class RAMDataset(Dataset):
     '''
     def __init__(self, \
         datacacher, \
-        modality_dict, \
         modalities_lengths, \
+        modalities_freq_mults, \
+        modalities_drop_lasts, \
         transform = None, \
         frame_skip = 0, \
         seq_stride = 1, \
@@ -45,13 +46,17 @@ class RAMDataset(Dataset):
         super(RAMDataset, self).__init__()
         self.datacacher = datacacher
         self.modalities_lengths = modalities_lengths
+        self.modalities_freq_mults = modalities_freq_mults
+        self.modalities_drop_lasts = modalities_drop_lasts
     
-        self.modkeylist, self.modtypelist, self.modlenlist= [], [], []
+        self.modkeylist, self.modfreqlist, self.moddroplist, self.modlenlist= [], [], [], []
         for k, v in self.modalities_lengths.items(): 
-            assert k in modality_dict, "Missing key {} in modality_dict".format(k)
+            assert k in modalities_freq_mults and k in modalities_drop_lasts, \
+                "RAMDataset: Missing key {} in modalities_freq_mults or modalities_drop_lasts".format(k)
             self.modkeylist.append(k) # ["img0", "img1", "depth0", ...]
             self.modlenlist.append(v) # [1,2,1,100,...]
-            self.modtypelist.append(modality_dict[k]) # [rgb_lcam_front, depth_lcam_right, ...]
+            self.modfreqlist.append(modalities_freq_mults[k]) # [1, 10, ...]
+            self.moddroplist.append(modalities_drop_lasts[k])
 
         self.transform = transform
 
@@ -89,9 +94,7 @@ class RAMDataset(Dataset):
         seqnumlist = []
         for trajlen in self.trajlenlist:
             minseqnum = trajlen + 1
-            for modlen, modtype in zip(self.modlenlist, self.modtypelist):
-                mod_droplast = modtype.drop_last
-                mod_freqmult = modtype.freq_mult
+            for modlen, mod_droplast, mod_freqmult in zip(self.modlenlist, self.moddroplist, self.modfreqlist):
                 seqnum = self.sample_num_from_traj(trajlen, self.frame_skip, self.seq_stride, 
                              modlen, mod_freqmult, mod_droplast)
                 if seqnum < minseqnum:
@@ -149,11 +152,10 @@ class RAMDataset(Dataset):
         # sample = self.datacacher[ramslice]
         sample = {}
         trajind, frameind = self.idx2trajind(idx)
-        for key, modlen, modtype in zip(self.modkeylist, self.modlenlist, self.modtypelist):
+        for key, modlen, mod_freqmult in zip(self.modkeylist, self.modlenlist, self.modfreqlist):
 
         # for datatype, datalen in self.modalities_lengths.items(): 
             # parse the idx to trajstr
-            mod_freqmult = modtype.freq_mult
             ramslice = self.idx2slice(mod_freqmult, modlen, trajind, frameind)
             # print(key, ramslice)
             sample[key] = self.datacacher.ready_buffer.get_frame(key, ramslice)

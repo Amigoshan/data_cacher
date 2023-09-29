@@ -10,7 +10,8 @@ DataRoot['local'] = {
                         'sintel':       '/home/amigo/tmp/data/sintel/training',
                         'euroc':        '/home/wenshan/tmp/vo_data/euroc',
                         'kitti-stereo': '/prague/tartanvo_data/kitti/stereo', 
-                        'kitti-vo':     '/home/wenshan/tmp/vo_data/kittivo'
+                        'kitti-vo':     '/home/wenshan/tmp/vo_data/kittivo',
+                        'tartandrive':  '/home/amigo/workspace/ros_atv/src/rosbag_to_dataset/test_output'
 }
 
 

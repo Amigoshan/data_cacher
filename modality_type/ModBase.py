@@ -8,11 +8,12 @@ This file defines the interfaces of the Modality:
     - function that convert framestr to file
     - data type
     - data shape
+New feature:
+One folder sometimes contains more than one type of data that cannot be concatenate together, e.g. flow and flow_mask
+We now return a list of numpy array, instead of one. 
 '''
 # TODO:
-#       Simple Mod
-#       Frequency 
-#       Handle freq_mult in dropping frames
+
 
 # please register new types here
 TYPEDICT = dict()
@@ -30,15 +31,23 @@ def get_modality_type(typename):
     return TYPEDICT[typename]
 
 class ModBase(object):
-    def __init__(self, datashape):
+    def __init__(self, datashapelist):
         '''
         Note that datashepe is (h, w) 2D value for resizing the data
         self.data_shape is the shape with channel that used to initialize the buffer
+
+        We allow the loader to return multiple numpy arrays (e.g. in the case of loading flow returns both flow and mask)
+        If which case the datashape will be a list of (h, w)s
+
+        The data_types is a list of data type 
+        The data_shapes is a list of data shape
         '''
         self.name = self.__class__.__name__ # the key name in a dictionary
-        self.data_type = None # needs to be filled in derived classes
-        self.data_shape = None # needs to be filled in derived classes
+        self.data_types = None # needs to be filled in derived classes
         self.data_info = {} # store additional information 
+
+        assert isinstance(datashapelist, list), "Type Error: datashape {} should be a list".format(datashapelist)
+        self.data_shapes = datashapelist # needs to be filled in derived classes
 
         # handle the data with different frequency
         self.freq_mult = 1 # used when this modality has higher frequency, now only integer is supported, e.g. for IMU freq_mult=10
@@ -57,26 +66,30 @@ class FrameModBase(ModBase):
         '''
         ind_env: the index of the frame in the opposite direction of the frame 
                  this is used to handle some modalities miss a few frames at last
+        new: the load_data function will be return a list of numpy arrays, in most cases, the lengh of the list will be one
         '''
-        filename = self.framestr2filename(framestr)
+        filenamelist = self.framestr2filename(framestr)
         if ind_env > self.drop_last:
-            data = self.load_frame(join(trajdir, filename))
-            data = self.resize_data(data)
-            data = self.transpose(data)
+            datalist = self.load_frame(trajdir, filenamelist)
+            datalist = self.resize_data(datalist)
+            datalist = self.transpose(datalist)
         else: # the frame does not exist, create a dummy frame
-            data = np.zeros(self.data_shape, dtype=self.data_type)
-        return data 
+            datalist = []
+            for datashape, datatype in zip(self.data_shapes, self.data_types):
+                data = np.zeros(datashape, dtype=datatype)
+                datalist.append(data)
+        return datalist 
 
     def framestr2filename(self, framestr):
         raise NotImplementedError
     
-    def resize_data(self, ):
+    def resize_data(self, datalist):
         raise NotImplementedError
 
-    def transpose(self, ):
+    def transpose(self, datalist):
         raise NotImplementedError
 
-    def load_frame(self, filename):
+    def load_frame(self, trajdir, filename):
         raise NotImplementedError
 
 class SimpleModBase(ModBase):
@@ -104,10 +117,16 @@ class SimpleModBase(ModBase):
     000089
     --- end of datafile ---
     If the second trajectory is loaded into the cache, we need to make sure the starting frame of that trajectory for IMU or motion is 50, instead of 0. 
+    
+    New: this allows that one class returns a list of numpy arrays, in most cases the length of the list will be one
     '''
-    def __init__(self, datashape):
-        super().__init__(datashape)
-        self.data_type = np.float32
+    def __init__(self, datashapes):
+        '''
+        datashapes is not useful in this class because we do not resize the data
+        the length of the datashapes indicates the number of numpy arrays it will return
+        '''
+        super().__init__(datashapes)
+        self.data_types = [np.float32, ] * len(datashapes)
 
     def get_filename(self, trajdir):
         raise NotImplementedError
@@ -129,17 +148,20 @@ class SimpleModBase(ModBase):
         The startingframe indicates the starting frame of this modality
         It is used in the case that the trajectory is cropped into pieces and the current trajectory is not start from the first frame
         '''
-        filename = self.get_filename()
-        if filename.endswith('.npy'):
-            data = np.load(join(trajdir, filename)) # this assume the data is stored as np file, this can be changed in the future
-        elif filename.endswith('.txt'):
-            data = np.loadtxt(join(trajdir, filename))
-        else:
-            assert False, "File format is not supported {}".format(filename)
-        # crop the trajectory based on the starting and ending frames
-        padding = self.data_padding()
-        if padding is not None:
-            data = np.concatenate((data, padding), axis=0)
-        data = self.crop_trajectory(data, framestrlist)
-        assert len(data) == len(framestrlist), "Error Loading {}, data len {}, framestr len {}".format(self.name, len(data), len(framestrlist))
-        return data
+        filenamelist = self.get_filename()
+        datalist = []
+        for k, filename in enumerate(filenamelist):
+            if filename.endswith('.npy'):
+                data = np.load(join(trajdir, filename)) # this assume the data is stored as np file, this can be changed in the future
+            elif filename.endswith('.txt'):
+                data = np.loadtxt(join(trajdir, filename))
+            else:
+                assert False, "File format is not supported {}".format(filename)
+            # crop the trajectory based on the starting and ending frames
+            padding = self.data_padding(k)
+            if padding is not None:
+                data = np.concatenate((data, padding), axis=0)
+            data = self.crop_trajectory(data, framestrlist)
+            assert len(data) == len(framestrlist), "Error Loading {}, data len {}, framestr len {}".format(self.name, len(data), len(framestrlist))
+            datalist.append(data)
+        return datalist

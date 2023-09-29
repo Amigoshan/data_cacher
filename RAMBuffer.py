@@ -20,7 +20,7 @@ class RAMBufferBase(object):
         '''
         datatype: np datatype
         datasize: a tuple
-        in general, the buffer is in the format of (n x h x w x c) or (n x h x w)
+        in general, the buffer is in the format of (n x c x h x w) or (n x h x w)
         '''
         self.ctype, self.databyte = convert_type(datatype)
         assert self.ctype is not None, "Type Error {}".format(datatype)

@@ -70,8 +70,13 @@ class RGBModBase(FrameModBase):
         # read image
         imglist = []
         for filename in filenamelist:
-            img = cv2.imread(join(trajdir,filename), cv2.IMREAD_UNCHANGED)
-            assert img is not None, "Error loading RGB {}".format(filename)
+            if filename.endswith('.png') or filename.endswith('.jpg'):
+                img = cv2.imread(join(trajdir,filename), cv2.IMREAD_UNCHANGED)
+                assert img is not None, "Error loading RGB {}".format(filename)
+            elif filename.endswith('.npy'):
+                img = np.load(join(trajdir,filename))
+            else:
+                raise NotImplementedError
             imglist.append(img)
         return imglist
 
@@ -241,7 +246,7 @@ class rgb_map(RGBModBase):
         This is very dataset specific
         Basically it handles how each dataset naming the frames and organizing the data
         '''
-        return [join(self.folder_name, framestr + '.png')]
+        return [join(self.folder_name, framestr + '.npy')]
 
 @register(TYPEDICT)
 class height_map(FrameModBase):

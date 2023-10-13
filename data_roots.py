@@ -23,7 +23,8 @@ DataRoot['cluster'] = {
                         'flying':       '/data2/datasets/yaoyuh/StereoData/SceneFlow',
                         'sintel':       '/project/learningvo/flowdata/sintel/training',
                         'euroc':        '/project/learningvo/euroc',
-                        'kitti-stereo': '/project/learningvo/stereo_data/kitti/training', 
+                        'kitti-stereo': '/project/learningvo/stereo_data/kitti/training',
+                        'tartandrive':  '/project/learningphysics' 
 }
 
 DataRoot['zoidberg'] = {

@@ -325,6 +325,10 @@ class height_map_ff(height_map):
         '''
         super().__init__(datashapelist)
         self.channel_num = 2
+        listlen = len(datashapelist) # this is usually one
+        self.data_shapes = datashapelist # needs to be filled in derived classes
+        for k in range(listlen):
+            self.data_shapes[k] =  (self.channel_num,) + tuple(self.data_shapes[k])
         self.folder_name = "heightmapffl"
 
     def transpose(self, imglist):

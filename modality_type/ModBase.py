@@ -47,7 +47,7 @@ class ModBase(object):
         self.data_info = {} # store additional information 
 
         assert isinstance(datashapelist, list), "Type Error: datashape {} should be a list".format(datashapelist)
-        self.data_shapes = datashapelist # needs to be filled in derived classes
+        self.data_shapes = datashapelist.copy() # needs to be filled in derived classes
 
         # handle the data with different frequency
         self.freq_mult = 1 # used when this modality has higher frequency, now only integer is supported, e.g. for IMU freq_mult=10

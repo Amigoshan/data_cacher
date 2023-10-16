@@ -1,7 +1,7 @@
 import os
 from torch.utils.data import DataLoader
 import numpy as np
-from os.path import isfile
+from os.path import isfile, split
 import time
 from .data_roots import *
 from .modality_type.ModBase import get_modality_type
@@ -48,6 +48,7 @@ class MultiDatasets(object):
         self.verbose = verbose
 
         self.datafiles = []
+        self.datasetnames = []
         self.datacachers = [ ] 
         self.datasets = [None, ] * self.datasetNum
         self.dataloaders = [None, ] * self.datasetNum
@@ -63,9 +64,12 @@ class MultiDatasets(object):
         self.subsetrepeat = [0,] * self.datasetNum # keep a track of how many times the subset is sampled
 
         self.current_dataset_ind = 0 # keep track of the dataset being loaded in the case of sequential way of data loading (shuffle = False)
-        self.new_epoch = [False, ] * self.datasetNum
+        self.new_epoch_loading_buffer = [False, ] * self.datasetNum
         self.epoch_count = [0, ] * self.datasetNum
+        self.batch_count_in_buffer = [-1, ] * self.datasetNum
+        self.batch_count_in_epoch = [-1, ] * self.datasetNum
 
+        self.first_buffer_flag = [True, ] * self.datasetNum
         self.init_datasets(dataconfigs)
 
     def parse_modality_types(self, modality_param):
@@ -142,6 +146,8 @@ class MultiDatasets(object):
         for datafileind, params in dataconfigs['data'].items():
             datafile = params['file']
             self.datafiles.append(datafile)
+            datasetname = split(datafile)[-1].split('.')[0] # use the datafile name as the dataset name
+            self.datasetnames.append(datasetname)
             modality_param = params['modality']
             cacher_param = params['cacher']
             dataset_param = params['dataset']
@@ -185,7 +191,7 @@ class MultiDatasets(object):
         for k, datacacher in enumerate(self.datacachers):
             while not datacacher.new_buffer_available:
                 time.sleep(1)
-            self.new_epoch[k] = self.datacachers[k].switch_buffer()
+            self.new_epoch_loading_buffer[k] = self.datacachers[k].switch_buffer()
             self.update_dataloader(k)
 
     def load_sample(self, fullbatch=True, notrepeat=False, maxrepeatnum=3):
@@ -201,24 +207,43 @@ class MultiDatasets(object):
             datasetind = 0 
             while randnum > self.accDataLens[datasetind]: # 
                 datasetind += 1
-        else: # load the data in sequential order
+        else: # load the data in sequential order, stick to the current dataset until all the data is loaded
             datasetind = self.current_dataset_ind
 
-        new_buffer = False
+        new_buffer = False 
         # load sample from the dataloader
         try:
             sample = next(self.dataiters[datasetind])
+            
             if sample[list(sample.keys())[0]].shape[0] < self.batch and (fullbatch is True): # the imcomplete batch is thrown away
                 sample = next(self.dataiters[datasetind])
-        except StopIteration:
-            new_buffer = True
 
-            if not self.shuffle: # sequential loading
+            if self.first_buffer_flag[datasetind]: # set flag for the first batch 
+                new_buffer = True
+                self.first_buffer_flag[datasetind] = False
+
+        except StopIteration:
+            # The current buffer is completed, 
+            # We have two options, 
+            # 1) move to the next buffer 
+            #    when moving to next buffer, we have two options
+            #       i. in random mode, the same dataset will be used for sampling the next buffer
+            #       ii. in the sequential mode, the next buffer will be sampled from the next dataset
+            # 2) repeat on the current buffer 
+            new_buffer = True
+            self.batch_count_in_buffer[datasetind] = -1
+            
+            if not self.shuffle: # sequential loading, switch to the next buffer in the same dataset or the first buffer of the next dataset
                 while not self.datacachers[datasetind].new_buffer_available:
                     time.sleep(1.0) # in sequential way, we always want the next buffer be loaded
-                if self.new_epoch[datasetind]: # sequential loading, new epoch coming
-                    self.current_dataset_ind = (self.current_dataset_ind + 1) % self.datasetNum
-                self.new_epoch[datasetind] = self.datacachers[datasetind].switch_buffer()
+                    self.vprint('  Wait for the next buffer...')
+
+                if self.new_epoch_loading_buffer[datasetind]: # sequential loading, the buffer just been loaded is a new epoch
+                    self.epoch_count[datasetind] += 1
+                    self.batch_count_in_epoch[datasetind] = -1
+                    self.current_dataset_ind = (self.current_dataset_ind + 1) % self.datasetNum # current buffer is a new epoch, go to the next dataset
+
+                self.new_epoch_loading_buffer[datasetind] = self.datacachers[datasetind].switch_buffer()
                 self.update_dataloader(datasetind)
                 datasetind = self.current_dataset_ind
 
@@ -228,17 +253,31 @@ class MultiDatasets(object):
                         time.sleep(1.0)
                         self.vprint('  Wait for the next buffer...')
 
-                if self.datacachers[datasetind].new_buffer_available : 
-                    self.new_epoch[datasetind] = self.datacachers[datasetind].switch_buffer()
+                if self.new_epoch_loading_buffer[datasetind]:
+                    self.epoch_count[datasetind] += 1
+                    self.batch_count_in_epoch[datasetind] = -1
+                    
+                if self.datacachers[datasetind].new_buffer_available : # switch to the next buffer
+                    self.new_epoch_loading_buffer[datasetind] = self.datacachers[datasetind].switch_buffer()
                     self.update_dataloader(datasetind)
-                else:
+                else: # repeat the current buffer 
                     self.dataiters[datasetind] = iter(self.dataloaders[datasetind])
 
             sample = next(self.dataiters[datasetind])
             self.subsetrepeat[datasetind] += 1
             self.vprint('==> Working on {} for the {} time'.format(self.datafiles[self.current_dataset_ind], self.subsetrepeat[self.current_dataset_ind]))
 
-        sample['new_buffer'] = new_buffer
+        self.batch_count_in_buffer[datasetind] += 1
+        self.batch_count_in_epoch[datasetind] += 1
+
+        datainfo = {'new_buffer': new_buffer, 
+                    'epoch_count': self.epoch_count[datasetind], 
+                    'batch_count_in_buffer': self.batch_count_in_buffer[datasetind],
+                    'batch_count_in_epoch': self.batch_count_in_epoch[datasetind], 
+                    'dataset_name': self.datasetnames[datasetind], 
+                    'buffer_repeat': self.subsetrepeat[datasetind]}
+
+        sample['dataset_info'] = datainfo
         params = self.paramparams[datasetind]
         for param, value in params.items():
             if isinstance(value, numbers.Number):
@@ -291,20 +330,21 @@ if __name__ == '__main__':
     tic = time.time()
     num = 23201                       
     for k in range(num):
-        sample = trainDataloader.load_sample(notrepeat=True)
+        sample = trainDataloader.load_sample(notrepeat=True, fullbatch=False)
         print(k, sample['trajdir'], sample.keys())
+        print(sample['dataset_info'])
         # time.sleep(0.02)
         # import ipdb;ipdb.set_trace()
-        for b in range(batch):
-            ss=sample['img0'][b][0].numpy()
-            ss = np.repeat(ss[...,np.newaxis], 3, axis=2)
-            ss2=sample['img1'][b][0].numpy().transpose(1,2,0)
-            ss3=sample['map'][b][0].numpy().transpose(1,2,0)
-            ss3 = get_vis_heightmap(ss3)
+        for b in range(len(sample['trajdir'])):
+            # ss=sample['img0'][b][0].numpy()
+            # ss = np.repeat(ss[...,np.newaxis], 3, axis=2)
+            # ss2=sample['img1'][b][0].numpy().transpose(1,2,0)
+            # ss3=sample['heightmap'][b][0].numpy().transpose(1,2,0)
+            # ss3 = get_vis_heightmap(ss3)
             ss4=sample['costmap'][b][0].numpy()
             ss4=get_vis_costmap(ss4)
-            disp = cv2.vconcat((ss, ss2, ss3, ss4))
-            cv2.imshow('img', disp)
+            # disp = cv2.vconcat((ss3, ss4))
+            cv2.imshow('img', ss4)
             cv2.waitKey(0)
 
     print((time.time()-tic))

@@ -123,6 +123,9 @@ class DataCacher(object):
     def reset_buffer(self):
         '''
         This function allocates the shared memory
+        1. call data_splitter to get next batch
+           get new_epoch==True at the beginning of each new epoch
+        2. start to load the next frame-based modality
         '''
         trajlist, trajlenlist, framelist, framenum, new_epoch = self.splitter_func()
         self.loading_buffer.reset(framenum, trajlist, trajlenlist, framelist)
@@ -152,7 +155,7 @@ class DataCacher(object):
             self.ready_buffer = self.buffer_a
 
         else:
-            return
+            assert False, "DataCacher: Unknow buffer state loading_a {}, loading_b {}".format(self.loading_a, self.loading_b)
 
         new_epoch = self.reset_buffer()
         return new_epoch

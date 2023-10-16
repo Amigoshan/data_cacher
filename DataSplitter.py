@@ -46,6 +46,9 @@ class DataSplitter(object):
         return framecount
 
     def get_next_split(self):
+        '''
+        self.epoch_flag returns true whenever a new epoch starts, including the first epoch
+        '''
         framecount = 0 
         self.subtrajlist, self.subtrajlenlist, self.subframelist = [], [], []
         self.epoch_flag = False
@@ -60,9 +63,9 @@ class DataSplitter(object):
 
         while framecount < self.framenum:
             self.curind = (self.curind + 1) % self.trajnum
-            if self.curind == 0: # shuffle the trajectory 
+            if self.curind == 0: # the new epoch starts
                 self.epoch_flag = True
-                if self.shuffle:
+                if self.shuffle: # shuffle the trajectory 
                     self.trajinds = np.random.permutation(self.trajnum)
 
             # add the current trajectory to the lists
@@ -75,10 +78,12 @@ class DataSplitter(object):
         return self.subtrajlist, self.subtrajlenlist, self.subframelist, self.framenum, self.epoch_flag
 
     def get_next_trajectory(self):
+        '''
+        TODO: it will become a problem if the trajectory is too long
+        '''
         self.curind = (self.curind + 1) % self.trajnum
-        self.epoch_flag = False
-        if self.curind == 0:  
-            self.epoch_flag = True
+        self.epoch_flag = True if self.curind == 0 else False
+        
         subtrajlist = [self.trajlist[self.curind]]
         subtrajlenlist = [self.trajlenlist[self.curind]]
         subframelist = [self.framelist[self.curind]]

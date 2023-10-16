@@ -355,7 +355,10 @@ class costmap(FrameModBase):
         vel = np.loadtxt(velocityfile, dtype=np.float32)
 
         if len(vel.shape) == 1:
-            vel = vel.reshape(1, self.channel_num)
+            if vel.size == 0:
+                vel = np.zeros((1, self.channel_num), dtype=np.float32)
+            else:
+                vel = vel.reshape(1, self.channel_num)
             
         if vel.shape[0]>= self.vel_max_len:
              vel = vel[:self.vel_max_len,:]

@@ -68,6 +68,25 @@ class LiDARBase(FrameModBase):
     def resize_data(self, lidarlist):
         return lidarlist
 
+class EventsBase(FrameModBase):
+    def __init__(self, datashape=None):
+        super().__init__(datashape) # point dimention, e.g. 3 for tartanvo, 6 if rgb is included
+        self.data_shape = datashape # The event tensor is of the shape 640x640x10
+        self.data_type = np.float32
+
+    def load_frame(self, filename):
+        if filename.endswith('npy'):
+            data = np.load(filename)
+        else:
+            assert False, "Unknow file type for events {}".format(filename)
+        return data
+    
+    def transpose(self, events):
+        return events
+
+    def resize_data(self, events):
+        return events
+
 class RGBModBase(FrameModBase):
     def __init__(self, datashapelist):
         super().__init__(datashapelist)
@@ -1083,4 +1102,15 @@ class lidar(LiDARBase):
         self.file_suffix = 'lcam_front_lidar'
 
     def framestr2filename(self, framestr):
-        return [join(self.folder_name, framestr + '_' + self.file_suffix + '.ply')]
+        return join(self.folder_name, framestr + '_' + self.file_suffix + '.ply')
+
+@register(TYPEDICT)
+class event_cam(EventsBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = 'events'
+        self.sub_folder = 'event_tensors'
+        self.file_suffix = 'event_tensor'
+
+    def framestr2filename(self, framestr) -> str:
+        return join(self.folder_name, join(self.sub_folder, framestr + '_' + self.file_suffix + '.npy'))

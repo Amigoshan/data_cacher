@@ -16,6 +16,9 @@ DataRoot['local'] = {
                         'tartandrive':  '/home/amigo/workspace/ros_atv/src/rosbag_to_dataset/test_output'
 }
 
+DataRoot['wsl'] = {
+'tartan2': '/mnt/e'
+}
 
 DataRoot['cluster'] = {
                         'sceneflow':    '/data2/datasets/yaoyuh/StereoData/SceneFlow',

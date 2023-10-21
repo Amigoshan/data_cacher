@@ -71,7 +71,8 @@ class LiDARBase(FrameModBase):
 class EventsBase(FrameModBase):
     def __init__(self, datashape=None):
         super().__init__(datashape) # point dimention, e.g. 3 for tartanvo, 6 if rgb is included
-        self.data_shape = datashape # The event tensor is of the shape 640x640x10
+        (self.num_bins, self.h, self.w) = datashape
+        self.data_shape = (self.num_bins, self.h, self.w) # The event tensor is of the shape 10x640x640
         self.data_type = np.float32
 
     def load_frame(self, filename):
@@ -1112,5 +1113,7 @@ class event_cam(EventsBase):
         self.sub_folder = 'event_tensors'
         self.file_suffix = 'event_tensor'
 
-    def framestr2filename(self, framestr) -> str:
-        return join(self.folder_name, join(self.sub_folder, framestr + '_' + self.file_suffix + '.npy'))
+    def framestr2filename(self, framestr):
+        framenum = int(framestr)
+        framestr2 = str(framenum + 1).zfill(6)
+        return join(self.folder_name, join(self.sub_folder, framestr + '_' + framestr2 + '_' + self.file_suffix + '.npy'))

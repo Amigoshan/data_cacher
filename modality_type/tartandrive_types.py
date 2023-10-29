@@ -317,6 +317,32 @@ class height_map(FrameModBase):
         return [join(self.folder_name, framestr + '.npy')]
 
 @register(TYPEDICT)
+class height_map_ff_format(height_map):
+ 
+    def __init__(self, datashapelist):
+        '''
+        load the four-channel heightmap
+        convert it to the two-channel ff format 
+        '''
+        super().__init__(datashapelist)
+        self.channel_num = 2
+
+    def load_frame(self, trajdir, filenamelist):
+        # read image
+        maplist = []
+        import ipdb;ipdb.set_trace()
+        for filename in filenamelist:
+            heightmap = np.load(join(trajdir,filename))
+            assert heightmap is not None, "Error loading map {}".format(filename)
+            mask = heightmap[:,:,0] < 10
+            mean = heightmap[:,:,2]
+            mean[heightmap[:,:,0]>10] = 0.
+            heightmap_ff = np.stack((mean,mask), axis=-1)
+            maplist.append(heightmap_ff)
+        return maplist
+
+
+@register(TYPEDICT)
 class height_map_ff(height_map):
  
     def __init__(self, datashapelist):
@@ -488,6 +514,11 @@ if __name__=="__main__":
         datalist7 = datatype.load_data(trajfolder, str(frameid).zfill(6), 100)
         print(len(datalist7), datalist7[0].shape,  datalist7[0].dtype)
         visheight2 = get_vis_heightmap2(datalist7[0].transpose(1,2,0), scale=1.0)
+
+        datatype = height_map_ff_format([(600, 600)])
+        datalist8 = datatype.load_data(trajfolder, str(frameid).zfill(6), 100)
+        print(len(datalist8), datalist8[0].shape,  datalist8[0].dtype)
+        visheight2 = get_vis_heightmap2(datalist8[0].transpose(1,2,0), scale=1.0)
 
         # import ipdb;ipdb.set_trace()
         disp = cv2.hconcat((datalist3[0].transpose(1,2,0), datalist6[0].transpose(1,2,0)))

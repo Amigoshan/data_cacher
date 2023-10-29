@@ -326,11 +326,14 @@ class height_map_ff_format(height_map):
         '''
         super().__init__(datashapelist)
         self.channel_num = 2
+        listlen = len(datashapelist) # this is usually one
+        self.data_types = []
+        for k in range(listlen):
+            self.data_shapes[k] =  (self.channel_num,) + tuple(datashapelist[k])
 
     def load_frame(self, trajdir, filenamelist):
         # read image
         maplist = []
-        import ipdb;ipdb.set_trace()
         for filename in filenamelist:
             heightmap = np.load(join(trajdir,filename))
             assert heightmap is not None, "Error loading map {}".format(filename)
@@ -495,7 +498,7 @@ if __name__=="__main__":
         datalist3 = datatype.load_data(trajfolder, str(frameid).zfill(6), 100)
         print(len(datalist3), datalist3[0].shape)
         # height map
-        datatype = height_map([(300, 300)])
+        datatype = height_map([(600, 600)])
         datalist4 = datatype.load_data(trajfolder, str(frameid).zfill(6), 100)
         print(len(datalist4), datalist4[0].shape,  datalist4[0].dtype)
         visheight = get_vis_heightmap(datalist4[0].transpose(1,2,0), scale=1.0)
@@ -504,13 +507,12 @@ if __name__=="__main__":
         datalist5 = datatype.load_data(trajfolder, str(frameid).zfill(6), 100)
         print(len(datalist5), datalist5[0].shape, datalist5[1].shape,  datalist5[0].dtype, datalist5[1])
         # imu
-        # import ipdb;ipdb.set_trace()
         # rgb map
         datatype = rgb_map_ff([(600, 600)])
         datalist6 = datatype.load_data(trajfolder, str(frameid).zfill(6), 100)
         print(len(datalist6), datalist6[0].shape)
         # height map
-        datatype = height_map_ff([(300, 300)])
+        datatype = height_map_ff([(600, 600)])
         datalist7 = datatype.load_data(trajfolder, str(frameid).zfill(6), 100)
         print(len(datalist7), datalist7[0].shape,  datalist7[0].dtype)
         visheight2 = get_vis_heightmap2(datalist7[0].transpose(1,2,0), scale=1.0)
@@ -518,12 +520,14 @@ if __name__=="__main__":
         datatype = height_map_ff_format([(600, 600)])
         datalist8 = datatype.load_data(trajfolder, str(frameid).zfill(6), 100)
         print(len(datalist8), datalist8[0].shape,  datalist8[0].dtype)
-        visheight2 = get_vis_heightmap2(datalist8[0].transpose(1,2,0), scale=1.0)
+        visheight3 = get_vis_heightmap2(datalist8[0].transpose(1,2,0), scale=1.0)
+        # import ipdb;ipdb.set_trace()
 
         # import ipdb;ipdb.set_trace()
         disp = cv2.hconcat((datalist3[0].transpose(1,2,0), datalist6[0].transpose(1,2,0)))
         cv2.imshow('img', disp)
-        disp2 = cv2.vconcat((visheight, visheight2))
+        disp2 = cv2.hconcat((visheight, cv2.vconcat((visheight2, visheight3))))
+        disp2 = cv2.resize(disp2, (0,0), fx=0.8, fy=0.8)
         cv2.imshow('img2', disp2)        
         cv2.waitKey(0)
 

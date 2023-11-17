@@ -113,7 +113,7 @@ class DataCacher(object):
         elif isinstance(modobj, FrameModBase):
             cacher_dataset = CacherDataset(modobj, self.loading_buffer.trajlist, self.loading_buffer.trajlenlist, 
                                             self.loading_buffer.framelist, datarootdir=self.data_root)
-            dataloader = DataLoader(cacher_dataset, batch_size=self.batch_size, shuffle=False, num_workers=self.num_worker, persistent_workers=True)#, persistent_workers=True)
+            dataloader = DataLoader(cacher_dataset, batch_size=self.batch_size, shuffle=False, num_workers=self.num_worker)#, persistent_workers=True)
             self.dataiter = iter(dataloader)
             self.modind = 0
             return True

@@ -139,7 +139,6 @@ class MultiDatasets(object):
         self.datasets[k] = dataset
         self.dataloaders[k] = dataloader
         self.dataiters[k] = iter(dataloader)
-        self.subsetrepeat[k] = 0
 
     def init_datasets(self, dataconfigs):
         # modalities = dataconfigs['modalities']
@@ -237,14 +236,16 @@ class MultiDatasets(object):
                 while not self.datacachers[datasetind].new_buffer_available:
                     time.sleep(1.0) # in sequential way, we always want the next buffer be loaded
                     self.vprint('  Wait for the next buffer...')
+                    # import ipdb;ipdb.set_trace()
+                self.new_epoch_loading_buffer[datasetind] = self.datacachers[datasetind].switch_buffer()
 
                 if self.new_epoch_loading_buffer[datasetind]: # sequential loading, the buffer just been loaded is a new epoch
                     self.epoch_count[datasetind] += 1
                     self.batch_count_in_epoch[datasetind] = -1
                     self.current_dataset_ind = (self.current_dataset_ind + 1) % self.datasetNum # current buffer is a new epoch, go to the next dataset
 
-                self.new_epoch_loading_buffer[datasetind] = self.datacachers[datasetind].switch_buffer()
                 self.update_dataloader(datasetind)
+                self.subsetrepeat[datasetind] = 0
                 datasetind = self.current_dataset_ind
 
             else: # in random order, both datasets and subsets should be shuffled
@@ -260,12 +261,13 @@ class MultiDatasets(object):
                 if self.datacachers[datasetind].new_buffer_available : # switch to the next buffer
                     self.new_epoch_loading_buffer[datasetind] = self.datacachers[datasetind].switch_buffer()
                     self.update_dataloader(datasetind)
+                    self.subsetrepeat[datasetind] = 0
                 else: # repeat the current buffer 
                     self.dataiters[datasetind] = iter(self.dataloaders[datasetind])
+                    self.subsetrepeat[datasetind] += 1
 
             sample = next(self.dataiters[datasetind])
-            self.subsetrepeat[datasetind] += 1
-            self.vprint('==> Working on {} for the {} time'.format(self.datafiles[self.current_dataset_ind], self.subsetrepeat[self.current_dataset_ind]))
+            self.vprint('==> Working on {} for the {} time'.format(self.datafiles[datasetind], self.subsetrepeat[datasetind]))
 
         self.batch_count_in_buffer[datasetind] += 1
         self.batch_count_in_epoch[datasetind] += 1

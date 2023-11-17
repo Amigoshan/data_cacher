@@ -62,7 +62,7 @@ class RAMBufferBase(object):
 
     def __getitem__(self, index):
         # assert index < self.datasize[0], 'Invalid index {}, buffer size {}'.format(index, self.datasize[0])
-        return self.buffer[index]
+        return self.buffer[index].copy()
 
 if __name__=="__main__":
     import ipdb;ipdb.set_trace()

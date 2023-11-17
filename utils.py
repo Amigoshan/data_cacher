@@ -22,6 +22,7 @@ import random
 import numpy as np
 import numbers
 import cv2
+import os
 
 # ===== general functions =====
 
@@ -971,7 +972,7 @@ def visflow(flownp, maxF=500.0, n=8, mask=None, hueMax=179, angShift=0.0):
     bgr = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
 
     if ( mask is not None ):
-        mask = mask != 255
+        mask = mask > 0
         bgr[mask] = np.array([0, 0 ,0], dtype=np.uint8)
 
     return bgr
@@ -981,6 +982,59 @@ def visdepth(disp, scale=3):
     res = cv2.applyColorMap(res, cv2.COLORMAP_JET)
     # res = np.tile(res[:,:,np.newaxis], (1, 1, 3))
     return res
+
+def visseg(segnp):
+    _CURRENT_PATH = os.path.dirname(os.path.realpath(__file__))
+
+    seg_colors = np.loadtxt(_CURRENT_PATH + '/seg_rgbs.txt', delimiter=',',dtype=np.uint8)
+    segvis = np.zeros(segnp.shape+(3,), dtype=np.uint8)
+
+    segvis = seg_colors[ segnp, : ]
+    segvis = segvis.reshape( segnp.shape+(3,) )
+
+    return segvis
+
+import open3d as o3d
+def vispcd( pc_np, vis_size=(1920, 480), o3d_cam=None):
+    # pcd: numpy array
+    w, h = (1920, 480)   # default o3d window size
+
+    pcd = o3d.geometry.PointCloud()
+    pcd.points = o3d.utility.Vector3dVector(pc_np)
+
+    if o3d_cam:
+        camerafile = o3d_cam
+        w, h = camerafile['w'], camerafile['h']
+        cam = o3d.camera.PinholeCameraParameters()
+        
+        intr_mat, ext_mat = camerafile['intrinsic'], camerafile['extrinsic']
+        intrinsic = o3d.camera.PinholeCameraIntrinsic(w, h, 
+                        intr_mat[0,0], intr_mat[1,1], 
+                        intr_mat[0,-1], intr_mat[1,-1])
+        intrinsic.intrinsic_matrix = intr_mat
+        cam.intrinsic = intrinsic
+        cam.extrinsic = ext_mat
+
+    vis = o3d.visualization.Visualizer()
+    vis.create_window(visible=False, width=w, height=h)
+    vis.add_geometry(pcd)
+
+    if o3d_cam:
+        ctr = vis.get_view_control()
+        ctr.convert_from_pinhole_camera_parameters(cam)
+    
+    vis.poll_events()
+    img = vis.capture_screen_float_buffer(do_render=True)
+    vis.destroy_window()
+
+    img = np.array(img)
+    img = (img * 255).astype(np.uint8)
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+
+    img = cv2.resize(img, vis_size)
+
+    return img
+
 
 def dataset_intrinsics(dataset='tartanair', calibfile=None):
     if dataset == 'kitti':

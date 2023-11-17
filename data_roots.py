@@ -1,8 +1,10 @@
+# This file handles the root directories on different platform
+# E.g. it allows you use the same spec file on your local machine and the remote cluster
 DataRoot = {}
 DataRoot['local'] = {
                         'sceneflow':    '/home/amigo/tmp/data/sceneflow',
                         'tartan':       '/home/wenshan/tmp/tartanair',
-                        'tartan2':      '/home/wenshan/tmp/tartanair_v2',
+                        'tartan2':      '/home/amigo/tmp/test_root',
                         'shibuya':      '/prague/tartanvo_data/AirDOS_shibuya',
                         'tartan-cvpr':  '/cairo/tartanair_test_cvpr',
                         'chairs':       '/home/amigo/tmp/data/flyingchairs',
@@ -30,7 +32,7 @@ DataRoot['cluster'] = {
 DataRoot['zoidberg'] = {
                         'sceneflow':    '/scratch/learningvo/SceneFlow',
                         'tartan':       '/scratch/learningvo/tartanair_v1_5',
-                        'tartan2':	 '/scratch/tartanair_v2',
+                        'tartan2':	    '/scratch/tartanair_v2',
                         'chairs':       '/scratch/learningvo/flyingchairs',
                         'sintel':       '/scratch/learningvo/sintel/training',
                         'flying':       '/scratch/learningvo/SceneFlow',

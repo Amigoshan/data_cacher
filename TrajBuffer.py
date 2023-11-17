@@ -1,38 +1,54 @@
 from .RAMBuffer import RAMBufferBase
-from .modality_type.ModBase import get_modality_type 
 
 class TrajBuffer(object):
     '''
+    One modality can provide multiple types of data. 
+    E.g. flow modality returns flow and flow_mask two modalities that require two buffers
     Store the multi-modal data in the form of trajectories
+
     keylist: a list of names that will be used as the key of returned dict
-    modtypelist: a list of modality_type objects
-    mod_names: list of strings
-    mod_datatypes: list of data types
-    mod_sizes: list of data sizes
+    modtypelist: a list of modality_type objects, each type cooresponds to a list of keys
+    
+    mod_names: list of list of strings, 
+    mod_datatypes: list of list of data types
+    mod_sizes: list of list of data sizes
     '''
     def __init__(self, keylist, modtypelist, verbose=False):
         assert len(keylist) == len(modtypelist), "The keylist length {} and modlist length {} don't match".format(len(keylist), len(modtypelist))
-        self.mod_names = keylist
-        self.modtypelist = modtypelist
+        # self.mod_namelist = keylist
+        # self.modtypelist = modtypelist
+
+        self.mod_names = []
         self.mod_datatypes = []
         self.mod_sizes = []
+        self.mod_freq = []
 
         self.buffer = {}
         self.full = {}
-        for modname, modtype in zip(self.mod_names, self.modtypelist):
-            self.mod_datatypes.append(modtype.data_type)
-            self.mod_sizes.append(modtype.data_shape)
-            self.buffer[modname] = RAMBufferBase(modtype.data_type, verbose = verbose)
-            self.full[modname] = False
+        for modnames, modtype in zip(keylist, modtypelist):
+            datatype_list = modtype.data_types
+            datashape_list = modtype.data_shapes
+
+            assert len(datatype_list) == len(datashape_list) and len(datatype_list) == len(modnames), \
+                "Data number do not match! {} data types {} data shapes, {} mod names".format( \
+                    len(datatype_list), len(datashape_list), len(modnames))
+
+            for datatype, datashape, modname in zip (datatype_list, datashape_list, modnames):
+                self.mod_datatypes.append(datatype)
+                self.mod_sizes.append(datashape)
+                self.mod_names.append(modname)
+                self.mod_freq.append(modtype.freq_mult)
+
+                self.buffer[modname] = RAMBufferBase(datatype, verbose = verbose)
+                self.full[modname] = False
 
         self.trajlist, self.trajlenlist, self.framelist = [],[],[]
         self.framenum = 0
 
     def reset(self, framenum, trajlist, trajlenlist, framelist):
         self.trajlist, self.trajlenlist, self.framelist = trajlist, trajlenlist, framelist
-        for mod_size, mod_name, modality in zip(self.mod_sizes, self.mod_names, self.modtypelist):
-            freq_mult = modality.freq_mult
-            self.buffer[mod_name].reset((framenum*freq_mult,) + mod_size)
+        for mod_size, mod_name, freq_mult in zip(self.mod_sizes, self.mod_names, self.mod_freq):
+            self.buffer[mod_name].reset((framenum*freq_mult,) + tuple(mod_size))
             self.full[mod_name] = False
         self.framenum = framenum
 
@@ -92,6 +108,11 @@ class TrajBuffer(object):
         return True
 
     def set_full(self, mod):
+        if isinstance(mod, list):
+            for mm in mod:
+                self.set_full(mm)
+            return
+
         assert mod in self.mod_names, "Error: mod {} not in datatype when set_full".format(mod)
         self.full[mod] = True
 
@@ -112,32 +133,40 @@ class TrajBuffer(object):
         return self.buffer[mod][index]
 
 if __name__=="__main__":
-    from .modality_type.tartanair_types import rgb_lcam_front, depth_lcam_front
+    from .modality_type.tartandrive_types import rgb_left, costmap, get_vis_costmap
     from .input_parser import parse_inputfile
     from .CacherDataset import CacherDataset
-    import torch
+    import numpy as np
+    import cv2
 
-    rgbtype = rgb_lcam_front((320, 320))
-    depthtype = depth_lcam_front((320, 320))
-    datafile = '/home/amigo/tmp/test_root/coalmine/analyze/data_coalmine_Data_easy_P000.txt'
+    rgbtype = rgb_left([(320, 320)])
+    costmaptype = costmap([(320, 320)])
+    datafile = 'data_cacher/data/tartandrive.txt'
     trajlist, trajlenlist, framelist, totalframenum = parse_inputfile(datafile)
+    dataroot = '/home/amigo/workspace/ros_atv/src/rosbag_to_dataset/test_output'
 
-    buffer = TrajBuffer(['img0', 'depth0'], [rgbtype, depthtype])
+    buffer = TrajBuffer([['img0'], ['cost','vel']], [rgbtype, costmaptype])
     buffer.reset(50, trajlist, trajlenlist, framelist)
 
-    dataset0 = CacherDataset(rgbtype, trajlist, trajlenlist, framelist, datarootdir="/home/amigo/tmp/test_root")
-    dataset1 = CacherDataset(depthtype, trajlist, trajlenlist, framelist, datarootdir="/home/amigo/tmp/test_root")
+    dataset0 = CacherDataset(rgbtype, trajlist, trajlenlist, framelist, datarootdir=dataroot)
+    dataset1 = CacherDataset(costmaptype, trajlist, trajlenlist, framelist, datarootdir=dataroot)
     for k in range(50):
-        ss=torch.from_numpy(dataset0[k]).unsqueeze(0)
-        ss2=torch.from_numpy(dataset1[k]).unsqueeze(0)
+        # import ipdb;ipdb.set_trace()
+        img0=dataset0[k][0][np.newaxis,...]
+        cost=dataset1[k][0][np.newaxis,...]
+        vel =dataset1[k][1][np.newaxis,...]
 
-        buffer.insert_frame_one_mod(k, 'img0', ss)
-        buffer.insert_frame_one_mod(k, 'depth0', ss2)
+        buffer.insert_frame_one_mod(k, 'img0', img0)
+        buffer.insert_frame_one_mod(k, 'cost', cost)
+        buffer.insert_frame_one_mod(k, 'vel', vel)
+
+        disp = get_vis_costmap(cost[0])
         # depthvis = visdepth(80./ss2)
         # disp = cv2.hconcat((ss, depthvis))
-        # cv2.imshow('img', disp)
-        # cv2.waitKey(0)
+        cv2.imshow('img', disp)
+        cv2.waitKey(0)
     print(buffer.is_full())
     buffer.set_full('img0')
-    buffer.set_full('depth0')
+    buffer.set_full('cost')
+    buffer.set_full('vel')
     print(buffer.is_full())

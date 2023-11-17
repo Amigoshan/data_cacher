@@ -20,7 +20,7 @@ class RAMBufferBase(object):
         '''
         datatype: np datatype
         datasize: a tuple
-        in general, the buffer is in the format of (n x h x w x c) or (n x h x w)
+        in general, the buffer is in the format of (n x c x h x w) or (n x h x w)
         '''
         self.ctype, self.databyte = convert_type(datatype)
         assert self.ctype is not None, "Type Error {}".format(datatype)
@@ -62,7 +62,7 @@ class RAMBufferBase(object):
 
     def __getitem__(self, index):
         # assert index < self.datasize[0], 'Invalid index {}, buffer size {}'.format(index, self.datasize[0])
-        return self.buffer[index]
+        return self.buffer[index].copy()
 
 if __name__=="__main__":
     import ipdb;ipdb.set_trace()

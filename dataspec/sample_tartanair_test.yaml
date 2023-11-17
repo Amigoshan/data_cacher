@@ -1,0 +1,52 @@
+---
+  task: flowvo
+  global:
+    modality:
+      length: 1
+    cacher:
+      load_traj: true
+    dataset:
+      frame_skip: 0
+      seq_stride: 1
+      frame_dir: true
+    parameter:
+  data:
+    1:
+      file: "/home/amigo/workspace/pytorch/ss_costmap/data_cacher/data/data_coalmine_filter.txt"
+      modality: 
+        rgb_lcam_back:
+          "img0":
+            cacher_size: [640, 640]
+            length: 2
+        rgb_rcam_equirect:
+          "img1":
+            cacher_size: [320, 640]
+            length: 3
+        depth_lcam_fish:
+          "depth0":
+            cacher_size: [560, 360]
+            length: 1
+        seg_lcam_fish:
+          "seg0":
+            cacher_size: [280, 280]
+            length: 2
+        flow_lcam_front:
+          "flow0":
+            cacher_size: [280, 280]
+            length: 1
+          "mask0":
+            cacher_size: [280, 280]
+            length: 1
+        lidar:
+          "lidar0":
+            cacher_size: [57600, 3]
+            length: 2
+      cacher:
+        data_root_path_override: "/home/amigo/tmp/test_root"
+        data_root_key: tartan2
+        subset_framenum: 100
+        worker_num: 0
+      dataset:
+      parameter:
+        intrinsics: [640, 640, 320, 320, 320, 320]
+        intrinsics_scale: [0.25, 0.25]

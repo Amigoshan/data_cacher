@@ -34,3 +34,6 @@ def parse_inputfile(inputfile):
     totalframenum = sum(trajlenlist)
     print('{}: Read {} trajectories, including {} frames'.format(inputfile, len(trajlist), totalframenum))
     return trajlist, trajlenlist, framelist, totalframenum
+
+if __name__=="__main__":
+    pp = parse_inputfile("/home/wenshan/workspace/pytorch/geometry_vision/data/tartanairv2_train_easy.txt")

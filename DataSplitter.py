@@ -28,6 +28,8 @@ class DataSplitter(object):
         self.leftover = [] # [traj, framelist, startind]
         self.subtrajlist, self.subtrajlenlist, self.subframelist = [], [], []
 
+        self.epoch_flag = False # set to True whenever a new epoch starts
+
     def add_traj(self, framecount, trajstr, trajlen, framelist, startind):
         self.subtrajlist.append(trajstr)
         if framecount + trajlen > self.framenum: # the leftover traj is still too long
@@ -44,8 +46,12 @@ class DataSplitter(object):
         return framecount
 
     def get_next_split(self):
+        '''
+        self.epoch_flag returns true whenever a new epoch starts, including the first epoch
+        '''
         framecount = 0 
         self.subtrajlist, self.subtrajlenlist, self.subframelist = [], [], []
+        self.epoch_flag = False
 
         # append the remaining traj from last time
         if len(self.leftover) > 0:
@@ -57,8 +63,10 @@ class DataSplitter(object):
 
         while framecount < self.framenum:
             self.curind = (self.curind + 1) % self.trajnum
-            if self.curind == 0 and self.shuffle: # shuffle the trajectory 
-                self.trajinds = np.random.permutation(self.trajnum)
+            if self.curind == 0: # the new epoch starts
+                self.epoch_flag = True
+                if self.shuffle: # shuffle the trajectory 
+                    self.trajinds = np.random.permutation(self.trajnum)
 
             # add the current trajectory to the lists
             trajind = self.trajinds[self.curind]
@@ -67,13 +75,17 @@ class DataSplitter(object):
             framelist = self.framelist[trajind]
             framecount = self.add_traj(framecount, trajstr, trajlen, framelist, 0)
 
-
-        return self.subtrajlist, self.subtrajlenlist, self.subframelist, self.framenum
+        return self.subtrajlist, self.subtrajlenlist, self.subframelist, self.framenum, self.epoch_flag
 
     def get_next_trajectory(self):
+        '''
+        TODO: it will become a problem if the trajectory is too long
+        '''
         self.curind = (self.curind + 1) % self.trajnum
+        self.epoch_flag = True if self.curind == 0 else False
+        
         subtrajlist = [self.trajlist[self.curind]]
         subtrajlenlist = [self.trajlenlist[self.curind]]
         subframelist = [self.framelist[self.curind]]
 
-        return subtrajlist, subtrajlenlist, subframelist, self.trajlenlist[self.curind]
+        return subtrajlist, subtrajlenlist, subframelist, self.trajlenlist[self.curind], self.epoch_flag

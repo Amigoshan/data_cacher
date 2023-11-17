@@ -1,16 +1,19 @@
+# This file handles the root directories on different platform
+# E.g. it allows you use the same spec file on your local machine and the remote cluster
 DataRoot = {}
 DataRoot['local'] = {
                         'sceneflow':    '/home/amigo/tmp/data/sceneflow',
-                        'tartan':       '/home/amigo/tmp/data/tartan',
-                        'tartan2':      '/home/wenshan/tmp/tartanair_v2',
+                        'tartan':       '/home/wenshan/tmp/tartanair',
+                        'tartan2':      '/home/amigo/tmp/test_root',
                         'shibuya':      '/prague/tartanvo_data/AirDOS_shibuya',
                         'tartan-cvpr':  '/cairo/tartanair_test_cvpr',
                         'chairs':       '/home/amigo/tmp/data/flyingchairs',
                         'flying':       '/home/amigo/tmp/data/sceneflow',
                         'sintel':       '/home/amigo/tmp/data/sintel/training',
-                        'euroc':        '/prague/tartanvo_data/euroc',
+                        'euroc':        '/home/wenshan/tmp/vo_data/euroc',
                         'kitti-stereo': '/prague/tartanvo_data/kitti/stereo', 
-                        'kitti-vo':     '/prague/tartanvo_data/kitti/vo'
+                        'kitti-vo':     '/home/wenshan/tmp/vo_data/kittivo',
+                        'tartandrive':  '/home/amigo/workspace/ros_atv/src/rosbag_to_dataset/test_output'
 }
 
 
@@ -22,12 +25,14 @@ DataRoot['cluster'] = {
                         'flying':       '/data2/datasets/yaoyuh/StereoData/SceneFlow',
                         'sintel':       '/project/learningvo/flowdata/sintel/training',
                         'euroc':        '/project/learningvo/euroc',
-                        'kitti-stereo': '/project/learningvo/stereo_data/kitti/training', 
+                        'kitti-stereo': '/project/learningvo/stereo_data/kitti/training',
+                        'tartandrive':  '/project/learningphysics' 
 }
 
 DataRoot['zoidberg'] = {
-                        'sceneflow':    '/data2/datasets/yaoyuh/StereoData/SceneFlow',
-                        'tartan-c':     '/scratch/learningvo/tartanair_v1_5',
+                        'sceneflow':    '/scratch/learningvo/SceneFlow',
+                        'tartan':       '/scratch/learningvo/tartanair_v1_5',
+                        'tartan2':	    '/scratch/tartanair_v2',
                         'chairs':       '/scratch/learningvo/flyingchairs',
                         'sintel':       '/scratch/learningvo/sintel/training',
                         'flying':       '/data2/datasets/yaoyuh/StereoData/SceneFlow',
@@ -47,9 +52,8 @@ DataRoot['dgx'] = {
 
 DataRoot['psc'] = {
                         'tartan':       '/jet/projects/cis210086p/tartanair_v1',
-                        'tartan2':      '/ocean/projects/cis220039p/shared/tartanair_v2',    
-                        'sceneflow':    '/ocean/projects/cis210086p/wenshanw/SceneFlow',
-                        'kitti-stereo':        '/ocean/projects/cis210086p/wenshanw/kitti/training',
+                        'tartan2':      '/ocean/projects/cis220039p/shared/tartanair_v2',   
+                        'euroc':        '/ocean/projects/cis220039p/wenshanw/euroc',
 }
 
 

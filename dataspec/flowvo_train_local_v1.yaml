@@ -4,49 +4,21 @@
   dataset_seq_stride: 1
   dataset_frame_dir: true
   data:
-    "/home/wenshan/workspace/pytorch/geometry_vision/data_cacher/data/data_tartanairv2_local.txt":
+    "/home/wenshan/workspace/pytorch/geometry_vision/data_cacher/data/tartan_train_local.txt":
       modality: 
-        "flow":
-          type: flow_left
-          cacher_size: [480, 640]
-          length: 1
-        "img0":
-          type: image_left
-          cacher_size: [480, 640]
-          length: 3
-        "img1":
-          type: image_right
-          cacher_size: [480, 640]
-          length: 1
-        "depth0":
+        "depth":
           type: depth_left
-          cacher_size: [480, 640]
-          length: 2
-        "acc":
-          type: imu_acc_v1
-          cacher_size: [3]
-          length: 20
-        "gyro":
-          type: imu_gyro_v1
-          cacher_size: [3]
-          length: 20
-        "pose":
-          type: pose_left
-          cacher_size: [7]
+          cacher_size: [120, 160]
           length: 1
         "motion":
           type: motion_left
           cacher_size: [6]
-          length: 3
-        "seg0":
-          type: seg_left
-          cacher_size: [480, 640]
-          length: 2
+          length: 1
       cacher:
         data_root_key: tartan
-        subset_framenum: 200
-        worker_num: 8
+        subset_framenum: 1000
+        worker_num: 2
       dataset:
       parameter:
         intrinsics: [640, 480, 320, 320, 320, 240]
-        intrinsics_scale: 1.0
+        intrinsics_scale: [0.25, 0.25]

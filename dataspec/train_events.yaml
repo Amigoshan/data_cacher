@@ -5,7 +5,7 @@
   parameter_intrinsics: [640, 480, 320, 320, 320, 240]
   parameter_intrinsics_scale: [0.25, 0.25]
   data:
-    "loader/data_cacher/data/event_test_tartanairv2.txt":
+    "loader/data_cacher/data/event_train_tartanairv2.txt":
       modality: 
         "flow_lcam_front":
           type: "flow_lcam_front"
@@ -21,8 +21,8 @@
           length: 2
       cacher:
         data_root_key: tartan2_event
-        subset_framenum: 100
-        worker_num: 2
+        subset_framenum: 500
+        worker_num: 3
       dataset:
         frame_skip: 0
       parameter:

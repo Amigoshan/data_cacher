@@ -4937,7 +4937,7 @@ ArchVizTinyHouseDayAutoExposure/Data_easy/P006 90
 000087
 000088
 000089
-DesertGasStationAutoExposure/Data_easy/P004 742
+DesertGasStationAutoExposure/Data_easy/P004 741
 000000
 000001
 000002
@@ -5679,8 +5679,7 @@ DesertGasStationAutoExposure/Data_easy/P004 742
 000738
 000739
 000740
-000741
-RetroOfficeAutoExposure/Data_easy/P005 132
+RetroOfficeAutoExposure/Data_easy/P005 131
 000000
 000001
 000002
@@ -5812,7 +5811,6 @@ RetroOfficeAutoExposure/Data_easy/P005 132
 000128
 000129
 000130
-000131
 CoalMineAutoExposure/Data_easy/P002 643
 000000
 000001

@@ -21730,7 +21730,6 @@ MiddleEastAutoExposure/Data_easy/P002 905
 000902
 000903
 000904
-000905
 ArchVizTinyHouseDayAutoExposure/Data_easy/P000 115
 000000
 000001
@@ -23580,8 +23579,7 @@ DesertGasStationAutoExposure/Data_easy/P001 568
 000565
 000566
 000567
-000568
-DesertGasStationAutoExposure/Data_easy/P002 807
+DesertGasStationAutoExposure/Data_easy/P002 805
 000000
 000001
 000002
@@ -24387,9 +24385,6 @@ DesertGasStationAutoExposure/Data_easy/P002 807
 000802
 000803
 000804
-000805
-000806
-000807
 DesertGasStationAutoExposure/Data_easy/P003 714
 000000
 000001
@@ -34837,4 +34832,3 @@ OldBrickHouseDayAutoExposure/Data_easy/P006 470
 000467
 000468
 000469
-000470

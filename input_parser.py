@@ -13,7 +13,10 @@ def parse_inputfile(inputfile):
     ind = 0
     while ind<len(lines):
         line = lines[ind].strip()
-        traj, trajlen = line.split(' ')
+        try:
+            traj, trajlen = line.split(' ')
+        except:
+            raise Exception("Datafile Error: line: {}, ind: {}".format(line, ind))
 
         # Break path and rebuild it to avoid problems with Windows and Linux.
         traj = os.path.join(*traj.split("\\"))

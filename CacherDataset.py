@@ -82,12 +82,12 @@ class SimpleDataloader(object):
         assert trajidx<self.trajnum, "Traj {} exceeds the total number of trajectories {}".format(trajidx, self.trajnum)
         trajstr = self.trajlist[trajidx]
         trajdir = join(self.dataroot, trajstr)
-        data = self.modality.load_data(trajdir, self.framelist[trajidx])
-        # TODO: Wenshan: There is an issue here
-        # assert data.shape[0] == self.trajlenlist[trajidx]*self.modality.freq_mult, \
-        #     "Traj {} mod {} data loaded size {} different from the required size {}".format(trajdir, 
-        #     self.modality.name, data.shape[0], self.trajlenlist[trajidx])
-        return data
+        datalist = self.modality.load_data(trajdir, self.framelist[trajidx])
+        for data in datalist:
+            assert data.shape[0] == self.trajlenlist[trajidx]*self.modality.freq_mult, \
+                "Traj {} mod {} data loaded size {} different from the required size {}".format(trajdir, 
+                self.modality.name, data.shape[0], self.trajlenlist[trajidx])
+        return datalist
 
 if __name__=="__main__":
     from .modality_type.tartanair_types import rgb_lcam_front, depth_lcam_front, flow_lcam_front

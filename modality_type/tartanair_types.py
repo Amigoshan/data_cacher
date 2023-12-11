@@ -69,18 +69,25 @@ class LiDARBase(FrameModBase):
         return lidarlist
 
 class EventsBase(FrameModBase):
-    def __init__(self, datashape=None):
-        super().__init__(datashape) # point dimention, e.g. 3 for tartanvo, 6 if rgb is included
-        (self.num_bins, self.h, self.w) = datashape
-        self.data_shape = (self.num_bins, self.h, self.w) # The event tensor is of the shape 10x640x640
-        self.data_type = np.float32
+    def __init__(self, datashapelist):
+        super().__init__(datashapelist) # point dimention, e.g. 3 for tartanvo, 6 if rgb is included
+        lenlist = len(datashapelist)
+        self.data_types = []
+        for k in range(lenlist):
+            self.data_types.append(np.float32)
 
-    def load_frame(self, filename):
-        if filename.endswith('npy'):
-            data = np.load(filename)
-        else:
-            assert False, "Unknow file type for events {}".format(filename)
-        return data
+        self.folder_name = "" # to be filled in the derived class
+        self.file_suffix = "" # to be filled in the derived class
+
+    def load_frame(self, trajdir, filenamelist):
+        eventtensorlist = []
+        for filename in filenamelist:
+            if filename.endswith('.npy'):
+                eventtensor = np.load(join(trajdir,filename))
+            else:
+                raise NotImplementedError
+            eventtensorlist.append(eventtensor)
+        return eventtensorlist
     
     def transpose(self, events):
         return events
@@ -292,7 +299,7 @@ class PoseModBase(SimpleModBase):
         assert startind < datalen and endind <= datalen, "Error in loading pose, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
         return data[startind: endind]
 
-    def data_padding(self):
+    def data_padding(self, k):
         return None
 
 class MotionModBase(SimpleModBase):
@@ -1116,4 +1123,4 @@ class event_cam(EventsBase):
     def framestr2filename(self, framestr):
         framenum = int(framestr)
         framestr2 = str(framenum + 1).zfill(6)
-        return join(self.folder_name, join(self.sub_folder, framestr + '_' + framestr2 + '_' + self.file_suffix + '.npy'))
+        return [join(self.folder_name, join(self.sub_folder, framestr + '_' + framestr2 + '_' + self.file_suffix + '.npy'))]

@@ -53,6 +53,7 @@ class MultiDatasets(object):
         self.datasets = [None, ] * self.datasetNum
         self.dataloaders = [None, ] * self.datasetNum
         self.dataiters = [None, ] * self.datasetNum
+        self.datasetlens = []
 
         self.datalens = [] # the framenum in each sub_dataset
         self.datasetparams = [] # the parameters used to create dataset
@@ -169,7 +170,8 @@ class MultiDatasets(object):
             self.modalitydroplast.append(modality_drop_last)
             self.modalitytypes.append(modality_objs)
 
-            trajlist, trajlenlist, framelist, framenum = parse_inputfile(datafile)
+            trajlist, trajlenlist, framelist, totalframenum = parse_inputfile(datafile)
+            self.datasetlens.append(totalframenum)
             subsetframenum = cacher_param['subset_framenum']
             self.datalens.append(subsetframenum)
             data_splitter = DataSplitter(trajlist, trajlenlist, framelist, subsetframenum, shuffle=True) 

@@ -34,13 +34,13 @@ class IMUBase(SimpleModBase):
         assert startind < datalen and endind <= datalen, "Error in loading IMU, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
         return data[startind: endind]
 
-    def data_padding(self):
+    def data_padding(self, k):
         '''
         In TartanAir, the lengh of IMU seq is (N-1)*10
         We would like the data be aligned, which means the nominal lengh should be N*10
         That's why we pad the data with 10 frames
         '''
-        return np.zeros((10,3), dtype=np.float32)
+        return np.zeros((self.freq_mult, self.data_shapes[k][0]), dtype=np.float32)
 
 class LiDARBase(FrameModBase):
     def __init__(self, datashapelist):
@@ -272,7 +272,7 @@ class PoseModBase(SimpleModBase):
         assert startind < datalen and endind <= datalen, "Error in loading pose, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
         return data[startind: endind]
 
-    def data_padding(self):
+    def data_padding(self, k):
         return None
 
 class MotionModBase(SimpleModBase):
@@ -287,8 +287,8 @@ class MotionModBase(SimpleModBase):
         assert startind < datalen and endind <= datalen, "Error in loading motion, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
         return data[startind: endind]
 
-    def data_padding(self):
-        return np.zeros((self.drop_last, 6), dtype=np.float32)
+    def data_padding(self, k):
+        return np.zeros((self.drop_last, self.data_shapes[k][0]), dtype=np.float32)
 
 # === lcam_front ===
 @register(TYPEDICT)
@@ -750,9 +750,6 @@ class pose_rcam_top(PoseModBase):
     '''
     def get_filename(self):
         return ['pose_rcam_top.txt']
-
-    def data_padding(self):
-        return None
 
 @register(TYPEDICT)
 class pose_rcam_bottom(PoseModBase):

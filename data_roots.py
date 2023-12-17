@@ -16,6 +16,9 @@ DataRoot['local'] = {
                         'tartandrive':  '/home/amigo/workspace/ros_atv/src/rosbag_to_dataset/test_output'
 }
 
+DataRoot['wsl'] = {
+'tartan2': '/mnt/e'
+}
 
 DataRoot['cluster'] = {
                         'sceneflow':    '/data2/datasets/yaoyuh/StereoData/SceneFlow',
@@ -53,6 +56,7 @@ DataRoot['dgx'] = {
 DataRoot['psc'] = {
                         'tartan':       '/jet/projects/cis210086p/tartanair_v1',
                         'tartan2':      '/ocean/projects/cis220039p/shared/tartanair_v2',   
+                        'tartan2_event':'/ocean/projects/cis220039p/shared/tartanair_v2_event',
                         'euroc':        '/ocean/projects/cis220039p/wenshanw/euroc',
 }
 

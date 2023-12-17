@@ -92,8 +92,10 @@ class DataCacher(object):
                 self.loading_buffer.insert_all_one_mode(modkey, datanp, startind)
 
             startind += datanp.shape[0]
-            assert startind == self.loading_buffer.framenum * modality.freq_mult, \
-                "DataCacher: Load simple mod {} for {} frames, which does not match {}".format(modkeys, startind, self.loading_buffer.framelist * modality.freq_mult)
+            
+        assert startind == self.loading_buffer.framenum * modality.freq_mult, \
+            "DataCacher: Load simple mod {} for {} frames, which does not match {}".format(modkeys, startind, 
+                                                                                            self.loading_buffer.framenum * modality.freq_mult)
         self.vprint('  simple type {} loaded: traj {} frames {}'.format(modkeys, len(self.loading_buffer.trajlist), startind))
         self.loading_buffer.set_full(modkeys)
 

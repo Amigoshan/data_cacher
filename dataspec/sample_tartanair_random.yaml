@@ -41,6 +41,10 @@
           "lidar0":
             cacher_size: [57600, 3]
             length: 2
+        pose_lcam_front:
+           "pose0":
+             cacher_size: [7]
+             lenght: 2
       cacher:
         data_root_path_override: "/home/amigo/tmp/test_root"
         data_root_key: tartan2
@@ -81,6 +85,10 @@
           "lidar0":
             cacher_size: [57600, 3]
             length: 2
+        pose_lcam_front:
+           "pose0":
+             cacher_size: [7]
+             lenght: 2
       cacher:
         data_root_path_override: "/home/amigo/tmp/test_root"
         data_root_key: tartan2

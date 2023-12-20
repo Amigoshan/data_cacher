@@ -1,24 +1,32 @@
 ---
   task: flowvo
-  dataset_frame_skip: 0
-  dataset_seq_stride: 1
-  dataset_frame_dir: true
+  global:
+    modality:
+      length: 1
+    cacher:
+      load_traj: false
+    dataset:
+      frame_skip: 0
+      seq_stride: 1
+      frame_dir: false
+    parameter:
+      intrinsics: [640, 480, 320, 320, 320, 240]
+      intrinsics_scale: [0.25, 0.25]
   data:
-    "/home/wenshan/workspace/pytorch/geometry_vision/data_cacher/data/tartan_train_local.txt":
+    1:
+      file: "/home/wenshan/workspace/pytorch/geometry_vision/data_cacher/data/tartan_train_local.txt"
       modality: 
-        "depth":
-          type: depth_left
-          cacher_size: [120, 160]
-          length: 1
-        "motion":
-          type: motion_left
-          cacher_size: [6]
-          length: 1
+        flow_left:
+          "flow":
+            cacher_size: [120, 160]
+          "mask":
+            cacher_size: [120, 160]
+        motion_left:
+          "motion":
+            cacher_size: [6]
       cacher:
         data_root_key: tartan
         subset_framenum: 1000
-        worker_num: 2
+        worker_num: 4
       dataset:
       parameter:
-        intrinsics: [640, 480, 320, 320, 320, 240]
-        intrinsics_scale: [0.25, 0.25]

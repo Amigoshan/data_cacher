@@ -217,8 +217,8 @@ class FlowModBase(FrameModBase):
         if h != target_h or w != target_w:
             scale_w, scale_h = float(target_w) / w, float(target_h) / h
             flow = cv2.resize(flow, (target_w, target_h), interpolation=cv2.INTER_LINEAR )
-            flow[0,:,:] = flow[0,:,:] * scale_w
-            flow[1,:,:] = flow[1,:,:] * scale_h
+            flow[:,:,0] = flow[:,:,0] * scale_w
+            flow[:,:,1] = flow[:,:,1] * scale_h
         if self.listlen == 1: 
             return [flow]
         

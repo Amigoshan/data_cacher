@@ -1,5 +1,5 @@
 import cv2
-from .ModBase import SimpleModBase, FrameModBase, register, TYPEDICT
+from .ModBase import SimpleModBase, FrameModBase, register, TYPEDICT, repeat_function
 from os.path import join
 import numpy as np
 from .ply_io import read_ply
@@ -71,8 +71,7 @@ class RGBModBase(FrameModBase):
         imglist = []
         for filename in filenamelist:
             if filename.endswith('.png') or filename.endswith('.jpg'):
-                img = cv2.imread(join(trajdir,filename), cv2.IMREAD_UNCHANGED)
-                assert img is not None, "Error loading RGB {}".format(filename)
+                img = repeat_function(cv2.imread, {'filename':join(trajdir,filename), 'flags':cv2.IMREAD_UNCHANGED}, repeat_times=10)
             elif filename.endswith('.npy'):
                 img = np.load(join(trajdir,filename))
             else:
@@ -108,8 +107,7 @@ class GreyModBase(FrameModBase):
         # read image
         imglist = []
         for filename in filenamelist:
-            img = cv2.imread(join(trajdir,filename), cv2.IMREAD_UNCHANGED)
-            assert img is not None, "Error loading Grey image {}".format(filename)
+            img = repeat_function(cv2.imread, {'filename':join(trajdir,filename), 'flags':cv2.IMREAD_UNCHANGED}, repeat_times=10)
             imglist.append(img)
         return imglist
 
@@ -136,8 +134,7 @@ class DepthModBase(FrameModBase):
     def load_frame(self, trajdir, filenamelist):
         depthlist = []
         for filename in filenamelist:
-            depth_rgba = cv2.imread(join(trajdir, filename), cv2.IMREAD_UNCHANGED)
-            assert depth_rgba is not None, "Error loading depth {}".format(filename)
+            depth_rgba = repeat_function(cv2.imread, {'filename':join(trajdir,filename), 'flags':cv2.IMREAD_UNCHANGED}, repeat_times=10)
             depth = depth_rgba.view("<f4")
             depth = np.squeeze(depth, axis=-1)
             depthlist.append(depth)
@@ -164,8 +161,7 @@ class FlowModBase(FrameModBase):
     def load_frame(self, filenamelist):
         # if filename is None: 
         #     return np.zeros((10,10,2), dtype=np.float32), np.zeros((10,10), dtype=np.uint8) # return an arbitrary shape because it will be resized later
-        flow16 = cv2.imread(filenamelist[0], cv2.IMREAD_UNCHANGED)
-        assert flow16 is not None, "Error loading flow {}".format(filenamelist[0])
+        flow16 = repeat_function(cv2.imread, {'filename':filenamelist[0], 'flags':cv2.IMREAD_UNCHANGED}, repeat_times=10)
         flow32 = flow16[:,:,:2].astype(np.float32)
         flow32 = (flow32 - 32768) / 64.0
 

@@ -1,5 +1,5 @@
 from .ModBase import register, TYPEDICT
-from .euroc_types import RGBModBase, FlowModBase, DispModBase, MotionModBase
+from .tartanair_types import RGBModBase, FlowModBase, DepthModBase, MotionModBase
 
 @register(TYPEDICT)
 class kitti_lmotion(MotionModBase):
@@ -50,7 +50,7 @@ class kitti_rcam(RGBModBase):
         self.folder_name = "image_right"
 
 @register(TYPEDICT)
-class kitti_ldisp(DispModBase):
+class kitti_ldisp(DepthModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "disp"

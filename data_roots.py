@@ -3,14 +3,14 @@
 DataRoot = {}
 DataRoot['local'] = {
                         'sceneflow':    '/home/amigo/tmp/data/sceneflow',
-                        'tartan':       '/home/wenshan/tmp/tartanair',
+                        'tartan':       '/home/amigo/tmp/data/tartan',
                         'tartan2':      '/home/amigo/tmp/test_root',
                         'shibuya':      '/prague/tartanvo_data/AirDOS_shibuya',
                         'tartan-cvpr':  '/cairo/tartanair_test_cvpr',
                         'chairs':       '/home/amigo/tmp/data/flyingchairs',
                         'flying':       '/home/amigo/tmp/data/sceneflow',
                         'sintel':       '/home/amigo/tmp/data/sintel/training',
-                        'euroc':        '/home/wenshan/tmp/vo_data/euroc',
+                        'euroc':        '/bigdata/tartanvo_data/euroc',
                         'kitti-stereo': '/prague/tartanvo_data/kitti/stereo', 
                         'kitti-vo':     '/home/wenshan/tmp/vo_data/kittivo',
                         'tartandrive':  '/home/amigo/workspace/ros_atv/src/rosbag_to_dataset/test_output'

@@ -10,7 +10,7 @@ class euroc_lmotion(MotionModBase):
         self.drop_last = 1 # this is used to let the loader know how much frames are short
 
     def get_filename(self):
-        return ['motion.npy']
+        return ['motion.txt']
 
 @register(TYPEDICT)
 class euroc_lcam(GreyModBase):

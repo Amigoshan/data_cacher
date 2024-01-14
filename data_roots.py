@@ -21,14 +21,8 @@ DataRoot['desktop'] = {
                         'tartan':       '/home/wenshan/tmp/tartanair',
                         'tartan2':      '/home/amigo/tmp/test_root',
                         'shibuya':      '/prague/tartanvo_data/AirDOS_shibuya',
-                        'tartan-cvpr':  '/cairo/tartanair_test_cvpr',
-                        'chairs':       '/home/amigo/tmp/data/flyingchairs',
-                        'flying':       '/home/amigo/tmp/data/sceneflow',
-                        'sintel':       '/home/amigo/tmp/data/sintel/training',
-                        'euroc':        '/bigdata/tartanvo_data/euroc',
-                        'kitti-stereo': '/bigdata/tartanvo_data/kitti/stereo', 
+                        'euroc':        '/home/wenshan/tmp/vo_data/euroc',
                         'kitti-vo':     '/home/wenshan/tmp/vo_data/kittivo',
-                        'tartandrive':  '/home/amigo/workspace/ros_atv/src/rosbag_to_dataset/test_output'
 }
 
 DataRoot['wsl'] = {
@@ -72,7 +66,8 @@ DataRoot['psc'] = {
                         'tartan':       '/ocean/projects/cis220039p/shared/tartanair_v1',
                         'tartan2':      '/ocean/projects/cis220039p/shared/tartanair_v2',   
                         'tartan2_event':'/ocean/projects/cis220039p/shared/tartanair_v2_event',
-                        'euroc':        '/ocean/projects/cis220039p/wenshanw/euroc',
+                        'euroc':        '/ocean/projects/cis220039p/shared/vo/euroc',
+                        'kitti-vo':     '/ocean/projects/cis220039p/shared/vo/kitti/vo',
 }
 
 

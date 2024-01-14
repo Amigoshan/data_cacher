@@ -50,6 +50,7 @@ class euroc_lflow(FlowModBase):
         super().__init__(datashape)
         self.folder_name = "cam0/flow"
         self.file_suffix = 'flow'
+        self.drop_last = 1
 
 if __name__=="__main__":
     trajfolder = '/bigdata/tartanvo_data/euroc/MH_01_easy_mav0_StereoRectified'

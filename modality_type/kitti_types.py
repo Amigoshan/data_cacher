@@ -1,5 +1,6 @@
 from .ModBase import register, TYPEDICT
 from .tartanair_types import RGBModBase, FlowModBase, DepthModBase, MotionModBase
+from os.path import join
 
 @register(TYPEDICT)
 class kitti_lmotion(MotionModBase):
@@ -8,7 +9,7 @@ class kitti_lmotion(MotionModBase):
         self.drop_last = 1 # this is used to let the loader know how much frames are short
 
     def get_filename(self):
-        return 'motion.npy'
+        return ['motion.npy']
 
 @register(TYPEDICT)
 class kitti_lmotion2(MotionModBase):
@@ -60,4 +61,15 @@ class kitti_lflow(FlowModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "flow"
+        self.file_suffix = 'flow'
+        self.drop_last = 1 # this is used to let the loader know how much frames are short
 
+    def framestr2filename(self, framestr):
+        '''
+        This is very dataset specific
+        Basically it handles how each dataset naming the frames and organizing the data
+        '''
+        framenum = int(framestr)
+        framestr2 = str(framenum + 1).zfill(6)
+        file_suffix = '_' + self.file_suffix if self.file_suffix != "" else ""
+        return [join(self.folder_name, framestr + '_' + framestr2 + file_suffix + '.npy')]

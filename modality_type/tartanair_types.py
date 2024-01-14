@@ -192,7 +192,10 @@ class FlowModBase(FrameModBase):
         # we also assume that the flow will always be returned, the mask is optional
         self.listlen = len(datashapes) # this is usually one
         self.data_shapes[0] = (2,) + tuple(self.data_shapes[0]) # add one dim to the 
-        self.data_types = [np.float32, np.uint8] # for flow and mask
+        if self.listlen == 1:
+            self.data_types = [np.float32] # for flow and mask
+        else:
+            self.data_types = [np.float32, np.uint8] # for flow and mask
 
         self.folder_name = "" # to be filled in the derived class
         self.file_suffix = "" # to be filled in the derived class
@@ -200,10 +203,15 @@ class FlowModBase(FrameModBase):
     def load_frame(self, trajdir, filenamelist):
         # if filename is None: 
         #     return np.zeros((10,10,2), dtype=np.float32), np.zeros((10,10), dtype=np.uint8) # return an arbitrary shape because it will be resized later
-        flow16 = repeat_function(cv2.imread, {'filename': join(trajdir, filenamelist[0]), 'flags': cv2.IMREAD_UNCHANGED}, 
-                                repeat_times=10, error_msg="loading depth " + filenamelist[0])
-        flow32 = flow16[:,:,:2].astype(np.float32)
-        flow32 = (flow32 - 32768) / 64.0
+        if filenamelist[0].endswith('.png'):
+            flow16 = repeat_function(cv2.imread, {'filename': join(trajdir, filenamelist[0]), 'flags': cv2.IMREAD_UNCHANGED}, 
+                                    repeat_times=10, error_msg="loading depth " + filenamelist[0])
+            flow32 = flow16[:,:,:2].astype(np.float32)
+            flow32 = (flow32 - 32768) / 64.0
+        elif filenamelist[0].endswith('.npy'):
+            flow32 = np.load(join(trajdir, filenamelist[0]))
+        else:
+            raise NotImplementedError
 
         if self.listlen == 1:
             return [flow32]

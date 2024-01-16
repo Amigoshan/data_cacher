@@ -1,4 +1,3 @@
-import cv2
 from .ModBase import register, TYPEDICT
 from .tartanair_types import RGBModBase, DepthModBase, SegModBase, IMUBase, FlowModBase, MotionModBase, PoseModBase
 from os.path import join

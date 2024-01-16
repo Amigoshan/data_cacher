@@ -42,11 +42,11 @@ DataRoot['cluster'] = {
 }
 
 DataRoot['zoidberg'] = {
-                        'sceneflow':    '/scratch/learningvo/SceneFlow',
-                        'tartan':       '/scratch/learningvo/tartanair_v1_5',
+                        'sceneflow':    '/data2/datasets/yaoyuh/StereoData/SceneFlow',
+                        'tartan':       '/project/learningvo/tartanair_v1_5',
                         'tartan2':	    '/scratch/tartanair_v2',
-                        'chairs':       '/scratch/learningvo/flyingchairs',
-                        'sintel':       '/scratch/learningvo/sintel/training',
+                        'chairs':       '/project/learningvo/flowdata/FlyingChairs_release',
+                        'sintel':       '/project/learningvo/flowdata/sintel/training',
                         'flying':       '/data2/datasets/yaoyuh/StereoData/SceneFlow',
                         'kitti-stereo': '/project/learningvo/stereo_data/kitti/training', 
                         'tartan2':      '/scratch/tartanair_v2',

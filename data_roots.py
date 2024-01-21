@@ -68,6 +68,9 @@ DataRoot['psc'] = {
                         'tartan2_event':'/ocean/projects/cis220039p/shared/tartanair_v2_event',
                         'euroc':        '/ocean/projects/cis220039p/shared/vo/euroc',
                         'kitti-vo':     '/ocean/projects/cis220039p/shared/vo/kitti/vo',
+                        'chairs':       '/ocean/projects/cis220039p/shared/vo/flyingchairs',
+                        'sintel':        '/ocean/projects/cis220039p/shared/vo/sintel/training',
+                        'flying':        '/ocean/projects/cis220039p/shared/vo/SceneFlow',
 }
 
 

@@ -114,6 +114,8 @@ class RGBModBase(FrameModBase):
             if filename.endswith('.png') or filename.endswith('.jpg') or filename.endswith('.ppm'):
                 img = repeat_function(cv2.imread, {'filename': join(trajdir,filename), 'flags': cv2.IMREAD_UNCHANGED}, 
                                         repeat_times=10, error_msg="loading RGB " + filename)
+                if img.shape[2] == 4: # flying things returns 4 channels RGBA
+                    img = img[:,:,:3]
             elif filename.endswith('.npy'):
                 img = np.load(join(trajdir,filename))
             else:

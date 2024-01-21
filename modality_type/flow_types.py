@@ -137,6 +137,7 @@ class flying_flow(FlowModBase):
         new: the load_data function will be return a list of numpy arrays, in most cases, the lengh of the list will be one
         '''
         filenamelist = self.framestr2filename(framestr, trajdir)
+        trajdir = trajdir.replace('frames_finalpass', 'optical_flow').replace('frames_cleanpass', 'optical_flow')
         if 'left' in trajdir:
             trajdir = trajdir.replace('left', 'into_future/left')
         elif 'right' in trajdir:
@@ -156,7 +157,7 @@ class flying_flow(FlowModBase):
         if 'left' in trajdir:
             return ['OpticalFlowIntoFuture_' + framestr + '_L.pfm']
         elif 'right' in trajdir:
-            return ['/OpticalFlowIntoFuture_' + framestr + '_R.pfm']
+            return ['OpticalFlowIntoFuture_' + framestr + '_R.pfm']
         else:
             raise NotImplementedError
 
@@ -164,8 +165,8 @@ class flying_flow(FlowModBase):
         flow_all, _ = repeat_function(readPFM, {'file': join(trajdir, filenamelist[0])}, 
                                 repeat_times=10, error_msg="loading flow " + filenamelist[0])
 
-        flow = flow_all[:,:,:2]
-        mask = flow_all[:,:,2]
+        flow = flow_all[:,:,:2].copy()
+        mask = flow_all[:,:,2].copy()
 
         if self.listlen == 1:
             return [flow]

@@ -137,10 +137,13 @@ class flying_flow(FlowModBase):
         new: the load_data function will be return a list of numpy arrays, in most cases, the lengh of the list will be one
         '''
         filenamelist = self.framestr2filename(framestr, trajdir)
+        trajdir = trajdir.replace('frames_cleanpass', 'optical_flow')
+        trajdir = trajdir.replace('frames_finalpass', 'optical_flow')
         if 'left' in trajdir:
             trajdir = trajdir.replace('left', 'into_future/left')
         elif 'right' in trajdir:
             trajdir = trajdir.replace('right', 'into_future/right')
+            
         if ind_env > self.drop_last:
             datalist = self.load_frame(trajdir, filenamelist)
             datalist = self.resize_data(datalist)

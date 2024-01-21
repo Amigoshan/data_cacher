@@ -142,6 +142,7 @@ class flying_flow(FlowModBase):
             trajdir = trajdir.replace('left', 'into_future/left')
         elif 'right' in trajdir:
             trajdir = trajdir.replace('right', 'into_future/right')
+            
         if ind_env > self.drop_last:
             datalist = self.load_frame(trajdir, filenamelist)
             datalist = self.resize_data(datalist)

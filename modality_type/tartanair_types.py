@@ -82,8 +82,8 @@ class EventsBase(FrameModBase):
     def load_frame(self, trajdir, filenamelist):
         eventtensorlist = []
         for filename in filenamelist:
-            if filename.endswith('.npy'):
-                eventtensor = np.load(join(trajdir,filename))
+            if filename.endswith('.npz'):
+                eventtensor = np.load(join(trajdir,filename))['event_tensor']
             else:
                 raise NotImplementedError
             eventtensorlist.append(eventtensor)
@@ -1136,4 +1136,4 @@ class event_cam(EventsBase):
         framenum = int(framestr)
         framestr2 = str(framenum + 1).zfill(6)
         file_suffix = '_' + self.file_suffix if self.file_suffix != "" else ""
-        return [join(self.folder_name, join(self.sub_folder, framestr + '_' + framestr2 + file_suffix + '.npy'))]
+        return [join(self.folder_name, join(self.sub_folder, framestr + '_' + framestr2 + file_suffix + '.npz'))]

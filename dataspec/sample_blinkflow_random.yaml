@@ -1,5 +1,5 @@
 ---
-  task: flowevo
+  task: flowvo
   global:
     modality:
       length: 1
@@ -12,30 +12,30 @@
     parameter:
   data:
     1:
-      file: "loader/data_cacher/data/event_test_tartanairv2.txt"
+      file: "/ocean/projects/cis220039p/gramasat/data/code/ERAFT/loader/data_cacher/data/event_train_blinkflow.txt"
       modality: 
-        flow_lcam_front:
+        blinkflow_cam:
+          "img0":
+            cacher_size: [640, 640]
+            length: 2
+        blinkflow_flow:
           "flow0":
             cacher_size: [640, 640]
             length: 2
           "mask0":
             cacher_size: [640, 640]
             length: 2
-        event_cam:
+        blinkflow_events:
           "events0":
             cacher_size: [15, 640, 640]
             length: 2
-        pose_lcam_front:
-          "pose0":
-            cacher_size: [6]
-            length: 2
       cacher:
-        # data_root_path_override: "/ocean/projects/cis220039p/gramasat/tmp/test_root"
-        data_root_key: tartan2_event
-        subset_framenum: 100
+        # data_root_path_override: "/home/amigo/tmp/test_root"
+        data_root_key: blinkflow
+        subset_framenum: 20
         worker_num: 2
       dataset:
-        frame_skip: 0
+        frame_skip: 1
       parameter:
         intrinsics: [640, 640, 320, 320, 320, 320]
         intrinsics_scale: [0.25, 0.25]

@@ -1,5 +1,5 @@
 import cv2
-from .ModBase import SimpleModBase, FrameModBase, register, TYPEDICT
+from .ModBase import SimpleModBase, FrameModBase, register, TYPEDICT, repeat_function
 from os.path import join
 import numpy as np
 from .ply_io import read_ply
@@ -111,9 +111,11 @@ class RGBModBase(FrameModBase):
         # read image
         imglist = []
         for filename in filenamelist:
-            if filename.endswith('.png') or filename.endswith('.jpg'):
-                img = cv2.imread(join(trajdir,filename), cv2.IMREAD_UNCHANGED)
-                assert img is not None, "Error loading RGB {}".format(filename)
+            if filename.endswith('.png') or filename.endswith('.jpg') or filename.endswith('.ppm'):
+                img = repeat_function(cv2.imread, {'filename': join(trajdir,filename), 'flags': cv2.IMREAD_UNCHANGED}, 
+                                        repeat_times=10, error_msg="loading RGB " + filename)
+                if img.shape[2] == 4: # flying things returns 4 channels RGBA
+                    img = img[:,:,:3]
             elif filename.endswith('.npy'):
                 img = np.load(join(trajdir,filename))
             else:
@@ -141,7 +143,8 @@ class RGBModBase(FrameModBase):
         This is very dataset specific
         Basically it handles how each dataset naming the frames and organizing the data
         '''
-        return [join(self.folder_name, framestr + '_' + self.file_suffix + '.png')]
+        file_suffix = '_' + self.file_suffix if self.file_suffix != "" else ""
+        return [join(self.folder_name, framestr + file_suffix + '.png')]
 
 class DepthModBase(FrameModBase):
     def __init__(self, datashapelist):
@@ -157,8 +160,8 @@ class DepthModBase(FrameModBase):
     def load_frame(self, trajdir, filenamelist):
         depthlist = []
         for filename in filenamelist:
-            depth_rgba = cv2.imread(join(trajdir, filename), cv2.IMREAD_UNCHANGED)
-            assert depth_rgba is not None, "Error loading depth {}".format(filename)
+            depth_rgba = repeat_function(cv2.imread, {'filename': join(trajdir,filename), 'flags': cv2.IMREAD_UNCHANGED}, 
+                                    repeat_times=10, error_msg="loading depth " + filename)
             depth = depth_rgba.view("<f4")
             depth = np.squeeze(depth, axis=-1)
             depthlist.append(depth)
@@ -181,7 +184,8 @@ class DepthModBase(FrameModBase):
         This is very dataset specific
         Basically it handles how each dataset naming the frames and organizing the data
         '''
-        return [join(self.folder_name, framestr + '_' + self.file_suffix + '.png')]
+        file_suffix = '_' + self.file_suffix if self.file_suffix != "" else ""
+        return [join(self.folder_name, framestr + file_suffix + '.png')]
 
 class FlowModBase(FrameModBase):
     def __init__(self, datashapes):
@@ -190,7 +194,10 @@ class FlowModBase(FrameModBase):
         # we also assume that the flow will always be returned, the mask is optional
         self.listlen = len(datashapes) # this is usually one
         self.data_shapes[0] = (2,) + tuple(self.data_shapes[0]) # add one dim to the 
-        self.data_types = [np.float32, np.uint8] # for flow and mask
+        if self.listlen == 1:
+            self.data_types = [np.float32] # for flow and mask
+        else:
+            self.data_types = [np.float32, np.uint8] # for flow and mask
 
         self.folder_name = "" # to be filled in the derived class
         self.file_suffix = "" # to be filled in the derived class
@@ -198,10 +205,15 @@ class FlowModBase(FrameModBase):
     def load_frame(self, trajdir, filenamelist):
         # if filename is None: 
         #     return np.zeros((10,10,2), dtype=np.float32), np.zeros((10,10), dtype=np.uint8) # return an arbitrary shape because it will be resized later
-        flow16 = cv2.imread(join(trajdir, filenamelist[0]), cv2.IMREAD_UNCHANGED)
-        assert flow16 is not None, "Error loading flow {}".format(join(trajdir, filenamelist[0]))
-        flow32 = flow16[:,:,:2].astype(np.float32)
-        flow32 = (flow32 - 32768) / 64.0
+        if filenamelist[0].endswith('.png'):
+            flow16 = repeat_function(cv2.imread, {'filename': join(trajdir, filenamelist[0]), 'flags': cv2.IMREAD_UNCHANGED}, 
+                                    repeat_times=10, error_msg="loading depth " + filenamelist[0])
+            flow32 = flow16[:,:,:2].astype(np.float32)
+            flow32 = (flow32 - 32768) / 64.0
+        elif filenamelist[0].endswith('.npy'):
+            flow32 = np.load(join(trajdir, filenamelist[0]))
+        else:
+            raise NotImplementedError
 
         if self.listlen == 1:
             return [flow32]
@@ -217,8 +229,8 @@ class FlowModBase(FrameModBase):
         if h != target_h or w != target_w:
             scale_w, scale_h = float(target_w) / w, float(target_h) / h
             flow = cv2.resize(flow, (target_w, target_h), interpolation=cv2.INTER_LINEAR )
-            flow[0,:,:] = flow[0,:,:] * scale_w
-            flow[1,:,:] = flow[1,:,:] * scale_h
+            flow[:,:,0] = flow[:,:,0] * scale_w
+            flow[:,:,1] = flow[:,:,1] * scale_h
         if self.listlen == 1: 
             return [flow]
         
@@ -246,7 +258,8 @@ class FlowModBase(FrameModBase):
         '''
         framenum = int(framestr)
         framestr2 = str(framenum + 1).zfill(6)
-        return [join(self.folder_name, framestr + '_' + framestr2 + '_' + self.file_suffix + '.png')]
+        file_suffix = '_' + self.file_suffix if self.file_suffix != "" else ""
+        return [join(self.folder_name, framestr + '_' + framestr2 + file_suffix + '.png')]
 
 class SegModBase(FrameModBase):
     def __init__(self, datashapelist):
@@ -262,8 +275,8 @@ class SegModBase(FrameModBase):
     def load_frame(self, trajdir, filenamelist):
         segglist = []
         for filename in filenamelist:
-            segimg = cv2.imread(join(trajdir, filename), cv2.IMREAD_UNCHANGED)
-            assert segimg is not None, "Error loading seg {}".format(filename)
+            segimg = repeat_function(cv2.imread, {'filename': join(trajdir,filename), 'flags': cv2.IMREAD_UNCHANGED}, 
+                                    repeat_times=10, error_msg="loading depth " + filename)
             segglist.append(segimg)
 
         return segglist
@@ -285,7 +298,8 @@ class SegModBase(FrameModBase):
         This is very dataset specific
         Basically it handles how each dataset naming the frames and organizing the data
         '''
-        return [join(self.folder_name, framestr + '_' + self.file_suffix + '.png')]
+        file_suffix = '_' + self.file_suffix if self.file_suffix != "" else ""
+        return [join(self.folder_name, framestr + file_suffix + '.png')]
 
 class PoseModBase(SimpleModBase):
     def __init__(self, datashape):
@@ -1107,7 +1121,8 @@ class lidar(LiDARBase):
         self.file_suffix = 'lcam_front_lidar'
 
     def framestr2filename(self, framestr):
-        return join(self.folder_name, framestr + '_' + self.file_suffix + '.ply')
+        file_suffix = '_' + self.file_suffix if self.file_suffix != "" else ""
+        return join(self.folder_name, framestr + file_suffix + '.ply')
 
 @register(TYPEDICT)
 class event_cam(EventsBase):
@@ -1120,4 +1135,5 @@ class event_cam(EventsBase):
     def framestr2filename(self, framestr):
         framenum = int(framestr)
         framestr2 = str(framenum + 1).zfill(6)
-        return [join(self.folder_name, join(self.sub_folder, framestr + '_' + framestr2 + '_' + self.file_suffix + '.npz'))]
+        file_suffix = '_' + self.file_suffix if self.file_suffix != "" else ""
+        return [join(self.folder_name, join(self.sub_folder, framestr + '_' + framestr2 + file_suffix + '.npz'))]

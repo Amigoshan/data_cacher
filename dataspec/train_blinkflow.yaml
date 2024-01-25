@@ -16,24 +16,24 @@
       modality: 
         blinkflow_cam:
           "img0":
-            cacher_size: [640, 640]
+            cacher_size: [480, 640]
             length: 2
         blinkflow_flow:
           "flow0":
-            cacher_size: [640, 640]
+            cacher_size: [480, 640]
             length: 2
           "mask0":
-            cacher_size: [640, 640]
+            cacher_size: [480, 640]
             length: 2
         blinkflow_events:
           "events0":
-            cacher_size: [15, 640, 640]
+            cacher_size: [15, 480, 640]
             length: 2
       cacher:
         # data_root_path_override: "/home/amigo/tmp/test_root"
         data_root_key: blinkflow
-        subset_framenum: 20
-        worker_num: 2
+        subset_framenum: 400
+        worker_num: 5
       dataset:
         frame_skip: 1
       parameter:

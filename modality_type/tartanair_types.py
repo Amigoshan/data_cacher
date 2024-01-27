@@ -173,7 +173,7 @@ class DepthModBase(FrameModBase):
             (h, w) = depth.shape
             target_h, target_w = self.data_shapes[k]
             if h != target_h or w != target_w:
-                depthlist[k] = cv2.resize(depth, (target_w, target_h), interpolation=cv2.INTER_LINEAR )
+                depthlist[k] = cv2.resize(depth, (target_w, target_h), interpolation=cv2.INTER_NEAREST )
         return depthlist
 
     def transpose(self, depthlist):

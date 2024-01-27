@@ -12,6 +12,7 @@ DataRoot['local'] = {
                         'sintel':       '/home/amigo/tmp/data/sintel/training',
                         'euroc':        '/bigdata/tartanvo_data/euroc',
                         'kitti-stereo': '/bigdata/tartanvo_data/kitti/stereo', 
+                        'kitti-flow':   '/peru/tartanvo_data/kitti/stereo_flow_cropped', 
                         'kitti-vo':     '/bigdata/tartanvo_data/kitti/vo',
                         'tartandrive':  '/home/amigo/workspace/ros_atv/src/rosbag_to_dataset/test_output'
 }
@@ -71,6 +72,7 @@ DataRoot['psc'] = {
                         'sintel':       '/ocean/projects/cis220039p/shared/vo/sintel',
                         'euroc':        '/ocean/projects/cis220039p/shared/vo/euroc',
                         'kitti-vo':     '/ocean/projects/cis220039p/shared/vo/kitti/vo',
+                        'kitti-flow':   '/ocean/projects/cis220039p/shared/vo/kitti/stereo_flow_cropped',
                         'chairs':       '/ocean/projects/cis220039p/shared/vo/flyingchairs',
                         'sintel':        '/ocean/projects/cis220039p/shared/vo/sintel/training',
                         'flying':        '/ocean/projects/cis220039p/shared/vo/SceneFlow',

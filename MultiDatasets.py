@@ -186,7 +186,7 @@ class MultiDatasets(object):
             # this is the parameters returned in each sample
             self.paramparams.append(parameter_param)
 
-        self.accDataLens = np.cumsum(self.datalens).astype(np.float64)/np.sum(self.datalens)    
+        self.accDataLens = np.cumsum(self.datalens).astype(np.float64)/np.sum(self.datalens)
 
         # wait for all datacacher being ready
         for k, datacacher in enumerate(self.datacachers):

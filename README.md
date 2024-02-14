@@ -21,7 +21,7 @@ When randomly loading sequences from a bunch of trajectories, different sequence
 
 This datacacher maintains two buffers in RAM. One is a "loading" buffer, one is a "ready" buffer. Data is loaded alternately to these two buffers using multiple workers. The training code loads data from the ready buffer and will either wait for the next buffer or repetitively train on the current one once all data has been sampled. 
 
-**Note that the datacacher breaks the OOD assumption. Depending on the size of your buffer, or whether you allow repetitive sampling, the distribution of your data will be less OOD.**
+**Note that the datacacher breaks the IID assumption. Depending on the size of your buffer, or whether you allow repetitive sampling, the distribution of your data will be less IID.**
 
 ![Loading sequences from trajectories](imgs/buffers.gif)
 

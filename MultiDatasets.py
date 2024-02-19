@@ -9,7 +9,7 @@ from .DataSplitter import DataSplitter
 from .DataCacher import DataCacher
 from .RAMDataset import RAMDataset
 from .ConfigParser import ConfigParser
-from .input_parser import parse_inputfile
+from .datafile_editor import read_datafile
 import torch 
 import numbers
 
@@ -170,7 +170,7 @@ class MultiDatasets(object):
             self.modalitydroplast.append(modality_drop_last)
             self.modalitytypes.append(modality_objs)
 
-            trajlist, trajlenlist, framelist, totalframenum = parse_inputfile(datafile)
+            trajlist, trajlenlist, framelist, totalframenum = read_datafile(datafile)
             self.datasetlens.append(totalframenum)
             subsetframenum = cacher_param['subset_framenum']
             self.datalens.append(subsetframenum)

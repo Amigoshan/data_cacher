@@ -91,13 +91,13 @@ class SimpleDataloader(object):
 
 if __name__=="__main__":
     from .modality_type.tartanair_types import rgb_lcam_front, depth_lcam_front, flow_lcam_front
-    from .input_parser import parse_inputfile
+    from .datafile_editor import read_datafile
     from .utils import visdepth, visflow
     import cv2
     from .modality_type.ModBase import TYPEDICT
 
     # datafile = '/home/amigo/tmp/test_root/coalmine/analyze/data_coalmine_Data_easy_P000.txt'
-    # trajlist, trajlenlist, framelist, totalframenum = parse_inputfile(datafile)
+    # trajlist, trajlenlist, framelist, totalframenum = read_datafile(datafile)
     # rgbtype = rgb_lcam_front((320, 320))
     # depthtype = depth_lcam_front((320, 320))
     # flowtype = flow_lcam_front((320, 320))
@@ -119,7 +119,7 @@ if __name__=="__main__":
     # # datafile = '/home/amigo/workspace/pytorch/geometry_vision/data/sceneflow_stereo_local_test.txt'
     # from .modality_type.stereo_types import kitti_left, kitti_right, kitti_disp
     # datafile = '/home/amigo/workspace/pytorch/geometry_vision/data/kitti_stereo.txt'
-    # trajlist, trajlenlist, framelist, totalframenum = parse_inputfile(datafile)
+    # trajlist, trajlenlist, framelist, totalframenum = read_datafile(datafile)
     # rgbtype = kitti_left((320, 320))
     # rgbtype2 = kitti_right((320, 320))
     # disptype = kitti_disp((320, 320))
@@ -140,7 +140,7 @@ if __name__=="__main__":
 
     # from .modality_type.euroc_types import euroc_lcam, euroc_ldisp, euroc_lflow, euroc_rcam
     # datafile = '/home/wenshan/workspace/pytorch/geometry_vision/data/euroc/euroc.txt'
-    # trajlist, trajlenlist, framelist, totalframenum = parse_inputfile(datafile)
+    # trajlist, trajlenlist, framelist, totalframenum = read_datafile(datafile)
     # rgbtype = euroc_lcam((320, 320))
     # rgbtype2 = euroc_rcam((320, 320))
     # disptype = euroc_ldisp((320, 320))
@@ -167,7 +167,7 @@ if __name__=="__main__":
     from torch.utils.data import DataLoader
     datafile = 'data_cacher/data/tartandrive.txt'
     dataroot = '/home/amigo/workspace/ros_atv/src/rosbag_to_dataset/test_output'
-    trajlist, trajlenlist, framelist, totalframenum = parse_inputfile(datafile)
+    trajlist, trajlenlist, framelist, totalframenum = read_datafile(datafile)
     rgbtype = rgb_left([(320, 320)])
     rgbtype2 = costmap([(320, 320)])
     dataset0 = CacherDataset(rgbtype, trajlist, trajlenlist, framelist, datarootdir=dataroot)

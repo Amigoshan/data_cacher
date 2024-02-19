@@ -211,13 +211,13 @@ class DataCacher(object):
 if __name__=="__main__":
     from .modality_type.tartandrive_types import rgb_left, costmap, get_vis_costmap
     from .DataSplitter import DataSplitter
-    from .input_parser import parse_inputfile
+    from .datafile_editor import read_datafile
     import cv2
     import numpy as np
 
     datafile = 'data_cacher/data/tartandrive.txt'
     dataroot = '/home/amigo/workspace/ros_atv/src/rosbag_to_dataset/test_output'
-    trajlist, trajlenlist, framelist, totalframenum = parse_inputfile(datafile)
+    trajlist, trajlenlist, framelist, totalframenum = read_datafile(datafile)
     dataspliter = DataSplitter(trajlist, trajlenlist, framelist, 12)
     rgbtype = rgb_left([(320, 320)])
     costmaptype = costmap([(320, 320)])

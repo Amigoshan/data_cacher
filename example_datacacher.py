@@ -33,7 +33,7 @@ def get_args():
 def call_data_cacher(args):
     from .modality_type.tartanair_types import rgb_lcam_front, rgb_rcam_equirect, depth_lcam_fish, seg_lcam_fish, flow_lcam_front, lidar
     from .DataSplitter import DataSplitter
-    from .input_parser import parse_inputfile
+    from .datafile_editor import read_datafile
     from .DataCacher import DataCacher
 
     datafile = args.data_file
@@ -43,7 +43,7 @@ def call_data_cacher(args):
     visualize = args.visualize_off
 
     # parse datafile
-    trajlist, trajlenlist, framelist, totalframenum = parse_inputfile(datafile)
+    trajlist, trajlenlist, framelist, totalframenum = read_datafile(datafile)
 
     # split the whole dataset, with 12 frames in each buffer
     # framenum should be as big as what your RAM can hold

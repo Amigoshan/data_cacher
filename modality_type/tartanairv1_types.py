@@ -1,6 +1,5 @@
-import cv2
-from .ModBase import SimpleModBase, register, TYPEDICT
-from .tartanair_types import RGBModBase, DepthModBase, SegModBase, IMUBase, FlowModBase, MotionModBase
+from .ModBase import register, TYPEDICT
+from .tartanair_types import RGBModBase, DepthModBase, SegModBase, IMUBase, FlowModBase, MotionModBase, PoseModBase
 from os.path import join
 import numpy as np
 
@@ -85,7 +84,7 @@ class flow2_left(FlowModBase):
         '''
         framenum = int(framestr)
         framestr2 = str(framenum + 2).zfill(6)
-        return join(self.folder_name, framestr + '_' + framestr2 + '_' + self.file_suffix + '.png')
+        return [join(self.folder_name, framestr + '_' + framestr2 + '_' + self.file_suffix + '.png')]
 
 @register(TYPEDICT)
 class flow4_left(FlowModBase):
@@ -102,30 +101,16 @@ class flow4_left(FlowModBase):
         '''
         framenum = int(framestr)
         framestr2 = str(framenum + 4).zfill(6)
-        return join(self.folder_name, framestr + '_' + framestr2 + '_' + self.file_suffix + '.png')
+        return [join(self.folder_name, framestr + '_' + framestr2 + '_' + self.file_suffix + '.png')]
 
 @register(TYPEDICT)
-class pose_left(SimpleModBase):
+class pose_left(PoseModBase):
     '''
     This defines modality that is light-weight
     such as IMU, pose, wheel_encoder
     '''
-    def __init__(self, datashape):
-        super().__init__(datashape)
-        self.data_shape = (7,)
-
-    def crop_trajectory(self, data, framestrlist):
-        startind = int(framestrlist[0])
-        endind = int(framestrlist[-1]) + 1
-        datalen = data.shape[0]
-        assert startind < datalen and endind <= datalen, "Error in loading pose, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
-        return data[startind:endind]
-
     def get_filename(self):
-        return 'pose_left.txt'
-
-    def data_padding(self):
-        return None
+        return ['pose_left.txt']
 
 @register(TYPEDICT)
 class motion_left(MotionModBase):
@@ -138,7 +123,7 @@ class motion_left(MotionModBase):
         self.drop_last = 1
 
     def get_filename(self):
-        return 'motion_left.npy'
+        return ['motion_left.npy']
 
 @register(TYPEDICT)
 class motion2_left(MotionModBase):
@@ -151,7 +136,7 @@ class motion2_left(MotionModBase):
         self.drop_last = 2
 
     def get_filename(self):
-        return 'motion_left2.npy'
+        return ['motion_left2.npy']
 
 @register(TYPEDICT)
 class motion3_left(MotionModBase):
@@ -164,7 +149,7 @@ class motion3_left(MotionModBase):
         self.drop_last = 3
 
     def get_filename(self):
-        return 'motion_left3.npy'
+        return ['motion_left3.npy']
 
 @register(TYPEDICT)
 class motion4_left(MotionModBase):
@@ -177,7 +162,7 @@ class motion4_left(MotionModBase):
         self.drop_last = 4
 
     def get_filename(self):
-        return 'motion_left4.npy'
+        return ['motion_left4.npy']
 
 @register(TYPEDICT)
 class imu_acc_v1(IMUBase):
@@ -186,7 +171,7 @@ class imu_acc_v1(IMUBase):
     such as IMU, pose, wheel_encoder
     '''
     def get_filename(self):
-        return join(self.folder_name, 'accel_left.npy')
+        return [join(self.folder_name, 'accel_left.npy')]
 
 @register(TYPEDICT)
 class imu_gyro_v1(IMUBase):
@@ -195,5 +180,5 @@ class imu_gyro_v1(IMUBase):
     such as IMU, pose, wheel_encoder
     '''
     def get_filename(self):
-        return join(self.folder_name, 'gyro_left.npy')
+        return [join(self.folder_name, 'gyro_left.npy')]
 

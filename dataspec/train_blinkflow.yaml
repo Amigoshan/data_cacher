@@ -1,0 +1,41 @@
+---
+  task: flowvo
+  global:
+    modality:
+      length: 1
+    cacher:
+      load_traj: false
+    dataset:
+      frame_skip: 0
+      seq_stride: 1
+      frame_dir: true
+    parameter:
+  data:
+    1:
+      file: "/ocean/projects/cis220039p/gramasat/data/code/ERAFT/loader/data_cacher/data/event_train_blinkflow.txt"
+      modality: 
+        blinkflow_cam:
+          "img0":
+            cacher_size: [480, 640]
+            length: 2
+        blinkflow_flow:
+          "flow0":
+            cacher_size: [480, 640]
+            length: 2
+          "mask0":
+            cacher_size: [480, 640]
+            length: 2
+        blinkflow_events:
+          "events0":
+            cacher_size: [15, 480, 640]
+            length: 2
+      cacher:
+        # data_root_path_override: "/home/amigo/tmp/test_root"
+        data_root_key: blinkflow
+        subset_framenum: 400
+        worker_num: 5
+      dataset:
+        frame_skip: 1
+      parameter:
+        intrinsics: [640, 640, 320, 320, 320, 320]
+        intrinsics_scale: [0.25, 0.25]

@@ -134,7 +134,7 @@ class TrajBuffer(object):
 
 if __name__=="__main__":
     from .modality_type.tartandrive_types import rgb_left, costmap, get_vis_costmap
-    from .input_parser import parse_inputfile
+    from .datafile_editor import read_datafile
     from .CacherDataset import CacherDataset
     import numpy as np
     import cv2
@@ -142,7 +142,7 @@ if __name__=="__main__":
     rgbtype = rgb_left([(320, 320)])
     costmaptype = costmap([(320, 320)])
     datafile = 'data_cacher/data/tartandrive.txt'
-    trajlist, trajlenlist, framelist, totalframenum = parse_inputfile(datafile)
+    trajlist, trajlenlist, framelist, totalframenum = read_datafile(datafile)
     dataroot = '/home/amigo/workspace/ros_atv/src/rosbag_to_dataset/test_output'
 
     buffer = TrajBuffer([['img0'], ['cost','vel']], [rgbtype, costmaptype])

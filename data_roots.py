@@ -3,7 +3,7 @@
 DataRoot = {}
 DataRoot['local'] = {
                         'sceneflow':    '/home/amigo/tmp/data/sceneflow',
-                        'tartan':       '/home/wenshan/tmp/tartanair',
+                        'tartan':       '/home/amigo/tmp/data/tartan',
                         'tartan2':      '/home/amigo/tmp/test_root',
                         'shibuya':      '/prague/tartanvo_data/AirDOS_shibuya',
                         'tartan-cvpr':  '/cairo/tartanair_test_cvpr',
@@ -17,6 +17,18 @@ DataRoot['local'] = {
                         'tartandrive2':  '/cairo/arl_bag_files/2023_traj'
 }
 
+DataRoot['desktop'] = {
+                        'sceneflow':    '/home/amigo/tmp/data/sceneflow',
+                        'tartan':       '/home/wenshan/tmp/tartanair',
+                        'tartan2':      '/home/amigo/tmp/test_root',
+                        'shibuya':      '/prague/tartanvo_data/AirDOS_shibuya',
+                        'euroc':        '/home/wenshan/tmp/vo_data/euroc',
+                        'kitti-vo':     '/home/wenshan/tmp/vo_data/kittivo',
+}
+
+DataRoot['wsl'] = {
+'tartan2': '/mnt/e'
+}
 
 DataRoot['cluster'] = {
                         'sceneflow':    '/data2/datasets/yaoyuh/StereoData/SceneFlow',
@@ -31,11 +43,11 @@ DataRoot['cluster'] = {
 }
 
 DataRoot['zoidberg'] = {
-                        'sceneflow':    '/scratch/learningvo/SceneFlow',
-                        'tartan':       '/scratch/learningvo/tartanair_v1_5',
+                        'sceneflow':    '/data2/datasets/yaoyuh/StereoData/SceneFlow',
+                        'tartan':       '/project/learningvo/tartanair_v1_5',
                         'tartan2':	    '/scratch/tartanair_v2',
-                        'chairs':       '/scratch/learningvo/flyingchairs',
-                        'sintel':       '/scratch/learningvo/sintel/training',
+                        'chairs':       '/project/learningvo/flowdata/FlyingChairs_release',
+                        'sintel':       '/project/learningvo/flowdata/sintel/training',
                         'flying':       '/data2/datasets/yaoyuh/StereoData/SceneFlow',
                         'kitti-stereo': '/project/learningvo/stereo_data/kitti/training', 
                         'tartan2':      '/scratch/tartanair_v2',
@@ -52,10 +64,21 @@ DataRoot['dgx'] = {
 }
 
 DataRoot['psc'] = {
-                        'tartan':       '/jet/projects/cis210086p/tartanair_v1',
+                        'tartan':       '/ocean/projects/cis220039p/shared/tartanair_v1',
                         'tartan2':      '/ocean/projects/cis220039p/shared/tartanair_v2',   
                         'euroc':        '/ocean/projects/cis220039p/wenshanw/euroc',
-                        'tartandrive2': '/ocean/projects/cis220039p/shared/tartandrive/2023_traj/v1'
+                        'tartandrive2': '/ocean/projects/cis220039p/shared/tartandrive/2023_traj/v1',
+                        'tartan2_event':'/ocean/projects/cis220039p/shared/tartanair_v2_event',
+                        'blinkflow':    '/ocean/projects/cis220039p/shared/blinkflow/train',
+                        'chairs':       '/ocean/projects/cis220039p/shared/vo/flyingchairs',
+                        'flying':       '/ocean/projects/cis220039p/shared/vo/SceneFlow',
+                        'sintel':       '/ocean/projects/cis220039p/shared/vo/sintel',
+                        'euroc':        '/ocean/projects/cis220039p/shared/vo/euroc',
+                        'kitti-vo':     '/ocean/projects/cis220039p/shared/vo/kitti/vo',
+                        'kitti-flow':   '/ocean/projects/cis220039p/shared/vo/kitti/stereo_flow_cropped',
+                        'chairs':       '/ocean/projects/cis220039p/shared/vo/flyingchairs',
+                        'sintel':        '/ocean/projects/cis220039p/shared/vo/sintel/training',
+                        'flying':        '/ocean/projects/cis220039p/shared/vo/SceneFlow',
 }
 
 

@@ -1,0 +1,41 @@
+---
+  task: flowevo
+  global:
+    modality:
+      length: 1
+    cacher:
+      load_traj: false
+    dataset:
+      frame_skip: 0
+      seq_stride: 1
+      frame_dir: true
+    parameter:
+  data:
+    1:
+      file: "loader/data_cacher/data/event_test_tartanairv2.txt"
+      modality: 
+        flow_lcam_front:
+          "flow0":
+            cacher_size: [640, 640]
+            length: 2
+          "mask0":
+            cacher_size: [640, 640]
+            length: 2
+        event_cam:
+          "events0":
+            cacher_size: [15, 640, 640]
+            length: 2
+        pose_lcam_front:
+          "pose0":
+            cacher_size: [6]
+            length: 2
+      cacher:
+        # data_root_path_override: "/ocean/projects/cis220039p/gramasat/tmp/test_root"
+        data_root_key: tartan2_event
+        subset_framenum: 100
+        worker_num: 2
+      dataset:
+        frame_skip: 0
+      parameter:
+        intrinsics: [640, 640, 320, 320, 320, 320]
+        intrinsics_scale: [0.25, 0.25]

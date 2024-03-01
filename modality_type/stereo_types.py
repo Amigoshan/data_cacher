@@ -1,6 +1,6 @@
 import cv2
 from .ModBase import FrameModBase, register, TYPEDICT
-
+from .tartanair_types import RGBModBase
 from os.path import join
 import numpy as np
 
@@ -43,50 +43,6 @@ def readPFM(file):
     data = np.flipud(data)
     return data, scale
 
-class RGBModBase(FrameModBase):
-    def __init__(self, datashape):
-        super().__init__(datashape)
-        (self.h, self.w) = datashape # (h, w)
-        self.data_shape = (3, self.h, self.w)
-        self.data_type = np.uint8
-
-    def load_frame(self, filename):
-        # read image
-        img = cv2.imread(filename)
-        assert img is not None, "Error loading RGB {}".format(filename)
-        return img
-
-    def transpose(self, img):
-        return img.transpose(2,0,1)
-
-    def resize_data(self, img):
-        # resize image
-        (h, w, _) = img.shape
-        if h != self.h or w != self.w:
-            img = cv2.resize(img, (self.w, self.h), interpolation=cv2.INTER_LINEAR )
-        return img
-
-# class DepthModBase(FrameModBase):
-#     def __init__(self, datashape):
-#         super().__init__(datashape)
-#         self.data_shape = (self.h, self.w)
-#         self.data_type = np.float32
-
-#     def load_frame(self, filename):
-#         dispImg, _ = readPFM(filename)
-#         assert dispImg is not None, "Error loading depth {}".format(filename)
-#         return dispImg
-
-#     def transpose(self, disp):
-#         return disp
-
-#     def resize_data(self, depth):
-#         # resize image
-#         (h, w) = depth.shape
-#         if h != self.h or w != self.w:
-#             depth = cv2.resize(depth, (self.w, self.h), interpolation=cv2.INTER_LINEAR )
-#         return depth
-
 @register(TYPEDICT)
 class sceneflow_left(RGBModBase):
     def __init__(self, datashape):
@@ -98,7 +54,7 @@ class sceneflow_left(RGBModBase):
         This is very dataset specific
         Basically it handles how each dataset naming the frames and organizing the data
         '''
-        return join(self.folder_name, framestr + '.png')
+        return [join(self.folder_name, framestr + '.png')]
 
 @register(TYPEDICT)
 class sceneflow_right(RGBModBase):

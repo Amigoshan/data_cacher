@@ -1,6 +1,6 @@
 from os.path import join
 import numpy as np
-
+import time
 '''
 In the low level, each modality corresponds to a folder in the traj folder
 This file defines the interfaces of the Modality: 
@@ -29,6 +29,17 @@ def register(dst):
 def get_modality_type(typename):
     assert typename in TYPEDICT, "Unknow type {} for the cacher!".format(typename)
     return TYPEDICT[typename]
+
+def repeat_function(func, func_params, repeat_times, error_msg = ""):
+    try_count = 0
+    res = None
+    while res is None and try_count < repeat_times:
+        res = func(**func_params)
+        if res is None:
+            time.sleep(0.2)
+            try_count += 1
+    assert res is not None, "Error in function {} after trying for {} times".format(error_msg, try_count)
+    return res
 
 class ModBase(object):
     def __init__(self, datashapelist):

@@ -13,7 +13,8 @@ DataRoot['local'] = {
                         'euroc':        '/home/wenshan/tmp/vo_data/euroc',
                         'kitti-stereo': '/prague/tartanvo_data/kitti/stereo', 
                         'kitti-vo':     '/home/wenshan/tmp/vo_data/kittivo',
-                        'tartandrive':  '/home/amigo/workspace/ros_atv/src/rosbag_to_dataset/test_output'
+                        'tartandrive':  '/home/amigo/workspace/ros_atv/src/rosbag_to_dataset/test_output',
+                        'tartandrive2':  '/cairo/arl_bag_files/2023_traj'
 }
 
 
@@ -54,6 +55,7 @@ DataRoot['psc'] = {
                         'tartan':       '/jet/projects/cis210086p/tartanair_v1',
                         'tartan2':      '/ocean/projects/cis220039p/shared/tartanair_v2',   
                         'euroc':        '/ocean/projects/cis220039p/wenshanw/euroc',
+                        'tartandrive2': '/ocean/projects/cis220039p/shared/tartandrive/2023_traj/v1'
 }
 
 

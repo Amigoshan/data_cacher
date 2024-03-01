@@ -252,7 +252,7 @@ class rgb_map(RGBModBase):
 class rgb_map_ff(RGBModBase):
     def __init__(self, datashapes):
         super().__init__(datashapes)
-        self.folder_name = "rgbmapffl"
+        self.folder_name = "rgb_map_ff"
     
     def framestr2filename(self, framestr):
         '''
@@ -266,6 +266,41 @@ class rgb_map_ff(RGBModBase):
         for img in imglist:
             # flip the data because the raw format issue
             img = cv2.flip(img, 1)
+            reslist.append(img.transpose(2,0,1))
+        return reslist
+
+@register(TYPEDICT)
+class rgb_map_ff_v2(RGBModBase):
+    def __init__(self, datashapes):
+        super().__init__(datashapes)
+        self.folder_name = "rgb_map_ff"
+    
+    def framestr2filename(self, framestr):
+        '''
+        This is very dataset specific
+        Basically it handles how each dataset naming the frames and organizing the data
+        '''
+        return [join(self.folder_name, framestr + '.png')]
+
+    def load_frame(self, trajdir, filenamelist):
+        # read image
+        imglist = []
+        for filename in filenamelist:
+            if filename.endswith('.png') or filename.endswith('.jpg'):
+                img = cv2.imread(join(trajdir,filename), cv2.IMREAD_UNCHANGED)
+                assert img is not None, "Error loading RGB {}".format(filename)
+            elif filename.endswith('.npy'):
+                img = np.load(join(trajdir,filename))
+            else:
+                raise NotImplementedError
+            img = img.transpose(1,0,2)
+            imglist.append(img)
+        return imglist
+
+    def transpose(self, imglist):
+        reslist = []
+        for img in imglist:
+            # flip the data because the raw format issue
             reslist.append(img.transpose(2,0,1))
         return reslist
 
@@ -357,13 +392,49 @@ class height_map_ff(height_map):
         self.data_shapes = datashapelist # needs to be filled in derived classes
         for k in range(listlen):
             self.data_shapes[k] =  (self.channel_num,) + tuple(self.data_shapes[k])
-        self.folder_name = "heightmapffl"
+        self.folder_name = "height_map_ff"
 
     def transpose(self, imglist):
         reslist = []
         for img in imglist:
             # flip the data because the raw format issue
             img = cv2.flip(img, 1)
+            reslist.append(img.transpose(2,0,1))
+        return reslist
+
+@register(TYPEDICT)
+class height_map_ff_v2(height_map):
+ 
+    def __init__(self, datashapelist):
+        '''
+        the heightmap has four channels
+        '''
+        super().__init__(datashapelist)
+        self.channel_num = 2
+        listlen = len(datashapelist) # this is usually one
+        self.data_shapes = datashapelist # needs to be filled in derived classes
+        for k in range(listlen):
+            self.data_shapes[k] =  (self.channel_num,) + tuple(self.data_shapes[k])
+        self.folder_name = "height_map_ff"
+
+    def load_frame(self, trajdir, filenamelist):
+        # read image
+        maplist = []
+        for filename in filenamelist:
+            heightmap = np.load(join(trajdir,filename))
+            assert heightmap is not None, "Error loading map {}".format(filename)
+
+            heightmap_sum = heightmap.sum(axis=0)
+            mask = heightmap_sum > 0
+            mean = heightmap[4,:,:]
+            heightmap_mask = np.stack((mean,mask.astype(np.float32)), axis=-1)
+            heightmap_mask = heightmap_mask.transpose(1,0,2)
+            maplist.append(heightmap_mask)
+        return maplist
+
+    def transpose(self, imglist):
+        reslist = []
+        for img in imglist:
             reslist.append(img.transpose(2,0,1))
         return reslist
 
@@ -414,6 +485,12 @@ class costmap(FrameModBase):
         Basically it handles how each dataset naming the frames and organizing the data
         '''
         return [join(self.folder_name, framestr + '.npy')]
+
+@register(TYPEDICT)
+class costmap_v2(costmap):
+    def __init__(self, datashapes):
+        super().__init__(datashapes)
+        self.folder_name = "costmap_v3"
 
 @register(TYPEDICT)
 class depth_left_tartan(DepthModBase):
@@ -467,8 +544,8 @@ def get_vis_heightmap(heightmap, scale=0.5, hmin=-1, hmax=4):
     disp_color = cv2.applyColorMap(disp, cv2.COLORMAP_JET)
     return disp_color
 
-def get_vis_heightmap2(heightmap, scale=0.5, hmin=-1, hmax=4):
-    disp1 = np.clip((heightmap[:, :, 0] - hmin)*100, 0, 255).astype(np.uint8)
+def get_vis_heightmap2(heightmap, scale=0.5, hmin=-4, hmax=4):
+    disp1 = np.clip((heightmap[:, :, 0] - hmin)*30, 0, 255).astype(np.uint8)
     disp2 = np.clip(heightmap[:, :, 1]*255, 0, 255).astype(np.uint8)
     disp = np.concatenate((disp1, disp2) , axis=1)
     disp_color = cv2.applyColorMap(disp, cv2.COLORMAP_JET)
@@ -480,52 +557,82 @@ def get_vis_costmap(costmap):
     return disp_color
 
 if __name__=="__main__":
-    trajfolder = '/home/amigo/workspace/ros_atv/src/rosbag_to_dataset/test_output/20210903_10'
+    # trajfolder = '/home/amigo/workspace/ros_atv/src/rosbag_to_dataset/test_output/20210903_10'
+    # for frameid in range(300):
+    #     # image left
+    #     datatype = grey_left([(544, 512)])
+    #     datalist0 = datatype.load_data(trajfolder, str(frameid).zfill(6), 100)
+    #     # image right
+    #     datatype = grey_right([(544, 512)])
+    #     datalist1 = datatype.load_data(trajfolder, str(frameid).zfill(6), 100)
+    #     # image color
+    #     datatype = rgb_left([(200, 400)])
+    #     datalist2 = datatype.load_data(trajfolder, str(frameid).zfill(6), 100)
+    #     print(len(datalist2), datalist2[0].shape)
+    #     # rgb map
+    #     datatype = rgb_map([(600, 600)])
+    #     datalist3 = datatype.load_data(trajfolder, str(frameid).zfill(6), 100)
+    #     print(len(datalist3), datalist3[0].shape)
+    #     # height map
+    #     datatype = height_map([(600, 600)])
+    #     datalist4 = datatype.load_data(trajfolder, str(frameid).zfill(6), 100)
+    #     print(len(datalist4), datalist4[0].shape,  datalist4[0].dtype)
+    #     visheight = get_vis_heightmap(datalist4[0].transpose(1,2,0), scale=1.0)
+    #     # cost map
+    #     datatype = costmap([(600, 600)])
+    #     datalist5 = datatype.load_data(trajfolder, str(frameid).zfill(6), 100)
+    #     print(len(datalist5), datalist5[0].shape, datalist5[1].shape,  datalist5[0].dtype, datalist5[1])
+    #     # imu
+    #     # rgb map
+    #     datatype = rgb_map_ff([(600, 600)])
+    #     datalist6 = datatype.load_data(trajfolder, str(frameid).zfill(6), 100)
+    #     print(len(datalist6), datalist6[0].shape)
+    #     # height map
+    #     datatype = height_map_ff([(600, 600)])
+    #     datalist7 = datatype.load_data(trajfolder, str(frameid).zfill(6), 100)
+    #     print(len(datalist7), datalist7[0].shape,  datalist7[0].dtype)
+    #     visheight2 = get_vis_heightmap2(datalist7[0].transpose(1,2,0), scale=1.0)
+
+    #     datatype = height_map_ff_format([(600, 600)])
+    #     datalist8 = datatype.load_data(trajfolder, str(frameid).zfill(6), 100)
+    #     print(len(datalist8), datalist8[0].shape,  datalist8[0].dtype)
+    #     visheight3 = get_vis_heightmap2(datalist8[0].transpose(1,2,0), scale=1.0)
+    #     # import ipdb;ipdb.set_trace()
+
+    #     # import ipdb;ipdb.set_trace()
+    #     disp = cv2.hconcat((datalist3[0].transpose(1,2,0), datalist6[0].transpose(1,2,0)))
+    #     cv2.imshow('img', disp)
+    #     disp2 = cv2.hconcat((visheight, cv2.vconcat((visheight2, visheight3))))
+    #     disp2 = cv2.resize(disp2, (0,0), fx=0.8, fy=0.8)
+    #     cv2.imshow('img2', disp2)        
+    #     cv2.waitKey(0)
+
+    trajfolder = '/cairo/arl_bag_files/2023_traj/meadows_2023-09-14-12-07-28'
     for frameid in range(300):
         # image left
-        datatype = grey_left([(544, 512)])
-        datalist0 = datatype.load_data(trajfolder, str(frameid).zfill(6), 100)
-        # image right
-        datatype = grey_right([(544, 512)])
-        datalist1 = datatype.load_data(trajfolder, str(frameid).zfill(6), 100)
         # image color
-        datatype = rgb_left([(200, 400)])
+        # import ipdb;ipdb.set_trace()
+        datatype = rgb_left([(400, 960)])
         datalist2 = datatype.load_data(trajfolder, str(frameid).zfill(6), 100)
         print(len(datalist2), datalist2[0].shape)
         # rgb map
-        datatype = rgb_map([(600, 600)])
+        datatype = rgb_map_ff_v2([(600, 240)])
         datalist3 = datatype.load_data(trajfolder, str(frameid).zfill(6), 100)
         print(len(datalist3), datalist3[0].shape)
         # height map
-        datatype = height_map([(600, 600)])
+        datatype = height_map_ff_v2([(600, 240)])
         datalist4 = datatype.load_data(trajfolder, str(frameid).zfill(6), 100)
         print(len(datalist4), datalist4[0].shape,  datalist4[0].dtype)
-        visheight = get_vis_heightmap(datalist4[0].transpose(1,2,0), scale=1.0)
+        visheight = get_vis_heightmap2(datalist4[0].transpose(1,2,0), scale=1.0)
         # cost map
-        datatype = costmap([(600, 600)])
+        datatype = costmap_v2([(600, 240)])
         datalist5 = datatype.load_data(trajfolder, str(frameid).zfill(6), 100)
+        viscostmap = get_vis_costmap(datalist5[0])
         print(len(datalist5), datalist5[0].shape, datalist5[1].shape,  datalist5[0].dtype, datalist5[1])
-        # imu
-        # rgb map
-        datatype = rgb_map_ff([(600, 600)])
-        datalist6 = datatype.load_data(trajfolder, str(frameid).zfill(6), 100)
-        print(len(datalist6), datalist6[0].shape)
-        # height map
-        datatype = height_map_ff([(600, 600)])
-        datalist7 = datatype.load_data(trajfolder, str(frameid).zfill(6), 100)
-        print(len(datalist7), datalist7[0].shape,  datalist7[0].dtype)
-        visheight2 = get_vis_heightmap2(datalist7[0].transpose(1,2,0), scale=1.0)
-
-        datatype = height_map_ff_format([(600, 600)])
-        datalist8 = datatype.load_data(trajfolder, str(frameid).zfill(6), 100)
-        print(len(datalist8), datalist8[0].shape,  datalist8[0].dtype)
-        visheight3 = get_vis_heightmap2(datalist8[0].transpose(1,2,0), scale=1.0)
-        # import ipdb;ipdb.set_trace()
 
         # import ipdb;ipdb.set_trace()
-        disp = cv2.hconcat((datalist3[0].transpose(1,2,0), datalist6[0].transpose(1,2,0)))
-        cv2.imshow('img', disp)
-        disp2 = cv2.hconcat((visheight, cv2.vconcat((visheight2, visheight3))))
+        disp = cv2.hconcat((datalist3[0].transpose(1,2,0), visheight, viscostmap))
+        disp2 = cv2.vconcat((datalist2[0].transpose(1,2,0), disp))
         disp2 = cv2.resize(disp2, (0,0), fx=0.8, fy=0.8)
         cv2.imshow('img2', disp2)        
         cv2.waitKey(0)

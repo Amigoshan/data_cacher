@@ -289,6 +289,8 @@ class rgb_map_ff_v2(RGBModBase):
                 img = np.load(join(trajdir,filename))
             else:
                 raise NotImplementedError
+            # bgr-rgb
+            img = img[:,:,::-1].copy()
             img = img.transpose(1,0,2)
             imglist.append(img)
         return imglist

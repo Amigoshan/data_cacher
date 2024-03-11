@@ -303,6 +303,12 @@ class rgb_map_ff_v2(RGBModBase):
         return reslist
 
 @register(TYPEDICT)
+class rgb_map_v2(rgb_map_ff_v2):
+    def __init__(self, datashapes):
+        super().__init__(datashapes)
+        self.folder_name = "rgb_map"
+            
+@register(TYPEDICT)
 class height_map(FrameModBase):
  
     def __init__(self, datashapelist):
@@ -435,6 +441,16 @@ class height_map_ff_v2(height_map):
         for img in imglist:
             reslist.append(img.transpose(2,0,1))
         return reslist
+
+@register(TYPEDICT)
+class height_map_v2(height_map_ff_v2):
+ 
+    def __init__(self, datashapelist):
+        '''
+        the heightmap has four channels
+        '''
+        super().__init__(datashapelist)
+        self.folder_name = "height_map"
 
 @register(TYPEDICT)
 class costmap(FrameModBase):

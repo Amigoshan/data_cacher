@@ -307,7 +307,19 @@ class rgb_map_v2(rgb_map_ff_v2):
     def __init__(self, datashapes):
         super().__init__(datashapes)
         self.folder_name = "rgb_map"
-            
+
+@register(TYPEDICT)
+class rgb_map_ff_v2_2cm(rgb_map_ff_v2):
+    def __init__(self, datashapes):
+        super().__init__(datashapes)
+        self.folder_name = "rgb_map_2cm_ff"
+
+@register(TYPEDICT)
+class rgb_map_v2_2cm(rgb_map_ff_v2):
+    def __init__(self, datashapes):
+        super().__init__(datashapes)
+        self.folder_name = "rgb_map_2cm"
+
 @register(TYPEDICT)
 class height_map(FrameModBase):
  
@@ -429,7 +441,7 @@ class height_map_ff_v2(height_map):
             assert heightmap is not None, "Error loading map {}".format(filename)
 
             heightmap_sum = heightmap.sum(axis=0)
-            mask = heightmap_sum > 0
+            mask = np.abs(heightmap_sum) > 0
             mean = heightmap[4,:,:]
             heightmap_mask = np.stack((mean,mask.astype(np.float32)), axis=-1)
             heightmap_mask = heightmap_mask.transpose(1,0,2)
@@ -446,11 +458,22 @@ class height_map_ff_v2(height_map):
 class height_map_v2(height_map_ff_v2):
  
     def __init__(self, datashapelist):
-        '''
-        the heightmap has four channels
-        '''
         super().__init__(datashapelist)
         self.folder_name = "height_map"
+
+@register(TYPEDICT)
+class height_map_ff_v2_2cm(height_map_ff_v2):
+ 
+    def __init__(self, datashapelist):
+        super().__init__(datashapelist)
+        self.folder_name = "height_map_2cm_ff"
+
+@register(TYPEDICT)
+class height_map_v2_2cm(height_map_ff_v2):
+ 
+    def __init__(self, datashapelist):
+        super().__init__(datashapelist)
+        self.folder_name = "height_map_2cm"
 
 @register(TYPEDICT)
 class costmap(FrameModBase):
@@ -505,6 +528,12 @@ class costmap_v2(costmap):
     def __init__(self, datashapes):
         super().__init__(datashapes)
         self.folder_name = "costmap_v3"
+
+@register(TYPEDICT)
+class costmap_v2_2cm(costmap):
+    def __init__(self, datashapes):
+        super().__init__(datashapes)
+        self.folder_name = "costmap_imu"
 
 @register(TYPEDICT)
 class depth_left_tartan(DepthModBase):

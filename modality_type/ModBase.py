@@ -3,14 +3,14 @@ import numpy as np
 import time
 '''
 In the low level, each modality corresponds to a folder in the traj folder
-This file defines the interfaces of the Modality: 
+This file defines the interfaces of the Modality:
     - folder name
     - function that convert framestr to file
     - data type
     - data shape
 New feature:
 One folder sometimes contains more than one type of data that cannot be concatenate together, e.g. flow and flow_mask
-We now return a list of numpy array, instead of one. 
+We now return a list of numpy array, instead of one.
 '''
 # TODO:
 
@@ -50,12 +50,12 @@ class ModBase(object):
         We allow the loader to return multiple numpy arrays (e.g. in the case of loading flow returns both flow and mask)
         If which case the datashape will be a list of (h, w)s
 
-        The data_types is a list of data type 
+        The data_types is a list of data type
         The data_shapes is a list of data shape
         '''
         self.name = self.__class__.__name__ # the key name in a dictionary
         self.data_types = None # needs to be filled in derived classes
-        self.data_info = {} # store additional information 
+        self.data_info = {} # store additional information
 
         assert isinstance(datashapelist, list), "Type Error: datashape {} should be a list".format(datashapelist)
         self.data_shapes = datashapelist.copy() # needs to be filled in derived classes
@@ -63,7 +63,7 @@ class ModBase(object):
         # handle the data with different frequency
         self.freq_mult = 1 # used when this modality has higher frequency, now only integer is supported, e.g. for IMU freq_mult=10
         self.drop_last = 0 # how many frames are dropped at the end of each trajectory, e.g. for optical flow, 1 frame is dropped
-    
+
     def load_data(self, trajdir, framestr, ind_env):
         raise NotImplementedError
 
@@ -75,7 +75,7 @@ class FrameModBase(ModBase):
     '''
     def load_data(self, trajdir, framestr, ind_env):
         '''
-        ind_env: the index of the frame in the opposite direction of the frame 
+        ind_env: the index of the frame in the opposite direction of the frame
                  this is used to handle some modalities miss a few frames at last
         new: the load_data function will be return a list of numpy arrays, in most cases, the lengh of the list will be one
         '''
@@ -89,11 +89,11 @@ class FrameModBase(ModBase):
             for datashape, datatype in zip(self.data_shapes, self.data_types):
                 data = np.zeros(datashape, dtype=datatype)
                 datalist.append(data)
-        return datalist 
+        return datalist
 
     def framestr2filename(self, framestr):
         raise NotImplementedError
-    
+
     def resize_data(self, datalist):
         raise NotImplementedError
 
@@ -112,7 +112,7 @@ class SimpleModBase(ModBase):
     The frame can be cropped in the datafile, but not really cropped in the data folder on the hard drive
     We will find the cooresponding frame by the framestr, instead of the frame index in the datafile
 
-    For example, in the data folder, we have a trajectory of 100 frames. 
+    For example, in the data folder, we have a trajectory of 100 frames.
     It contains image folders with 100 images in each, and IMU numpy arrays that are with 100 in lengh
     We can crop the trajectory "virtually" in the datafile into two trajectories just by defining a datafile like this:
     --- datafile ---
@@ -127,8 +127,8 @@ class SimpleModBase(ModBase):
     ...
     000089
     --- end of datafile ---
-    If the second trajectory is loaded into the cache, we need to make sure the starting frame of that trajectory for IMU or motion is 50, instead of 0. 
-    
+    If the second trajectory is loaded into the cache, we need to make sure the starting frame of that trajectory for IMU or motion is 50, instead of 0.
+
     New: this allows that one class returns a list of numpy arrays, in most cases the length of the list will be one
     '''
     def __init__(self, datashapes):
@@ -152,7 +152,9 @@ class SimpleModBase(ModBase):
         '''
         The trajecotry can start from the middle of the trajectory
         '''
+        # print(data.shape, framestrlist)
         raise NotImplementedError
+
 
     def load_data(self, trajdir, framestrlist):
         '''
@@ -173,6 +175,6 @@ class SimpleModBase(ModBase):
             if padding is not None:
                 data = np.concatenate((data, padding), axis=0)
             data = self.crop_trajectory(data, framestrlist)
-            assert len(data) == len(framestrlist), "Error Loading {}, data len {}, framestr len {}".format(self.name, len(data), len(framestrlist))
+            assert len(data) == self.freq_mult*len(framestrlist), "Error Loading {}, data len {}, framestr len {}".format(self.name, len(data), len(framestrlist))
             datalist.append(data)
         return datalist

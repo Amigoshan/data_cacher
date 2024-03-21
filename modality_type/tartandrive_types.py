@@ -5,12 +5,12 @@ import numpy as np
 from .ply_io import read_ply
 
 '''
-We assume one modality may contains multiple data types. 
+We assume one modality may contains multiple data types.
 E.g. costmap contains cost and velocity
 The load_data function returns a list of data
 
 In the low level, each modality corresponds to a folder in the traj folder
-This file defines the interfaces of the Modality: 
+This file defines the interfaces of the Modality:
     - folder name
     - function that convert framestr to file
     - data type list
@@ -32,12 +32,19 @@ class IMUBase(SimpleModBase):
         self.folder_name = 'imu'
 
     def data_padding(self, k):
-        return np.zeros((10,) + tuple(self.data_shapes[k]), dtype=np.float32)
+        return np.zeros((self.freq_mult, self.data_shapes[k][0]), dtype=np.float32)
+
+    def crop_trajectory(self, data, framestrlist):
+        startind = int(framestrlist[0]) * self.freq_mult
+        endind = (1+int(framestrlist[-1])) * self.freq_mult # IMU len = (N-1)*10, where N is the number of images
+        datalen = data.shape[0]
+        assert startind < datalen and endind <= datalen, "Error in loading IMU, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
+        return data[startind: endind]
 
 class LiDARBase(FrameModBase):
     def __init__(self, datashapelist):
         super().__init__(datashapelist) # point dimention, e.g. 3 for tartanvo, 6 if rgb is included
-        self.data_shapes = [(57600, 3)] # 57600 is the maximun points for Velodyn 16 where there are 16x3600 points
+        self.data_shapes = [(96000, 3)] # 57600 is the maximun points for Velodyn 16 where there are 16x3600 points
         self.data_shape = self.data_shapes[0]
         self.data_types = [np.float32]
 
@@ -51,7 +58,13 @@ class LiDARBase(FrameModBase):
             else:
                 assert False, "Unknow file type for LiDAR {}".format(filename)
             assert data.shape[0] <= self.data_shape[0], "The number of LiDAR points {} exeeds the maximum size {}".format(data.shape[0], self.data_shape[0])
+            if data.shape[0] < self.data_shape[0]:
+                data = np.vstack([data, np.zeros([self.data_shape[0] - data.shape[0],3])])
+            data = data.astype(self.data_types[0])
             lidarlist.append(data)
+        return lidarlist
+
+    def transpose(self, lidarlist):
         return lidarlist
 
     def resize_data(self, lidarlist):
@@ -155,11 +168,11 @@ class FlowModBase(FrameModBase):
         # we assume that the flow might return flow or (flow, mask)
         # we also assume that the flow will always be returned, the mask is optional
         self.listlen = len(datashapes) # this is usually one
-        self.data_shapes[0] = (2,) + tuple(self.data_shapes[0]) # add one dim to the 
+        self.data_shapes[0] = (2,) + tuple(self.data_shapes[0]) # add one dim to the
         self.data_type = [np.float32, np.uint8] # for flow and mask
 
     def load_frame(self, filenamelist):
-        # if filename is None: 
+        # if filename is None:
         #     return np.zeros((10,10,2), dtype=np.float32), np.zeros((10,10), dtype=np.uint8) # return an arbitrary shape because it will be resized later
         flow16 = repeat_function(cv2.imread, {'filename':filenamelist[0], 'flags':cv2.IMREAD_UNCHANGED}, repeat_times=10)
         flow32 = flow16[:,:,:2].astype(np.float32)
@@ -181,9 +194,9 @@ class FlowModBase(FrameModBase):
             flow = cv2.resize(flow, (target_w, target_h), interpolation=cv2.INTER_LINEAR )
             flow[:,:,0] = flow[:,:,0] * scale_w
             flow[:,:,1] = flow[:,:,1] * scale_h
-        if self.listlen == 1: 
+        if self.listlen == 1:
             return [flow]
-        
+
         mask = flowmasklist[1]
         target_h, target_w = self.data_shapes[1]
         (h, w) = mask.shape
@@ -197,7 +210,7 @@ class grey_left(GreyModBase):
     def __init__(self, datashapes):
         super().__init__(datashapes)
         self.folder_name = "image_left"
-    
+
     def framestr2filename(self, framestr):
         '''
         This is very dataset specific
@@ -210,7 +223,7 @@ class grey_right(GreyModBase):
     def __init__(self, datashapes):
         super().__init__(datashapes)
         self.folder_name = "image_right"
-    
+
     def framestr2filename(self, framestr):
         '''
         This is very dataset specific
@@ -223,7 +236,7 @@ class rgb_left(RGBModBase):
     def __init__(self, datashapes):
         super().__init__(datashapes)
         self.folder_name = "image_left_color"
-    
+
     def framestr2filename(self, framestr):
         '''
         This is very dataset specific
@@ -236,7 +249,7 @@ class rgb_map(RGBModBase):
     def __init__(self, datashapes):
         super().__init__(datashapes)
         self.folder_name = "rgb_map"
-    
+
     def framestr2filename(self, framestr):
         '''
         This is very dataset specific
@@ -249,7 +262,7 @@ class rgb_map_ff(RGBModBase):
     def __init__(self, datashapes):
         super().__init__(datashapes)
         self.folder_name = "rgb_map_ff"
-    
+
     def framestr2filename(self, framestr):
         '''
         This is very dataset specific
@@ -270,7 +283,7 @@ class rgb_map_ff_v2(RGBModBase):
     def __init__(self, datashapes):
         super().__init__(datashapes)
         self.folder_name = "rgb_map_ff"
-    
+
     def framestr2filename(self, framestr):
         '''
         This is very dataset specific
@@ -322,7 +335,7 @@ class rgb_map_v2_2cm(rgb_map_ff_v2):
 
 @register(TYPEDICT)
 class height_map(FrameModBase):
- 
+
     def __init__(self, datashapelist):
         '''
         the heightmap has four channels
@@ -345,7 +358,7 @@ class height_map(FrameModBase):
             maplist.append(heightmap)
         return maplist
 
-    def resize_data(self, imglist): 
+    def resize_data(self, imglist):
         # resize image
         for k, img in enumerate(imglist):
             h, w = img.shape[0], img.shape[1]
@@ -369,11 +382,11 @@ class height_map(FrameModBase):
 
 @register(TYPEDICT)
 class height_map_ff_format(height_map):
- 
+
     def __init__(self, datashapelist):
         '''
         load the four-channel heightmap
-        convert it to the two-channel ff format 
+        convert it to the two-channel ff format
         '''
         super().__init__(datashapelist)
         self.channel_num = 2
@@ -397,7 +410,7 @@ class height_map_ff_format(height_map):
 
 @register(TYPEDICT)
 class height_map_ff(height_map):
- 
+
     def __init__(self, datashapelist):
         '''
         the heightmap has four channels
@@ -420,7 +433,7 @@ class height_map_ff(height_map):
 
 @register(TYPEDICT)
 class height_map_ff_v2(height_map):
- 
+
     def __init__(self, datashapelist):
         '''
         the heightmap has four channels
@@ -456,21 +469,21 @@ class height_map_ff_v2(height_map):
 
 @register(TYPEDICT)
 class height_map_v2(height_map_ff_v2):
- 
+
     def __init__(self, datashapelist):
         super().__init__(datashapelist)
         self.folder_name = "height_map"
 
 @register(TYPEDICT)
 class height_map_ff_v2_2cm(height_map_ff_v2):
- 
+
     def __init__(self, datashapelist):
         super().__init__(datashapelist)
         self.folder_name = "height_map_2cm_ff"
 
 @register(TYPEDICT)
 class height_map_v2_2cm(height_map_ff_v2):
- 
+
     def __init__(self, datashapelist):
         super().__init__(datashapelist)
         self.folder_name = "height_map_2cm"
@@ -495,7 +508,7 @@ class costmap(FrameModBase):
                 vel = np.zeros((1, self.channel_num), dtype=np.float32)
             else:
                 vel = vel.reshape(1, self.channel_num)
-            
+
         if vel.shape[0]>= self.vel_max_len:
              vel = vel[:self.vel_max_len,:]
         else: # pad vel with zero
@@ -503,7 +516,7 @@ class costmap(FrameModBase):
 
         return [costmap, vel]
 
-    def resize_data(self, datalist): 
+    def resize_data(self, datalist):
         costmap = datalist[0]
         h, w = costmap.shape[0], costmap.shape[1]
         target_h, target_w = self.data_shapes[0][1], self.data_shapes[0][2]
@@ -540,7 +553,7 @@ class depth_left_tartan(DepthModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "depth_left"
-    
+
     def framestr2filename(self, framestr):
         '''
         This is very dataset specific
@@ -558,15 +571,23 @@ class imu(IMUBase):
     def get_filename(self):
         return [join(self.folder_name, 'imu.npy')]
 
-# @register(TYPEDICT)
-# class lidar(LiDARBase):
-#     def __init__(self, datashape):
-#         super().__init__(datashape)
-#         self.folder_name = 'lidar'
-#         self.file_suffix = 'lcam_front_lidar'
+@register(TYPEDICT)
+class novatel_imu(IMUBase):
+    '''
+    This defines modality that is light-weight
+    such as IMU, pose, wheel_encoder
+    '''
+    def get_filename(self):
+        return [join('novatel_' + self.folder_name, 'imu.npy')]
 
-#     def framestr2filename(self, framestr):
-#         return join(self.folder_name, framestr + '_' + self.file_suffix + '.ply')
+@register(TYPEDICT)
+class full_cloud(LiDARBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = 'full_cloud'
+
+    def framestr2filename(self, framestr):
+        return [join(self.folder_name, framestr + '.npy')]
 
 def get_vis_heightmap(heightmap, scale=0.5, hmin=-1, hmax=4):
     FLOATMAX = 1000000.0
@@ -647,7 +668,7 @@ if __name__=="__main__":
     #     cv2.imshow('img', disp)
     #     disp2 = cv2.hconcat((visheight, cv2.vconcat((visheight2, visheight3))))
     #     disp2 = cv2.resize(disp2, (0,0), fx=0.8, fy=0.8)
-    #     cv2.imshow('img2', disp2)        
+    #     cv2.imshow('img2', disp2)
     #     cv2.waitKey(0)
 
     trajfolder = '/cairo/arl_bag_files/2023_traj/meadows_2023-09-14-12-07-28'
@@ -677,7 +698,7 @@ if __name__=="__main__":
         disp = cv2.hconcat((datalist3[0].transpose(1,2,0), visheight, viscostmap))
         disp2 = cv2.vconcat((datalist2[0].transpose(1,2,0), disp))
         disp2 = cv2.resize(disp2, (0,0), fx=0.8, fy=0.8)
-        cv2.imshow('img2', disp2)        
+        cv2.imshow('img2', disp2)
         cv2.waitKey(0)
 
     import ipdb;ipdb.set_trace()

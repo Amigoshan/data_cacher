@@ -11,10 +11,11 @@ DataRoot['local'] = {
                         'flying':       '/home/amigo/tmp/data/sceneflow',
                         'sintel':       '/home/amigo/tmp/data/sintel/training',
                         'euroc':        '/home/wenshan/tmp/vo_data/euroc',
-                        'kitti-stereo': '/prague/tartanvo_data/kitti/stereo', 
+                        'kitti-stereo': '/prague/tartanvo_data/kitti/stereo',
                         'kitti-vo':     '/home/wenshan/tmp/vo_data/kittivo',
                         'tartandrive':  '/home/amigo/workspace/ros_atv/src/rosbag_to_dataset/test_output',
-                        'tartandrive2':  '/cairo/arl_bag_files/2023_traj'
+                        'tartandrive2':  '/cairo/arl_bag_files/2023_traj',
+                        'tdrive_gupta': '/media/matthew/Extreme SSD/gupta_temp_dataset'
 }
 
 DataRoot['desktop'] = {
@@ -39,7 +40,7 @@ DataRoot['cluster'] = {
                         'sintel':       '/project/learningvo/flowdata/sintel/training',
                         'euroc':        '/project/learningvo/euroc',
                         'kitti-stereo': '/project/learningvo/stereo_data/kitti/training',
-                        'tartandrive':  '/project/learningphysics' 
+                        'tartandrive':  '/project/learningphysics'
 }
 
 DataRoot['zoidberg'] = {
@@ -49,7 +50,7 @@ DataRoot['zoidberg'] = {
                         'chairs':       '/project/learningvo/flowdata/FlyingChairs_release',
                         'sintel':       '/project/learningvo/flowdata/sintel/training',
                         'flying':       '/data2/datasets/yaoyuh/StereoData/SceneFlow',
-                        'kitti-stereo': '/project/learningvo/stereo_data/kitti/training', 
+                        'kitti-stereo': '/project/learningvo/stereo_data/kitti/training',
                         'tartan2':      '/scratch/tartanair_v2',
 }
 
@@ -60,12 +61,12 @@ DataRoot['dgx'] = {
                         'chairs':       '/tmp2/wenshan/flyingchairs',
                         'flying':       '/tmp2/DockerTmpfs_yaoyuh/StereoData/SceneFlow',
                         'sintel':       '/tmp2/wenshan/sintel/training',
-                        'kitti-stereo': '/tmp2/wenshan/kitti/training', 
+                        'kitti-stereo': '/tmp2/wenshan/kitti/training',
 }
 
 DataRoot['psc'] = {
                         'tartan':       '/ocean/projects/cis220039p/shared/tartanair_v1',
-                        'tartan2':      '/ocean/projects/cis220039p/shared/tartanair_v2',   
+                        'tartan2':      '/ocean/projects/cis220039p/shared/tartanair_v2',
                         'euroc':        '/ocean/projects/cis220039p/wenshanw/euroc',
                         'tartandrive2': '/ocean/projects/cis220039p/shared/tartandrive/2023_traj/v1',
                         'tartan2_event':'/ocean/projects/cis220039p/shared/tartanair_v2_event',
@@ -89,7 +90,7 @@ STEREO_DR = {'sceneflow':   {'local':   ['/home/amigo/tmp/data/sceneflow', '/hom
                             'azure':    ['SceneFlow', 'SceneFlow'],
                             'dgx':      ['/tmp2/DockerTmpfs_yaoyuh/StereoData/SceneFlow', '/tmp2/DockerTmpfs_yaoyuh/StereoData/SceneFlow'],
                             'psc':      ['/ocean/projects/cis210086p/wenshanw/SceneFlow','/ocean/projects/cis210086p/wenshanw/SceneFlow'],
-                            }, 
+                            },
             'tartan':       {'local':   ['/home/amigo/tmp/data/tartan', '/home/amigo/tmp/data/tartan'],
                             'local_test':  ['/peru/tartanair', '/peru/tartanair'],
                             'cluster':  ['/data/datasets/wenshanw/tartan_data', '/data/datasets/wenshanw/tartan_data'],
@@ -110,19 +111,19 @@ STEREO_DR = {'sceneflow':   {'local':   ['/home/amigo/tmp/data/sceneflow', '/hom
 
 
 # Datasets for FlowVo
-FLOWVO_DR = {'tartan':      {'local':   '/home/amigo/tmp/data/tartan', # '/home/amigo/tmp/data/tartanair_pose_and_imu',# 
-                            'local2':   '/home/amigo/tmp/data/tartanair_pose_and_imu', #'/cairo/tartanair_test_cvpr', # '/home/amigo/tmp/data/tartan', # 
+FLOWVO_DR = {'tartan':      {'local':   '/home/amigo/tmp/data/tartan', # '/home/amigo/tmp/data/tartanair_pose_and_imu',#
+                            'local2':   '/home/amigo/tmp/data/tartanair_pose_and_imu', #'/cairo/tartanair_test_cvpr', # '/home/amigo/tmp/data/tartan', #
                             'local_test':  '/peru/tartanair',
                             'cluster':  '/data/datasets/wenshanw/tartan_data',
                             'cluster2':  '/project/learningvo/tartanair_v1_5',
                             'azure':    '',
                             'dgx':      '/tmp2/wenshan/tartanair_v1_5',
                             'psc':      '/ocean/projects/cis210086p/wenshanw/tartanair_v1_5',
-                            }, 
-             'euroc':       {'local':   '/prague/tartanvo_data/euroc', 
+                            },
+             'euroc':       {'local':   '/prague/tartanvo_data/euroc',
                             'cluster2':  '/project/learningvo/euroc',
                             },
-             'kitti':       {'local':   '/prague/tartanvo_data/kitti/vo', 
+             'kitti':       {'local':   '/prague/tartanvo_data/kitti/vo',
                             },
 }
 
@@ -132,19 +133,19 @@ FLOW_DR =   {'flyingchairs':{'local':   ['/home/amigo/tmp/data/flyingchairs', '/
                             'azure':    ['FlyingChairs_release', 'FlyingChairs_release'],
                             'dgx':      ['/tmp2/wenshan/flyingchairs', '/tmp2/wenshan/flyingchairs'],
                             'psc':      ['/ocean/projects/cis210086p/wenshanw/flyingchairs','/ocean/projects/cis210086p/wenshanw/flyingchairs'],
-                            }, 
+                            },
             'flyingthings': {'local':   ['/home/amigo/tmp/data/sceneflow', '/home/amigo/tmp/data/sceneflow/frames_cleanpass'],
                             'cluster':  ['/data/datasets/yaoyuh/StereoData/SceneFlow', '/project/learningvo/flowdata/optical_flow'],
                             'azure':    ['SceneFlow','SceneFlow'],
                             'dgx':      ['/tmp2/DockerTmpfs_yaoyuh/StereoData/SceneFlow', '/tmp2/wenshan/optical_flow'],
                             'psc':      ['/ocean/projects/cis210086p/wenshanw/SceneFlow','/ocean/projects/cis210086p/wenshanw/optical_flow'],
-                            }, 
+                            },
             'sintel':       {'local':   ['/home/amigo/tmp/data/sintel/training', '/home/amigo/tmp/data/sintel/training'],
                             'cluster':  ['/project/learningvo/flowdata/sintel/training', '/project/learningvo/flowdata/sintel/training'],
                             'azure':    ['sintel/training', 'sintel/training'],
                             'dgx':      ['/tmp2/wenshan/sintel/training', '/tmp2/wenshan/sintel/training'],
                             'psc':      ['/ocean/projects/cis210086p/wenshanw/sintel/training','/ocean/projects/cis210086p/wenshanw/sintel/training'],
-                            }, 
+                            },
             'tartan':       {'local':   ['/home/amigo/tmp/data/tartan', '/home/amigo/tmp/data/tartan'],
                             'local_test':  ['/peru/tartanair', '/peru/tartanair'],
                             'cluster':  ['/data/datasets/wenshanw/tartan_data', '/data/datasets/wenshanw/tartan_data'],
@@ -152,12 +153,11 @@ FLOW_DR =   {'flyingchairs':{'local':   ['/home/amigo/tmp/data/flyingchairs', '/
                             'azure':    ['', ''],
                             'dgx':      ['/tmp2/wenshan/tartanair_v1_5', '/tmp2/wenshan/tartanair_v1_5'],
                             'psc':      ['/ocean/projects/cis210086p/wenshanw/tartanair_v1_5','/ocean/projects/cis210086p/wenshanw/tartanair_v1_5'],
-                            }, 
+                            },
             'euroc':        {'local':   ['/prague/tartanvo_data/euroc', '/prague/tartanvo_data/euroc'],
                             'cluster2':  ['/project/learningvo/euroc', '/project/learningvo/euroc'],
                             },
             'kitti':        {'local':   ['/prague/tartanvo_data/kitti/vo', '/prague/tartanvo_data/kitti/vo'],
                             },
-    
-}
 
+}

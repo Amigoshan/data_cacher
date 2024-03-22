@@ -1,22 +1,23 @@
 import numpy as np
 from torch.utils.data import Dataset
 # from .utils import make_intrinsics_layer
+import os
 
 class RAMDataset(Dataset):
     '''
-    Update: 
+    Update:
     1. remove task-specific things from dataloader: imu_freq, intrinsics, blxfx, random_blur
     2. code clean
 
-    datacacher: 
+    datacacher:
     modality_dict: e.g. {"img0": rgb_lcam_front, "depth0": depth_lcam_left}
     modalities_lengths: e.g. {"img0": 2, "img1": 1, "flow": 1, "imu": 10}
-    the following modalities are supported: 
+    the following modalities are supported:
     img0(img0blur),img1,disp0,disp1,depth0,depth1,flow,fmask,motion,imu,trajdir
 
     Note if trajdir is asked for, the trajectory's path will be returned in sample['trajdir'] for debugging purpose
 
-    imu_freq: only useful when imu modality is queried 
+    imu_freq: only useful when imu modality is queried
     intrinsics: [w, h, fx, fy, ox, oy], used for generating intrinsics layer. No intrinsics layer added if the value is None
     blxfx: used to convert between depth and disparity
 
@@ -24,8 +25,8 @@ class RAMDataset(Dataset):
     Note only one of the flow/flow2/flow4 can be queried in one Dataset
     Note now the img sequence and the flow sequence are coorelated, which means that you can not ask for a image seq with 0 skipping while querying flow2
 
-    When a sequence of data is required, the code will automatically adjust the length of the dataset, to make sure the every modality exists. 
-    The IMU has a higher frequency than the other modalities. The frequency is imu_freq x other_freq. 
+    When a sequence of data is required, the code will automatically adjust the length of the dataset, to make sure the every modality exists.
+    The IMU has a higher frequency than the other modalities. The frequency is imu_freq x other_freq.
 
     If intrinsics is not None, a intrinsics layer is added to the sample
     The intrinsics layer will be scaled wrt the intrinsics_sclae
@@ -41,16 +42,16 @@ class RAMDataset(Dataset):
         frame_dir = False, \
         verbose = False, \
         params = None
-        ):  
+        ):
 
         super(RAMDataset, self).__init__()
         self.datacacher = datacacher
         self.modalities_lengths = modalities_lengths
         self.modalities_freq_mults = modalities_freq_mults
         self.modalities_drop_lasts = modalities_drop_lasts
-    
+
         self.modkeylist, self.modfreqlist, self.moddroplist, self.modlenlist= [], [], [], []
-        for k, v in self.modalities_lengths.items(): 
+        for k, v in self.modalities_lengths.items():
             assert k in modalities_freq_mults and k in modalities_drop_lasts, \
                 "RAMDataset: Missing key {} in modalities_freq_mults or modalities_drop_lasts".format(k)
             self.modkeylist.append(k) # ["img0", "img1", "depth0", ...]
@@ -61,14 +62,14 @@ class RAMDataset(Dataset):
         self.transform = transform
 
         self.frame_skip = frame_skip # sample not consequtively, skip a few frames within a sequences
-        self.seq_stride = seq_stride # sample less sequence, skip a few frames between two sequences 
+        self.seq_stride = seq_stride # sample less sequence, skip a few frames between two sequences
         self.frame_dir = frame_dir # return the trajdir and framestr if set to True
         self.params = params
 
         # initialize the trajectories and figure out the seqlen
         assert datacacher.ready_buffer.full, "Databuffer in RAM is not ready! "
         self.trajlist = datacacher.ready_buffer.trajlist
-        self.trajlenlist = datacacher.ready_buffer.trajlenlist 
+        self.trajlenlist = datacacher.ready_buffer.trajlenlist
         self.framelist = datacacher.ready_buffer.framelist
         self.dataroot = datacacher.data_root
 
@@ -95,25 +96,33 @@ class RAMDataset(Dataset):
         for trajlen in self.trajlenlist:
             minseqnum = trajlen + 1
             for modlen, mod_droplast, mod_freqmult in zip(self.modlenlist, self.moddroplist, self.modfreqlist):
-                seqnum = self.sample_num_from_traj(trajlen, self.frame_skip, self.seq_stride, 
+                seqnum = self.sample_num_from_traj(trajlen, self.frame_skip, self.seq_stride,
                              modlen, mod_freqmult, mod_droplast)
                 if seqnum < minseqnum:
                     minseqnum = seqnum
             seqnumlist.append(minseqnum)
         return seqnumlist
 
-    def sample_num_from_traj(self, trajlen, skip, stride, 
+    def grab_pairs(self, expfol, id, pair_type):
+        string_id = "{:06d}".format(id)
+        near_all = np.load(os.path.join(self.dataroot, expfol,pair_type, string_id + '.npy'))
+        # print(near_all.dtype)
+        near_ids = np.random.choice(near_all.shape[0])
+        near = near_all[near_ids]
+        return near
+
+    def sample_num_from_traj(self, trajlen, skip, stride,
                              mod_sample_len, mod_freq_mul, mod_drop_last):
         # the valid data lengh of this modality
         mod_trajlen = trajlen * mod_freq_mul - mod_drop_last
-        # sequence length with skip frame 
+        # sequence length with skip frame
         # e.g. x..x..x (sample_length=3, skip=2, seqlen_w_skip=1+(2+1)*(3-1)=7)
         seqlen_w_skip = (skip + 1) * mod_sample_len - skip
         mod_stride = stride * mod_freq_mul
         seqnum = int((mod_trajlen - seqlen_w_skip)/ mod_stride) + 1
         if mod_trajlen<seqlen_w_skip:
-            seqnum = 0      
-        return seqnum  
+            seqnum = 0
+        return seqnum
 
     def idx2trajind(self, idx):
         for k in range(self.trajnum):
@@ -152,13 +161,29 @@ class RAMDataset(Dataset):
         # sample = self.datacacher[ramslice]
         sample = {}
         trajind, frameind = self.idx2trajind(idx)
+        # print(idx, trajind, frameind)
+        # print(self.trajlist)
+        sp_near_hash = self.grab_pairs(self.trajlist[trajind],frameind, 'spatial_near')
+        # print(near_hash)
+
         for key, modlen, mod_freqmult in zip(self.modkeylist, self.modlenlist, self.modfreqlist):
 
-        # for datatype, datalen in self.modalities_lengths.items(): 
+        # for datatype, datalen in self.modalities_lengths.items():
             # parse the idx to trajstr
             ramslice = self.idx2slice(mod_freqmult, modlen, trajind, frameind)
             # print(key, ramslice)
             sample[key] = self.datacacher.ready_buffer.get_frame(key, ramslice)
+
+        # sp_near_sample = {}
+        # for key, modlen, mod_freqmult in zip(self.modkeylist, self.modlenlist, self.modfreqlist):
+        #
+        # # for datatype, datalen in self.modalities_lengths.items():
+        #     # parse the idx to trajstr
+        #     ramslice = self.idx2slice(mod_freqmult, modlen, sp_near_hash[0], sp_near_hash[1])
+        #     # print(key, ramslice)
+        #     sp_near_sample[key] = self.datacacher.ready_buffer.get_frame(key, ramslice)
+        #
+        # sample['spatial_near'] = sp_near_sample
 
         if self.frame_dir:
             sample['trajdir'] = self.dataroot + '/' + self.trajlist[trajind] + '/' + self.framelist[trajind][frameind]
@@ -198,7 +223,7 @@ if __name__ == '__main__':
     modality_types = {'img0':rgbtype, 'depth0':depthtype, 'flow':flowtype}
     modalities_lengths = {'img0':2, 'depth0':1, 'flow':3}
     datacacher = DataCacher({'img0':rgbtype, 'depth0':depthtype, 'flow':flowtype}, dataspliter, dataroot, 2, batch_size=1, load_traj=False)
-     
+
     while not datacacher.new_buffer_available:
         print('wait for data loading...')
         time.sleep(1)

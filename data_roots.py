@@ -15,7 +15,7 @@ DataRoot['local'] = {
                         'kitti-vo':     '/home/wenshan/tmp/vo_data/kittivo',
                         'tartandrive':  '/home/amigo/workspace/ros_atv/src/rosbag_to_dataset/test_output',
                         'tartandrive2':  '/cairo/arl_bag_files/2023_traj',
-                        'tdrive_gupta': '/media/matthew/Extreme SSD/gupta_temp_dataset'
+                        'tdrive_gupta': '/media/matthew/Extreme SSD1/gupta_temp_dataset'
 }
 
 DataRoot['desktop'] = {

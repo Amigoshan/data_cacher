@@ -20,10 +20,11 @@ DataRoot['local'] = {
 DataRoot['desktop'] = {
                         'sceneflow':    '/home/amigo/tmp/data/sceneflow',
                         'tartan':       '/home/wenshan/tmp/tartanair',
-                        'tartan2':      '/home/amigo/tmp/test_root',
+                        'tartan2':      '/peru/tartanairv2',
                         'shibuya':      '/prague/tartanvo_data/AirDOS_shibuya',
                         'euroc':        '/home/wenshan/tmp/vo_data/euroc',
                         'kitti-vo':     '/home/wenshan/tmp/vo_data/kittivo',
+                        'kitti-stereo': '/peru/tartanvo_data/kitti/stereo'
 }
 
 DataRoot['wsl'] = {

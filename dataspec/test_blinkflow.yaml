@@ -12,7 +12,7 @@
     parameter:
   data:
     1:
-      file: "/ocean/projects/cis220039p/gramasat/data/code/ERAFT/loader/data_cacher/data/event_test_blinkflow.txt"
+      file: "./data_cacher/data/event_test_blinkflow.txt"
       modality: 
         blinkflow_cam:
           "img0":
@@ -32,7 +32,7 @@
       cacher:
         # data_root_path_override: "/home/amigo/tmp/test_root"
         data_root_key: blinkflow
-        subset_framenum: 100
+        subset_framenum: 500
         worker_num: 8
       dataset:
         frame_skip: 1

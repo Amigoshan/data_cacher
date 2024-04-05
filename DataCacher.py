@@ -1,14 +1,16 @@
 import torch
 from torch.utils.data import DataLoader
 import time
-
+from os.path import join
 import threading
 
-from .modality_type.ModBase import FrameModBase, SimpleModBase, get_modality_type
+from .modality_type.ModBase import FrameModBase, SimpleModBase
 torch.multiprocessing.set_sharing_strategy('file_system')
 
 from .TrajBuffer import TrajBuffer
-from .CacherDataset import CacherDataset, SimpleDataloader
+from .CacherDataset import  SimpleDataloader #CacherDataset,
+
+import concurrent.futures
 
 class DataCacher(object):
 
@@ -29,26 +31,19 @@ class DataCacher(object):
         '''
         self.verbose = verbose
 
-        # self.modalities_sizes = modalities_sizes
-        # self.datatypes = list(self.modalities_sizes.keys())
-        # self.modality_dict = modality_dict
         assert len(modalities) == len(modkey_list), "DataCacher: Modality number {} and modkey number {} mismatch!".format(\
             len(modalities), len(modkey_list))
         self.modkey_list = modkey_list #[modality_dict[kk] for kk in modality_dict]
-        # mod_type_names = list(modality_dict.keys()) # a list of strings, which are the names of type class 
         self.modalities = modalities # [get_modality_type(mm) for mm in mod_type_names]
-        # self.modalities = list(modality_dict.keys()) # [modality_dict[kk] for kk in self.modnames]
-        self.modnum = len(modalities)
+        # self.modnum = len(modalities)
 
         self.num_worker = num_worker
         self.batch_size = batch_size
-        # self.cacher_dataset = cacher_dataset
         self.data_root = data_root
         if load_traj:
             self.splitter_func = data_splitter.get_next_trajectory
         else:
             self.splitter_func = data_splitter.get_next_split
-        # self.data_splitter = data_splitter # split the whole dataset into subsets
 
         # initialize two buffers
         self.loading_buffer = None
@@ -56,13 +51,14 @@ class DataCacher(object):
         self.loading_a = False
         self.loading_b = False
         self.new_buffer_available = False
-        self.active_mod = -1
-        self.active_modkeys = ""
-        self.mod_ind = 0
-        self.dataiter = None
+        # self.active_mod = -1
+        # self.active_modkeys = ""
+        # self.mod_ind = 0
+        # self.dataiter = None
         # This following lines won't allocate RAM memory yet
         self.buffer_a = TrajBuffer(self.modkey_list, self.modalities, verbose)
         self.buffer_b = TrajBuffer(self.modkey_list, self.modalities, verbose)
+        self.filelist = None
 
         # initialize a dataloader
         self.stop_flag = False
@@ -99,28 +95,17 @@ class DataCacher(object):
         self.vprint('  simple type {} loaded: traj {} frames {}'.format(modkeys, len(self.loading_buffer.trajlist), startind))
         self.loading_buffer.set_full(modkeys)
 
-    def set_load_mod(self, k): 
+    def process_filelist(self, trajlist, framelist):
         '''
-        set the k-th modality as the active modality
-        return: whether it ends up with a modality that needs to be loaded by worker
+        return: 1. the relative dir of trajectory 
+                2. the frame string 
+                3. is the frame at the end of the current trajectory (for loading flow)
         '''
-        modobj = self.modalities[k]
-        self.active_mod = k
-        self.active_modkeys = self.modkey_list[k]
-
-        if isinstance(modobj, SimpleModBase):
-            self.load_simple_mod(self.active_modkeys, modobj)
-            return False
-
-        elif isinstance(modobj, FrameModBase):
-            cacher_dataset = CacherDataset(modobj, self.loading_buffer.trajlist, self.loading_buffer.trajlenlist, 
-                                            self.loading_buffer.framelist, datarootdir=self.data_root)
-            dataloader = DataLoader(cacher_dataset, batch_size=self.batch_size, shuffle=False, num_workers=self.num_worker)#, persistent_workers=True)
-            self.dataiter = iter(dataloader)
-            self.modind = 0
-            return True
-        else:
-            assert False, "DataCacher: Unknow modality type {}".format(self.active_modkeys)
+        image_files = []
+        for trajstr, frames in zip(trajlist, framelist):
+            for k,framestr in enumerate(frames):
+                image_files.append( (trajstr, framestr, len(frames)-k) )
+        return image_files
 
     def reset_buffer(self):
         '''
@@ -131,10 +116,11 @@ class DataCacher(object):
         '''
         trajlist, trajlenlist, framelist, framenum, new_epoch = self.splitter_func()
         self.loading_buffer.reset(framenum, trajlist, trajlenlist, framelist)
+        self.filelist = self.process_filelist(trajlist, framelist)
 
-        self.active_mod = -1
-        self.active_modkeys = ""
-        self.update_mod()
+        # self.active_mod = -1
+        # self.active_modkeys = ""
+        # self.update_mod()
 
         self.new_buffer_available = False
         self.starttime = time.time()
@@ -165,38 +151,108 @@ class DataCacher(object):
     def __getitem__(self, index):
         return self.ready_buffer[index]
 
-    def update_mod(self,):
-        '''
-        control which modality currently is working on
-        '''
-        while True: # loop until a FrameMod is found
-            if self.active_mod+1 == self.modnum: # all modalities have been loaded
-                assert self.loading_buffer.is_full, "Datacacher: the buffer is not full"
-                self.new_buffer_available = True
-                self.vprint('==> Buffer loaded: traj {}, frame {}, time {}'.format(len(self.loading_buffer.trajlist),len(self.loading_buffer), time.time()-self.starttime))
-                break
-            else: # load the next modality
-                if self.set_load_mod(self.active_mod + 1):
-                    break
+    # def set_load_mod(self, k): 
+    #     '''
+    #     set the k-th modality as the active modality
+    #     return: whether it ends up with a modality that needs to be loaded by worker
+    #     '''
+    #     modobj = self.modalities[k]
+    #     self.active_mod = k
+    #     self.active_modkeys = self.modkey_list[k]
+
+    #     if isinstance(modobj, SimpleModBase):
+    #         self.load_simple_mod(self.active_modkeys, modobj)
+    #         return False
+
+    #     elif isinstance(modobj, FrameModBase):
+    #         cacher_dataset = CacherDataset(modobj, self.loading_buffer.trajlist, self.loading_buffer.trajlenlist, 
+    #                                         self.loading_buffer.framelist, datarootdir=self.data_root)
+    #         dataloader = DataLoader(cacher_dataset, batch_size=self.batch_size, shuffle=False, num_workers=self.num_worker)#, persistent_workers=True)
+    #         self.dataiter = iter(dataloader)
+    #         self.modind = 0
+    #         return True
+    #     else:
+    #         assert False, "DataCacher: Unknow modality type {}".format(self.active_modkeys)
+
+
+    # def update_mod(self,):
+    #     '''
+    #     control which modality currently is working on
+    #     '''
+    #     while True: # loop until a FrameMod is found
+    #         if self.active_mod+1 == self.modnum: # all modalities have been loaded
+    #             assert self.loading_buffer.is_full(), "Datacacher: the buffer is not full"
+    #             self.new_buffer_available = True
+    #             self.vprint('==> Buffer loaded: traj {}, frame {}, time {}'.format(len(self.loading_buffer.trajlist),len(self.loading_buffer), time.time()-self.starttime))
+    #             break
+    #         else: # load the next modality
+    #             if self.set_load_mod(self.active_mod + 1):
+    #                 break
+
+    def load_new_buffer(self,):
+        # import ipdb;ipdb.set_trace()
+        for modobj, modkeys in zip(self.modalities, self.modkey_list): 
+            if isinstance(modobj, SimpleModBase):
+                self.load_simple_mod(modkeys, modobj)
+            elif isinstance(modobj, FrameModBase):
+                modstarttime = time.time()
+                with concurrent.futures.ThreadPoolExecutor(max_workers=self.num_worker) as executor:
+                    # Submit tasks to the executor
+                    future_to_index = {executor.submit(modobj.load_data, join(self.data_root,trajdir), 
+                                        framestr, remainidx): k for k, (trajdir, framestr, remainidx) in enumerate(self.filelist)}
+
+                    # Iterate over completed tasks
+                    for future in concurrent.futures.as_completed(future_to_index):
+                        data_index = future_to_index[future]
+                        try:
+                            data_array_list = future.result()
+                            assert(len(modkeys) == len(data_array_list)), \
+                                'sped keys {} for {} do not match the data returned'.format(modkeys, modobj.name)
+                                
+                        except Exception as exc:
+                            self.vprint(f"Failed to load image {data_index}: {exc}")
+                        else:
+                            for datanp, modkey in zip(data_array_list, modkeys):
+                                self.loading_buffer.insert_frame_one_mod(data_index, modkey, datanp[np.newaxis,...])
+
+                        if self.stop_flag:
+                            return
+
+                    if all(future.done() for future in future_to_index):
+                        self.loading_buffer.set_full(modkeys)
+                        self.vprint('  type {} loaded: traj {}, frame {}, time {}'.format( \
+                            modkeys, len(self.loading_buffer.trajlist),len(self.loading_buffer), time.time()-modstarttime))
+                    else:
+                        self.vprint("Not all tasks have completed yet.")
+            else:
+                assert False, "DataCacher: Unknow modality type {}".format(modkeys)
+        
+        assert self.loading_buffer.is_full(), "Datacacher: the buffer is not full!"
+        self.new_buffer_available = True
+        self.vprint('==> Buffer loaded: traj {}, frame {}, time {}'.format( \
+            len(self.loading_buffer.trajlist),len(self.loading_buffer), time.time()-self.starttime))
 
     def run(self):
         # check which buffer is active
         while not self.stop_flag: # this loops forever unless the stop flag is set
             if not self.new_buffer_available:
-                try:
-                    sample = next(self.dataiter)
-                    assert len(sample) == len(self.active_modkeys), \
-                        "DataCacher: Data number {} and key number {} mismatch!".format(len(sample), len(self.active_modkeys))
-                    
-                    for modkey, data in zip(self.active_modkeys, sample):
-                        datanp = data.numpy()
-                        self.loading_buffer.insert_frame_one_mod(self.modind, modkey, datanp)
+                # load modalities one by one
+                self.load_new_buffer()
 
-                    self.modind += datanp.shape[0]
-                except StopIteration:
-                    self.vprint('  type {} loaded: traj {}, frame {}, time {}'.format(self.active_modkeys, len(self.loading_buffer.trajlist),len(self.loading_buffer), time.time()-self.starttime))
-                    self.loading_buffer.set_full(self.active_modkeys)
-                    self.update_mod()
+                # try:
+                #     sample = next(self.dataiter)
+                #     assert len(sample) == len(self.active_modkeys), \
+                #         "DataCacher: Data number {} and key number {} mismatch!".format(len(sample), len(self.active_modkeys))
+                    
+                #     for modkey, data in zip(self.active_modkeys, sample):
+                #         datanp = data.numpy()
+                #         self.loading_buffer.insert_frame_one_mod(self.modind, modkey, datanp)
+
+                #     self.modind += datanp.shape[0]
+                # except StopIteration:
+                #     self.vprint('  type {} loaded: traj {}, frame {}, time {}'.format(self.active_modkeys, len(self.loading_buffer.trajlist),len(self.loading_buffer), time.time()-self.starttime))
+                #     self.loading_buffer.set_full(self.active_modkeys)
+                #     self.update_mod()
             else:
                 time.sleep(0.1)
 
@@ -209,20 +265,26 @@ class DataCacher(object):
 
 # python -m Datacacher.DataCacher
 if __name__=="__main__":
-    from .modality_type.tartandrive_types import rgb_left, costmap, get_vis_costmap
+    from .modality_type.tartanair_types import rgb_lcam_back, pose_lcam_bottom, flow_lcam_front
     from .DataSplitter import DataSplitter
     from .datafile_editor import read_datafile
+    from .utils import visflow
     import cv2
     import numpy as np
 
-    datafile = 'data_cacher/data/tartandrive.txt'
-    dataroot = '/home/amigo/workspace/ros_atv/src/rosbag_to_dataset/test_output'
+    datafile = 'data_cacher/data/local_test.txt'
+    dataroot = '/peru/tartanairv2'
     trajlist, trajlenlist, framelist, totalframenum = read_datafile(datafile)
-    dataspliter = DataSplitter(trajlist, trajlenlist, framelist, 12)
-    rgbtype = rgb_left([(320, 320)])
-    costmaptype = costmap([(320, 320)])
+    dataspliter = DataSplitter(trajlist, trajlenlist, framelist, 100)
+    rgbtype = rgb_lcam_back([(320, 320)])
+    posetype = pose_lcam_bottom([7])
+    flowtype = flow_lcam_front([(320,320),(320,320)])
 
-    datacacher = DataCacher([rgbtype, costmaptype], [['img0'], ['costmap', 'vel']], dataspliter, dataroot, 2, batch_size=1, load_traj=False, verbose=True)
+    datacacher = DataCacher([rgbtype, flowtype, posetype], 
+                            [['img0'], ['flow', 'mask'], ['pose']], 
+                            dataspliter, 
+                            dataroot, 8, batch_size=1, 
+                            load_traj=False, verbose=True)
      
     while not datacacher.new_buffer_available:
         print('wait for data loading...')
@@ -231,26 +293,25 @@ if __name__=="__main__":
     datacacher.switch_buffer()
 
     while True:
-        for k in range(12):
+        for k in range(100):
             sample = datacacher[k]
             img = sample["img0"].transpose(1,2,0)
-            # flow = sample["flow6"]
-            # flowvis = visflow(flow)
+            flow = sample["flow"].transpose(1,2,0)
+            flowvis = visflow(flow)
             # flowvis = cv2.resize(flowvis, (0,0), fx=4, fy=4)
-            cost = sample["costmap"]
-            costvis = get_vis_costmap(cost)
-            # fmask = sample["fmask6"]
-            # fmaskvis = (fmask>0).astype(np.uint8)*255
-            # fmaskvis = np.tile(fmaskvis[:,:,np.newaxis], (1, 1, 3))
-            # fmaskvis = cv2.resize(fmaskvis, (640, 480))
-            disp = np.concatenate((img,costvis), axis=1) # 
+
+            fmask = sample["mask"]
+            fmaskvis = (fmask>0).astype(np.uint8)*255
+            fmaskvis = cv2.applyColorMap(fmaskvis, cv2.COLORMAP_JET)
+
+            disp = np.concatenate((img,flowvis,fmaskvis), axis=1) # 
             # if flow.max()==0:
             #     print(k, 'flow zeros')
             # if fmask.max()==0:
             #     print(k, 'fmask zeros')
             cv2.imshow('img',disp)
-            cv2.waitKey(0)
-            # print(k, img.shape, flow.shape)
+            cv2.waitKey(10)
+            # print(k,sample["pose"])
         if datacacher.new_buffer_available:
             datacacher.switch_buffer()
 

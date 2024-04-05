@@ -65,7 +65,7 @@ DataRoot['dgx'] = {
 }
 
 DataRoot['psc'] = {
-                        'tartan':       '/ocean/projects/cis220039p/shared/tartanair_v1',
+                        'tartan':       '/ocean/projects/cis220039p/shared/TartanAir/tartanair_v1',
                         'tartan2':      '/ocean/projects/cis220039p/shared/tartanair_v2',   
                         'euroc':        '/ocean/projects/cis220039p/wenshanw/euroc',
                         'tartandrive2': '/ocean/projects/cis220039p/shared/tartandrive/2023_traj/v1',
@@ -80,6 +80,7 @@ DataRoot['psc'] = {
                         'chairs':       '/ocean/projects/cis220039p/shared/vo/flyingchairs',
                         'sintel':        '/ocean/projects/cis220039p/shared/vo/sintel/training',
                         'flying':        '/ocean/projects/cis220039p/shared/vo/SceneFlow',
+                        'sceneflow':        '/ocean/projects/cis220039p/shared/vo/SceneFlow',
 }
 
 

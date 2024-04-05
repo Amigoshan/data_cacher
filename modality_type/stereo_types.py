@@ -121,10 +121,10 @@ class kitti_left(RGBModBase):
             assert img is not None, "Error loading image {}".format(filename)
             # the kitti stereo image comes in different sizes
             # clip the data, because the cacher buffer cannot deal with difference sizes
-            imgh, imgw, _ = img.shape
-            imgx = (imgh-370)//2
-            imgy = (imgw - 1224)//2
-            img = img[imgx:imgx+370, imgy:imgy+1224,:]
+            # imgh, imgw, _ = img.shape
+            # imgx = (imgh-370)//2
+            # imgy = (imgw - 1224)//2
+            # img = img[imgx:imgx+370, imgy:imgy+1224,:]
             imglist.append(img)
         return imglist
 
@@ -156,11 +156,11 @@ class kitti_disp(FrameModBase):
         for filename in filenamelist:
             dispImg = cv2.imread(join(trajdir, filename))
             assert dispImg is not None, "Error loading depth {}".format(filename)
-            imgh, imgw, _ = dispImg.shape
-            imgx = (imgh-370)//2
-            imgy = (imgw - 1224)//2
-            dispImg = dispImg[imgx:imgx+370, imgy:imgy+1224, 0].astype(np.float32)
-            displist.append(dispImg)
+            # imgh, imgw, _ = dispImg.shape
+            # imgx = (imgh-370)//2
+            # imgy = (imgw - 1224)//2
+            # dispImg = dispImg[imgx:imgx+370, imgy:imgy+1224, 0].astype(np.float32)
+            displist.append(dispImg[:,:,0].astype(np.float32))
         return displist
 
     def resize_data(self, displist):

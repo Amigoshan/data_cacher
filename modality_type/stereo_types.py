@@ -1,6 +1,6 @@
 import cv2
 from .ModBase import FrameModBase, register, TYPEDICT
-from .tartanair_types import RGBModBase
+from .tartanair_types import RGBModBase, repeat_function
 from os.path import join
 import numpy as np
 
@@ -56,8 +56,24 @@ class sceneflow_left(RGBModBase):
         '''
         return [join(self.folder_name, framestr + '.png')]
 
+    def load_frame(self, trajdir, filenamelist):
+        # read image
+        imglist = []
+        for filename in filenamelist:
+            if filename.endswith('.png') or filename.endswith('.jpg') or filename.endswith('.ppm'):
+                img = repeat_function(cv2.imread, {'filename': join(trajdir,filename)}, 
+                                        repeat_times=10, error_msg="loading RGB " + filename)
+                if img.shape[2] == 4: # flying things returns 4 channels RGBA
+                    img = img[:,:,:3]
+            elif filename.endswith('.npy'):
+                img = np.load(join(trajdir,filename))
+            else:
+                raise NotImplementedError
+            imglist.append(img)
+        return imglist
+
 @register(TYPEDICT)
-class sceneflow_right(RGBModBase):
+class sceneflow_right(sceneflow_left):
     def __init__(self, datashapelist):
         super().__init__(datashapelist)
         self.folder_name = "right"

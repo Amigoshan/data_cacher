@@ -1,13 +1,9 @@
-import torch
-# from torch.utils.data import DataLoader
 import time
 from os.path import join
 import threading
 import numpy as np
 
 from .modality_type.ModBase import FrameModBase, SimpleModBase
-torch.multiprocessing.set_sharing_strategy('file_system')
-
 from .TrajBuffer import TrajBuffer
 from .CacherDataset import  SimpleDataloader #CacherDataset,
 
@@ -36,7 +32,6 @@ class DataCacher(object):
             len(modalities), len(modkey_list))
         self.modkey_list = modkey_list #[modality_dict[kk] for kk in modality_dict]
         self.modalities = modalities # [get_modality_type(mm) for mm in mod_type_names]
-        # self.modnum = len(modalities)
 
         self.num_worker = num_worker
         self.batch_size = batch_size
@@ -52,11 +47,6 @@ class DataCacher(object):
         self.loading_a = False
         self.loading_b = False
         self.new_buffer_available = False
-        # self.active_mod = -1
-        # self.active_modkeys = ""
-        # self.mod_ind = 0
-        # self.dataiter = None
-        # This following lines won't allocate RAM memory yet
         self.buffer_a = TrajBuffer(self.modkey_list, self.modalities, verbose)
         self.buffer_b = TrajBuffer(self.modkey_list, self.modalities, verbose)
         self.filelist = None
@@ -119,10 +109,6 @@ class DataCacher(object):
         self.loading_buffer.reset(framenum, trajlist, trajlenlist, framelist)
         self.filelist = self.process_filelist(trajlist, framelist)
 
-        # self.active_mod = -1
-        # self.active_modkeys = ""
-        # self.update_mod()
-
         self.new_buffer_available = False
         self.starttime = time.time()
 
@@ -152,44 +138,6 @@ class DataCacher(object):
     def __getitem__(self, index):
         return self.ready_buffer[index]
 
-    # def set_load_mod(self, k): 
-    #     '''
-    #     set the k-th modality as the active modality
-    #     return: whether it ends up with a modality that needs to be loaded by worker
-    #     '''
-    #     modobj = self.modalities[k]
-    #     self.active_mod = k
-    #     self.active_modkeys = self.modkey_list[k]
-
-    #     if isinstance(modobj, SimpleModBase):
-    #         self.load_simple_mod(self.active_modkeys, modobj)
-    #         return False
-
-    #     elif isinstance(modobj, FrameModBase):
-    #         cacher_dataset = CacherDataset(modobj, self.loading_buffer.trajlist, self.loading_buffer.trajlenlist, 
-    #                                         self.loading_buffer.framelist, datarootdir=self.data_root)
-    #         dataloader = DataLoader(cacher_dataset, batch_size=self.batch_size, shuffle=False, num_workers=self.num_worker)#, persistent_workers=True)
-    #         self.dataiter = iter(dataloader)
-    #         self.modind = 0
-    #         return True
-    #     else:
-    #         assert False, "DataCacher: Unknow modality type {}".format(self.active_modkeys)
-
-
-    # def update_mod(self,):
-    #     '''
-    #     control which modality currently is working on
-    #     '''
-    #     while True: # loop until a FrameMod is found
-    #         if self.active_mod+1 == self.modnum: # all modalities have been loaded
-    #             assert self.loading_buffer.is_full(), "Datacacher: the buffer is not full"
-    #             self.new_buffer_available = True
-    #             self.vprint('==> Buffer loaded: traj {}, frame {}, time {}'.format(len(self.loading_buffer.trajlist),len(self.loading_buffer), time.time()-self.starttime))
-    #             break
-    #         else: # load the next modality
-    #             if self.set_load_mod(self.active_mod + 1):
-    #                 break
-
     def load_new_buffer(self,):
         # import ipdb;ipdb.set_trace()
         for modobj, modkeys in zip(self.modalities, self.modkey_list): 
@@ -204,11 +152,11 @@ class DataCacher(object):
 
                     # Iterate over completed tasks
                     for future in concurrent.futures.as_completed(future_to_index):
-                        data_index = future_to_index[future]
+                        data_index = future_to_index.pop(future)
                         try:
                             data_array_list = future.result()
                             assert(len(modkeys) == len(data_array_list)), \
-                                'sped keys {} for {} do not match the data returned'.format(modkeys, modobj.name)
+                                'spec keys {} for {} do not match the data returned'.format(modkeys, modobj.name)
                                 
                         except Exception as exc:
                             self.vprint(f"Failed to load image {data_index}: {exc}")
@@ -226,7 +174,7 @@ class DataCacher(object):
                     else:
                         self.vprint("Not all tasks have completed yet.")
             else:
-                assert False, "DataCacher: Unknow modality type {}".format(modkeys)
+                assert False, "DataCacher: Unknown modality type {}".format(modkeys)
         
         assert self.loading_buffer.is_full(), "Datacacher: the buffer is not full!"
         self.new_buffer_available = True
@@ -240,20 +188,6 @@ class DataCacher(object):
                 # load modalities one by one
                 self.load_new_buffer()
 
-                # try:
-                #     sample = next(self.dataiter)
-                #     assert len(sample) == len(self.active_modkeys), \
-                #         "DataCacher: Data number {} and key number {} mismatch!".format(len(sample), len(self.active_modkeys))
-                    
-                #     for modkey, data in zip(self.active_modkeys, sample):
-                #         datanp = data.numpy()
-                #         self.loading_buffer.insert_frame_one_mod(self.modind, modkey, datanp)
-
-                #     self.modind += datanp.shape[0]
-                # except StopIteration:
-                #     self.vprint('  type {} loaded: traj {}, frame {}, time {}'.format(self.active_modkeys, len(self.loading_buffer.trajlist),len(self.loading_buffer), time.time()-self.starttime))
-                #     self.loading_buffer.set_full(self.active_modkeys)
-                #     self.update_mod()
             else:
                 time.sleep(0.1)
 
@@ -306,10 +240,7 @@ if __name__=="__main__":
             fmaskvis = cv2.applyColorMap(fmaskvis, cv2.COLORMAP_JET)
 
             disp = np.concatenate((img,flowvis,fmaskvis), axis=1) # 
-            # if flow.max()==0:
-            #     print(k, 'flow zeros')
-            # if fmask.max()==0:
-            #     print(k, 'fmask zeros')
+
             cv2.imshow('img',disp)
             cv2.waitKey(10)
             # print(k,sample["pose"])

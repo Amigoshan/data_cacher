@@ -3,6 +3,8 @@ from torch.utils.data import Dataset
 # from .utils import make_intrinsics_layer
 import os
 
+MAX_MOD_LENGTH = 100
+
 class RAMDataset(Dataset):
     '''
     Update:
@@ -107,8 +109,15 @@ class RAMDataset(Dataset):
         string_id = "{:06d}".format(id)
         near_all = np.load(os.path.join(self.dataroot, expfol,pair_type, string_id + '.npy'))
         # print(near_all.dtype)
-        near_ids = np.random.choice(near_all.shape[0])
-        near = near_all[near_ids]
+        near_id = np.random.choice(near_all.shape[0])
+        near = near_all[near_id]
+        # print('---')
+        # print(near[1], self.trajlenlist[near[0]])
+        while near[1] >= self.trajlenlist[near[0]] - MAX_MOD_LENGTH: # minus max mode length since we want to be able to look into the future for the pair as well
+            near_id = np.random.choice(near_all.shape[0])
+            near = near_all[near_id]
+            # print(near[1], self.trajlenlist[near[0]])
+        # print('---')
         return near
 
     def sample_num_from_traj(self, trajlen, skip, stride,
@@ -163,8 +172,6 @@ class RAMDataset(Dataset):
         trajind, frameind = self.idx2trajind(idx)
         # print(idx, trajind, frameind)
         # print(self.trajlist)
-        sp_near_hash = self.grab_pairs(self.trajlist[trajind],frameind, 'spatial_near')
-        # print(near_hash)
 
         for key, modlen, mod_freqmult in zip(self.modkeylist, self.modlenlist, self.modfreqlist):
 
@@ -174,16 +181,84 @@ class RAMDataset(Dataset):
             # print(key, ramslice)
             sample[key] = self.datacacher.ready_buffer.get_frame(key, ramslice)
 
-        # sp_near_sample = {}
-        # for key, modlen, mod_freqmult in zip(self.modkeylist, self.modlenlist, self.modfreqlist):
-        #
-        # # for datatype, datalen in self.modalities_lengths.items():
-        #     # parse the idx to trajstr
-        #     ramslice = self.idx2slice(mod_freqmult, modlen, sp_near_hash[0], sp_near_hash[1])
-        #     # print(key, ramslice)
-        #     sp_near_sample[key] = self.datacacher.ready_buffer.get_frame(key, ramslice)
-        #
-        # sample['spatial_near'] = sp_near_sample
+        ###### SPATIAL
+        sp_near_hash = self.grab_pairs(self.trajlist[trajind],frameind, 'spatial_near')
+        sp_far_hash = self.grab_pairs(self.trajlist[trajind],frameind, 'spatial_far')
+
+        sp_near_sample = {}
+        for key, modlen, mod_freqmult in zip(self.modkeylist, self.modlenlist, self.modfreqlist):
+
+        # for datatype, datalen in self.modalities_lengths.items():
+            # parse the idx to trajstr
+            ramslice = self.idx2slice(mod_freqmult, modlen, sp_near_hash[0], sp_near_hash[1])
+            # print(key, ramslice)
+            sp_near_sample[key] = self.datacacher.ready_buffer.get_frame(key, ramslice)
+
+        sample['spatial_near'] = sp_near_sample
+
+        sp_far_sample = {}
+        for key, modlen, mod_freqmult in zip(self.modkeylist, self.modlenlist, self.modfreqlist):
+
+        # for datatype, datalen in self.modalities_lengths.items():
+            # parse the idx to trajstr
+            ramslice = self.idx2slice(mod_freqmult, modlen, sp_far_hash[0], sp_far_hash[1])
+            # print(key, ramslice)
+            sp_far_sample[key] = self.datacacher.ready_buffer.get_frame(key, ramslice)
+
+        sample['spatial_far'] = sp_far_sample
+        #######
+
+        ###ROUGH
+        rough_near_hash = self.grab_pairs(self.trajlist[trajind],frameind, 'roughness_near')
+        rough_far_hash = self.grab_pairs(self.trajlist[trajind],frameind, 'roughness_far')
+
+        rough_near_sample = {}
+        for key, modlen, mod_freqmult in zip(self.modkeylist, self.modlenlist, self.modfreqlist):
+
+        # for datatype, datalen in self.modalities_lengths.items():
+            # parse the idx to trajstr
+            ramslice = self.idx2slice(mod_freqmult, modlen, rough_near_hash[0], rough_near_hash[1])
+            # print(key, ramslice)
+            rough_near_sample[key] = self.datacacher.ready_buffer.get_frame(key, ramslice)
+
+        sample['rough_near'] = rough_near_sample
+
+        rough_far_sample = {}
+        for key, modlen, mod_freqmult in zip(self.modkeylist, self.modlenlist, self.modfreqlist):
+
+        # for datatype, datalen in self.modalities_lengths.items():
+            # parse the idx to trajstr
+            ramslice = self.idx2slice(mod_freqmult, modlen, rough_far_hash[0], rough_far_hash[1])
+            # print(key, ramslice)
+            rough_far_sample[key] = self.datacacher.ready_buffer.get_frame(key, ramslice)
+
+        sample['rough_far'] = rough_far_sample
+
+        ###visual
+        visual_near_hash = self.grab_pairs(self.trajlist[trajind],frameind, 'visual_near')
+        visual_far_hash = self.grab_pairs(self.trajlist[trajind],frameind, 'visual_far')
+
+        visual_near_sample = {}
+        for key, modlen, mod_freqmult in zip(self.modkeylist, self.modlenlist, self.modfreqlist):
+
+        # for datatype, datalen in self.modalities_lengths.items():
+            # parse the idx to trajstr
+            ramslice = self.idx2slice(mod_freqmult, modlen, visual_near_hash[0], visual_near_hash[1])
+            # print(key, ramslice)
+            visual_near_sample[key] = self.datacacher.ready_buffer.get_frame(key, ramslice)
+
+        sample['visual_near'] = visual_near_sample
+
+        visual_far_sample = {}
+        for key, modlen, mod_freqmult in zip(self.modkeylist, self.modlenlist, self.modfreqlist):
+
+        # for datatype, datalen in self.modalities_lengths.items():
+            # parse the idx to trajstr
+            ramslice = self.idx2slice(mod_freqmult, modlen, visual_far_hash[0], visual_far_hash[1])
+            # print(key, ramslice)
+            visual_far_sample[key] = self.datacacher.ready_buffer.get_frame(key, ramslice)
+
+        sample['visual_far'] = visual_far_sample
 
         if self.frame_dir:
             sample['trajdir'] = self.dataroot + '/' + self.trajlist[trajind] + '/' + self.framelist[trajind][frameind]

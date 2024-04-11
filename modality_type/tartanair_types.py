@@ -6,7 +6,7 @@ from .ply_io import read_ply
 
 '''
 In the low level, each modality corresponds to a folder in the traj folder
-This file defines the interfaces of the Modality: 
+This file defines the interfaces of the Modality:
     - folder name
     - function that convert framestr to file
     - data type
@@ -88,7 +88,7 @@ class EventsBase(FrameModBase):
                 raise NotImplementedError
             eventtensorlist.append(eventtensor)
         return eventtensorlist
-    
+
     def transpose(self, events):
         return events
 
@@ -112,7 +112,7 @@ class RGBModBase(FrameModBase):
         imglist = []
         for filename in filenamelist:
             if filename.endswith('.png') or filename.endswith('.jpg') or filename.endswith('.ppm'):
-                img = repeat_function(cv2.imread, {'filename': join(trajdir,filename), 'flags': cv2.IMREAD_UNCHANGED}, 
+                img = repeat_function(cv2.imread, {'filename': join(trajdir,filename), 'flags': cv2.IMREAD_UNCHANGED},
                                         repeat_times=10, error_msg="loading RGB " + filename)
                 if img.shape[2] == 4: # flying things returns 4 channels RGBA
                     img = img[:,:,:3]
@@ -160,7 +160,7 @@ class DepthModBase(FrameModBase):
     def load_frame(self, trajdir, filenamelist):
         depthlist = []
         for filename in filenamelist:
-            depth_rgba = repeat_function(cv2.imread, {'filename': join(trajdir,filename), 'flags': cv2.IMREAD_UNCHANGED}, 
+            depth_rgba = repeat_function(cv2.imread, {'filename': join(trajdir,filename), 'flags': cv2.IMREAD_UNCHANGED},
                                     repeat_times=10, error_msg="loading depth " + filename)
             depth = depth_rgba.view("<f4")
             depth = np.squeeze(depth, axis=-1)
@@ -193,7 +193,7 @@ class FlowModBase(FrameModBase):
         # we assume that the flow might return flow or (flow, mask)
         # we also assume that the flow will always be returned, the mask is optional
         self.listlen = len(datashapes) # this is usually one
-        self.data_shapes[0] = (2,) + tuple(self.data_shapes[0]) # add one dim to the 
+        self.data_shapes[0] = (2,) + tuple(self.data_shapes[0]) # add one dim to the
         if self.listlen == 1:
             self.data_types = [np.float32] # for flow and mask
         else:
@@ -203,10 +203,10 @@ class FlowModBase(FrameModBase):
         self.file_suffix = "" # to be filled in the derived class
 
     def load_frame(self, trajdir, filenamelist):
-        # if filename is None: 
+        # if filename is None:
         #     return np.zeros((10,10,2), dtype=np.float32), np.zeros((10,10), dtype=np.uint8) # return an arbitrary shape because it will be resized later
         if filenamelist[0].endswith('.png'):
-            flow16 = repeat_function(cv2.imread, {'filename': join(trajdir, filenamelist[0]), 'flags': cv2.IMREAD_UNCHANGED}, 
+            flow16 = repeat_function(cv2.imread, {'filename': join(trajdir, filenamelist[0]), 'flags': cv2.IMREAD_UNCHANGED},
                                     repeat_times=10, error_msg="loading depth " + filenamelist[0])
             flow32 = flow16[:,:,:2].astype(np.float32)
             flow32 = (flow32 - 32768) / 64.0
@@ -231,9 +231,9 @@ class FlowModBase(FrameModBase):
             flow = cv2.resize(flow, (target_w, target_h), interpolation=cv2.INTER_LINEAR )
             flow[:,:,0] = flow[:,:,0] * scale_w
             flow[:,:,1] = flow[:,:,1] * scale_h
-        if self.listlen == 1: 
+        if self.listlen == 1:
             return [flow]
-        
+
         mask = flowmasklist[1]
         target_h, target_w = self.data_shapes[1]
         (h, w) = mask.shape
@@ -275,7 +275,7 @@ class SegModBase(FrameModBase):
     def load_frame(self, trajdir, filenamelist):
         segglist = []
         for filename in filenamelist:
-            segimg = repeat_function(cv2.imread, {'filename': join(trajdir,filename), 'flags': cv2.IMREAD_UNCHANGED}, 
+            segimg = repeat_function(cv2.imread, {'filename': join(trajdir,filename), 'flags': cv2.IMREAD_UNCHANGED},
                                     repeat_times=10, error_msg="loading depth " + filename)
             segglist.append(segimg)
 
@@ -338,14 +338,14 @@ class rgb_lcam_front(RGBModBase):
         super().__init__(datashape)
         self.folder_name = "image_lcam_front"
         self.file_suffix = "lcam_front"
-    
+
 @register(TYPEDICT)
 class depth_lcam_front(DepthModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "depth_lcam_front"
         self.file_suffix = "lcam_front_depth"
-    
+
 @register(TYPEDICT)
 class seg_lcam_front(SegModBase):
     def __init__(self, datashape):
@@ -360,20 +360,20 @@ class rgb_rcam_front(RGBModBase):
         super().__init__(datashape)
         self.folder_name = "image_rcam_front"
         self.file_suffix = "rcam_front"
-    
+
 @register(TYPEDICT)
 class depth_rcam_front(DepthModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "depth_rcam_front"
         self.file_suffix = "rcam_front_depth"
-    
+
 @register(TYPEDICT)
 class seg_rcam_front(SegModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "seg_rcam_front"
-        self.file_suffix = "rcam_front_seg" 
+        self.file_suffix = "rcam_front_seg"
 
 
 # === lcam_back ===
@@ -383,14 +383,14 @@ class rgb_lcam_back(RGBModBase):
         super().__init__(datashape)
         self.folder_name = "image_lcam_back"
         self.file_suffix = "lcam_back"
-    
+
 @register(TYPEDICT)
 class depth_lcam_back(DepthModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "depth_lcam_back"
         self.file_suffix = "lcam_back_depth"
-    
+
 @register(TYPEDICT)
 class seg_lcam_back(SegModBase):
     def __init__(self, datashape):
@@ -405,20 +405,20 @@ class rgb_rcam_back(RGBModBase):
         super().__init__(datashape)
         self.folder_name = "image_rcam_back"
         self.file_suffix = "rcam_back"
-    
+
 @register(TYPEDICT)
 class depth_rcam_back(DepthModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "depth_rcam_back"
         self.file_suffix = "rcam_back_depth"
-    
+
 @register(TYPEDICT)
 class seg_rcam_back(SegModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "seg_rcam_back"
-        self.file_suffix = "rcam_back_seg" 
+        self.file_suffix = "rcam_back_seg"
 
 # === lcam_left ===
 @register(TYPEDICT)
@@ -427,14 +427,14 @@ class rgb_lcam_left(RGBModBase):
         super().__init__(datashape)
         self.folder_name = "image_lcam_left"
         self.file_suffix = "lcam_left"
-    
+
 @register(TYPEDICT)
 class depth_lcam_left(DepthModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "depth_lcam_left"
         self.file_suffix = "lcam_left_depth"
-    
+
 @register(TYPEDICT)
 class seg_lcam_left(SegModBase):
     def __init__(self, datashape):
@@ -449,20 +449,20 @@ class rgb_rcam_left(RGBModBase):
         super().__init__(datashape)
         self.folder_name = "image_rcam_left"
         self.file_suffix = "rcam_left"
-    
+
 @register(TYPEDICT)
 class depth_rcam_left(DepthModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "depth_rcam_left"
         self.file_suffix = "rcam_left_depth"
-    
+
 @register(TYPEDICT)
 class seg_rcam_left(SegModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "seg_rcam_left"
-        self.file_suffix = "rcam_left_seg" 
+        self.file_suffix = "rcam_left_seg"
 
 # === lcam_right ===
 @register(TYPEDICT)
@@ -471,14 +471,14 @@ class rgb_lcam_right(RGBModBase):
         super().__init__(datashape)
         self.folder_name = "image_lcam_right"
         self.file_suffix = "lcam_right"
-    
+
 @register(TYPEDICT)
 class depth_lcam_right(DepthModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "depth_lcam_right"
         self.file_suffix = "lcam_right_depth"
-    
+
 @register(TYPEDICT)
 class seg_lcam_right(SegModBase):
     def __init__(self, datashape):
@@ -493,20 +493,20 @@ class rgb_rcam_right(RGBModBase):
         super().__init__(datashape)
         self.folder_name = "image_rcam_right"
         self.file_suffix = "rcam_right"
-    
+
 @register(TYPEDICT)
 class depth_rcam_right(DepthModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "depth_rcam_right"
         self.file_suffix = "rcam_right_depth"
-    
+
 @register(TYPEDICT)
 class seg_rcam_right(SegModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "seg_rcam_right"
-        self.file_suffix = "rcam_right_seg" 
+        self.file_suffix = "rcam_right_seg"
 
 # === lcam_top ===
 @register(TYPEDICT)
@@ -515,14 +515,14 @@ class rgb_lcam_top(RGBModBase):
         super().__init__(datashape)
         self.folder_name = "image_lcam_top"
         self.file_suffix = "lcam_top"
-    
+
 @register(TYPEDICT)
 class depth_lcam_top(DepthModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "depth_lcam_top"
         self.file_suffix = "lcam_top_depth"
-    
+
 @register(TYPEDICT)
 class seg_lcam_top(SegModBase):
     def __init__(self, datashape):
@@ -537,20 +537,20 @@ class rgb_rcam_top(RGBModBase):
         super().__init__(datashape)
         self.folder_name = "image_rcam_top"
         self.file_suffix = "rcam_top"
-    
+
 @register(TYPEDICT)
 class depth_rcam_top(DepthModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "depth_rcam_top"
         self.file_suffix = "rcam_top_depth"
-    
+
 @register(TYPEDICT)
 class seg_rcam_top(SegModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "seg_rcam_top"
-        self.file_suffix = "rcam_top_seg" 
+        self.file_suffix = "rcam_top_seg"
 
 # === lcam_bottom ===
 @register(TYPEDICT)
@@ -559,14 +559,14 @@ class rgb_lcam_bottom(RGBModBase):
         super().__init__(datashape)
         self.folder_name = "image_lcam_bottom"
         self.file_suffix = "lcam_bottom"
-    
+
 @register(TYPEDICT)
 class depth_lcam_bottom(DepthModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "depth_lcam_bottom"
         self.file_suffix = "lcam_bottom_depth"
-    
+
 @register(TYPEDICT)
 class seg_lcam_bottom(SegModBase):
     def __init__(self, datashape):
@@ -581,20 +581,20 @@ class rgb_rcam_bottom(RGBModBase):
         super().__init__(datashape)
         self.folder_name = "image_rcam_bottom"
         self.file_suffix = "rcam_bottom"
-    
+
 @register(TYPEDICT)
 class depth_rcam_bottom(DepthModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "depth_rcam_bottom"
         self.file_suffix = "rcam_bottom_depth"
-    
+
 @register(TYPEDICT)
 class seg_rcam_bottom(SegModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "seg_rcam_bottom"
-        self.file_suffix = "rcam_bottom_seg" 
+        self.file_suffix = "rcam_bottom_seg"
 
 # ==== lcam equirect ====
 @register(TYPEDICT)
@@ -610,13 +610,13 @@ class depth_lcam_equirect(DepthModBase):
         super().__init__(datashape)
         self.folder_name = "depth_lcam_equirect"
         self.file_suffix = "lcam_equirect_depth"
-    
+
 @register(TYPEDICT)
 class seg_lcam_equirect(SegModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "seg_lcam_equirect"
-        self.file_suffix = "lcam_equirect_seg" 
+        self.file_suffix = "lcam_equirect_seg"
 
 # ==== rcam equirect ====
 @register(TYPEDICT)
@@ -647,13 +647,13 @@ class depth_lcam_fish(DepthModBase):
         super().__init__(datashape)
         self.folder_name = "depth_lcam_fish"
         self.file_suffix = "lcam_fish_depth"
-    
+
 @register(TYPEDICT)
 class seg_lcam_fish(SegModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "seg_lcam_fish"
-        self.file_suffix = "lcam_fish_seg" 
+        self.file_suffix = "lcam_fish_seg"
 
 # ==== rcam fish ====
 @register(TYPEDICT)
@@ -675,7 +675,7 @@ class seg_rcam_fish(SegModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "seg_rcam_fish"
-        self.file_suffix = "rcam_fish_seg" 
+        self.file_suffix = "rcam_fish_seg"
 
 # ==== FLOW ====
 @register(TYPEDICT)
@@ -685,7 +685,7 @@ class flow_lcam_front(FlowModBase):
         self.folder_name = "flow_lcam_front"
         self.file_suffix = "flow"
         self.drop_last = 1 # the flow is one frame shorter than other modalities
-    
+
 @register(TYPEDICT)
 class imu_acc(IMUBase):
     '''

@@ -166,6 +166,8 @@ class SimpleModBase(ModBase):
         for k, filename in enumerate(filenamelist):
             if filename.endswith('.npy'):
                 data = np.load(join(trajdir, filename)) # this assume the data is stored as np file, this can be changed in the future
+                if len(data.shape) == 1:
+                    data = data.reshape(-1,1)
             elif filename.endswith('.txt'):
                 data = np.loadtxt(join(trajdir, filename))
             else:

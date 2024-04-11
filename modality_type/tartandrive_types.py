@@ -41,6 +41,54 @@ class IMUBase(SimpleModBase):
         assert startind < datalen and endind <= datalen, "Error in loading IMU, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
         return data[startind: endind]
 
+class CostBase(SimpleModBase):
+    '''
+    This defines modality that is light-weight
+    such as IMU, pose, wheel_encoder
+    '''
+    def __init__(self, datashapelist):
+        super().__init__(datashapelist)
+        self.data_shapes = [(1,)]
+
+        self.freq_mult = 1
+        self.drop_last = 1
+
+        self.folder_name = 'traversability_'
+
+    def data_padding(self, k):
+        return np.zeros((self.freq_mult, self.data_shapes[k][0]), dtype=np.float32)
+
+    def crop_trajectory(self, data, framestrlist):
+        startind = int(framestrlist[0]) * self.freq_mult
+        endind = (1+int(framestrlist[-1])) * self.freq_mult # IMU len = (N-1)*10, where N is the number of images
+        datalen = data.shape[0]
+        assert startind < datalen and endind <= datalen, "Error in loading Cost, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
+        return data[startind: endind]
+
+class OdometryBase(SimpleModBase):
+    '''
+    This defines modality that is light-weight
+    such as IMU, pose, wheel_encoder
+    '''
+    def __init__(self, datashapelist):
+        super().__init__(datashapelist)
+        self.data_shapes = [(13,)]
+
+        self.freq_mult = 10
+        self.drop_last = 10
+
+        self.folder_name = 'odom'
+
+    def data_padding(self, k):
+        return np.zeros((self.freq_mult, self.data_shapes[k][0]), dtype=np.float32)
+
+    def crop_trajectory(self, data, framestrlist):
+        startind = int(framestrlist[0]) * self.freq_mult
+        endind = (1+int(framestrlist[-1])) * self.freq_mult # IMU len = (N-1)*10, where N is the number of images
+        datalen = data.shape[0]
+        assert startind < datalen and endind <= datalen, "Error in loading Odom, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
+        return data[startind: endind]
+
 class LiDARBase(FrameModBase):
     def __init__(self, datashapelist):
         super().__init__(datashapelist) # point dimention, e.g. 3 for tartanvo, 6 if rgb is included
@@ -106,6 +154,41 @@ class RGBModBase(FrameModBase):
         for img in imglist:
             reslist.append(img.transpose(2,0,1))
         return reslist
+
+class SemanticMapBase(FrameModBase):
+    def __init__(self, datashapelist):
+        super().__init__(datashapelist)
+        listlen = len(datashapelist) # this is usually one
+        self.data_types = []
+        for k in range(listlen):
+            self.data_shapes[k] = tuple(self.data_shapes[k] )
+            self.data_types.append(np.uint8)
+
+    def load_frame(self, trajdir, filenamelist):
+        # read image
+        imglist = []
+        for filename in filenamelist:
+            if filename.endswith('.png') or filename.endswith('.jpg'):
+                img = repeat_function(cv2.imread, {'filename':join(trajdir,filename), 'flags':cv2.IMREAD_UNCHANGED}, repeat_times=10)
+            elif filename.endswith('.npy'):
+                img = np.load(join(trajdir,filename))
+                img = np.argmin(img, axis=0).astype(np.uint8)
+            else:
+                raise NotImplementedError
+            imglist.append(img)
+        return imglist
+
+    def resize_data(self, imglist):
+        # resize image
+        for k, img in enumerate(imglist):
+            h, w = img.shape[0], img.shape[1]
+            target_h, target_w = self.data_shapes[k][0], self.data_shapes[k][1]
+            if h != target_h or w != target_w:
+                imglist[k] = cv2.resize(img, (target_w, target_h), interpolation=cv2.INTER_LINEAR )
+        return imglist
+
+    def transpose(self, imglist):
+        return imglist
 
 class GreyModBase(FrameModBase):
     def __init__(self, datashapelist):
@@ -256,6 +339,19 @@ class rgb_map(RGBModBase):
         Basically it handles how each dataset naming the frames and organizing the data
         '''
         return [join(self.folder_name, framestr + '.npy')]
+
+@register(TYPEDICT)
+class dino_map(SemanticMapBase):
+    def __init__(self, datashapes):
+        super().__init__(datashapes)
+        self.folder_name = "local_dino_map"
+
+    def framestr2filename(self, framestr):
+        '''
+        This is very dataset specific
+        Basically it handles how each dataset naming the frames and organizing the data
+        '''
+        return [join(self.folder_name, framestr + '_data.npy')]
 
 @register(TYPEDICT)
 class rgb_map_ff(RGBModBase):
@@ -579,6 +675,24 @@ class novatel_imu(IMUBase):
     '''
     def get_filename(self):
         return [join('novatel_' + self.folder_name, 'imu.npy')]
+
+@register(TYPEDICT)
+class super_odometry(OdometryBase):
+    '''
+    This defines modality that is light-weight
+    such as IMU, pose, wheel_encoder
+    '''
+    def get_filename(self):
+        return [join('super_' + self.folder_name, 'odometry.npy')]
+
+@register(TYPEDICT)
+class cost_v4(CostBase):
+    '''
+    This defines modality that is light-weight
+    such as IMU, pose, wheel_encoder
+    '''
+    def get_filename(self):
+        return [join(self.folder_name + 'v4', 'cost.npy')]
 
 @register(TYPEDICT)
 class full_cloud(LiDARBase):

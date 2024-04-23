@@ -165,6 +165,9 @@ class RAMDataset(Dataset):
     def set_epoch_complete(self):
         self.is_epoch_complete = True
 
+    def data_path(self, trajind, frameind):
+        return self.dataroot + '/' + self.trajlist[trajind] + '/' + self.framelist[trajind][frameind]
+
     def __getitem__(self, idx):
         # import ipdb;ipdb.set_trace()
         # sample = self.datacacher[ramslice]
@@ -195,6 +198,7 @@ class RAMDataset(Dataset):
             sp_near_sample[key] = self.datacacher.ready_buffer.get_frame(key, ramslice)
 
         sample['spatial_near'] = sp_near_sample
+        sample['spatial_near']['trajdir'] = self.data_path(*sp_near_hash)
 
         sp_far_sample = {}
         for key, modlen, mod_freqmult in zip(self.modkeylist, self.modlenlist, self.modfreqlist):
@@ -206,6 +210,7 @@ class RAMDataset(Dataset):
             sp_far_sample[key] = self.datacacher.ready_buffer.get_frame(key, ramslice)
 
         sample['spatial_far'] = sp_far_sample
+        sample['spatial_far']['trajdir'] = self.data_path(*sp_far_hash)
         #######
 
         ###ROUGH
@@ -222,6 +227,7 @@ class RAMDataset(Dataset):
             rough_near_sample[key] = self.datacacher.ready_buffer.get_frame(key, ramslice)
 
         sample['rough_near'] = rough_near_sample
+        sample['rough_near']['trajdir'] = self.data_path(*rough_near_hash)
 
         rough_far_sample = {}
         for key, modlen, mod_freqmult in zip(self.modkeylist, self.modlenlist, self.modfreqlist):
@@ -233,6 +239,7 @@ class RAMDataset(Dataset):
             rough_far_sample[key] = self.datacacher.ready_buffer.get_frame(key, ramslice)
 
         sample['rough_far'] = rough_far_sample
+        sample['rough_far']['trajdir'] = self.data_path(*rough_far_hash)
 
         ###visual
         visual_near_hash = self.grab_pairs(self.trajlist[trajind],frameind, 'visual_near')
@@ -248,6 +255,7 @@ class RAMDataset(Dataset):
             visual_near_sample[key] = self.datacacher.ready_buffer.get_frame(key, ramslice)
 
         sample['visual_near'] = visual_near_sample
+        sample['visual_near']['trajdir'] = self.data_path(*visual_near_hash)
 
         visual_far_sample = {}
         for key, modlen, mod_freqmult in zip(self.modkeylist, self.modlenlist, self.modfreqlist):
@@ -259,6 +267,7 @@ class RAMDataset(Dataset):
             visual_far_sample[key] = self.datacacher.ready_buffer.get_frame(key, ramslice)
 
         sample['visual_far'] = visual_far_sample
+        sample['visual_far']['trajdir'] = self.data_path(*visual_far_hash)
 
         if self.frame_dir:
             sample['trajdir'] = self.dataroot + '/' + self.trajlist[trajind] + '/' + self.framelist[trajind][frameind]

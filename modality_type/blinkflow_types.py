@@ -98,13 +98,6 @@ class FlowModBase(FrameModBase):
                 reslist.append(img)
         return reslist
 
-    def framestr2filename(self, framestr):
-        '''
-        This is very dataset specific
-        Basically it handles how each dataset naming the frames and organizing the data
-        '''
-        return [join(self.folder_name, framestr + self.file_suffix + '.npy')]
-
 class EventsBase(FrameModBase):
     def __init__(self, datashapelist):
         super().__init__(datashapelist) # point dimention, e.g. 3 for tartanvo, 6 if rgb is included
@@ -120,7 +113,7 @@ class EventsBase(FrameModBase):
         eventtensorlist = []
         for filename in filenamelist:
             if filename.endswith('.npz'):
-                eventtensor = np.load(join(trajdir,filename))['event_tensor']
+                eventtensor = np.load(join(trajdir,filename))['event_tensor'].astype(np.float32)
             else:
                 raise NotImplementedError
             eventtensorlist.append(eventtensor)
@@ -132,13 +125,6 @@ class EventsBase(FrameModBase):
     def resize_data(self, events):
         return events
     
-    def framestr2filename(self, framestr):
-        '''
-        This is very dataset specific
-        Basically it handles how each dataset naming the frames and organizing the data
-        '''
-        return [join(self.folder_name, framestr + self.file_suffix + '.npz')]
-
 @register(TYPEDICT)
 class blinkflow_cam(RGBModBase):
     def __init__(self, datashape):
@@ -151,8 +137,65 @@ class blinkflow_flow(FlowModBase):
         super().__init__(datashape)
         self.folder_name = "forward_flow"
 
+    def framestr2filename(self, framestr):
+        '''
+        This is very dataset specific
+        Basically it handles how each dataset naming the frames and organizing the data
+        '''
+        return [join(self.folder_name, framestr + self.file_suffix + '.npy')]
+
 @register(TYPEDICT)
 class blinkflow_events(EventsBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "event_tensors"
+    
+    def framestr2filename(self, framestr):
+        '''
+        This is very dataset specific
+        Basically it handles how each dataset naming the frames and organizing the data
+        '''
+        return [join(self.folder_name, framestr + self.file_suffix + '.npz')]
+
+@register(TYPEDICT)
+class mvsec_flow(FlowModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "forward_flow"
+        self.file_prefix = "forward_flow"
+    
+    def load_frame(self, trajdir, filenamelist):
+        flow_npz = np.load(join(trajdir, filenamelist[0]))
+        assert flow_npz is not None, "Error loading flow {}".format(join(trajdir, filenamelist[0]))
+        flow = np.stack((flow_npz["x"], flow_npz["y"]),axis=2).astype(np.float32)
+
+        if self.listlen == 1:
+            return [flow]
+
+        mask8 = flow_npz["valid"].astype(np.uint8)
+        return [flow, mask8]
+    
+    def framestr2filename(self, framestr):
+        '''
+        This is very dataset specific
+        Basically it handles how each dataset naming the frames and organizing the data
+        '''
+        framenum = int(framestr)
+        framestr2 = str(framenum + 1).zfill(6)
+        return [join(self.folder_name, self.file_prefix + "_" + framestr + '_' + framestr2 + '.npz')]
+
+@register(TYPEDICT)
+class mvsec_events(EventsBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.folder_name = "event_tensor"
+        self.file_suffix = "event_tensor"
+    
+    def framestr2filename(self, framestr):
+        '''
+        This is very dataset specific
+        Basically it handles how each dataset naming the frames and organizing the data
+        '''
+        framenum = int(framestr)
+        framestr2 = str(framenum + 1).zfill(6)
+        return [join(self.folder_name,  framestr + "_" + framestr2 + "_" + self.file_suffix + '.npz')]

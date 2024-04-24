@@ -71,6 +71,7 @@ DataRoot['psc'] = {
                         'tartandrive2': '/ocean/projects/cis220039p/shared/tartandrive/2023_traj/v1',
                         'tartan2_event':'/ocean/projects/cis220039p/shared/tartanair_v2_event',
                         'blinkflow':    '/ocean/projects/cis220039p/shared/blinkflow/train',
+                        'mvsec':        '/ocean/projects/cis220039p/shared/mvsec/processed',
                         'chairs':       '/ocean/projects/cis220039p/shared/vo/flyingchairs',
                         'flying':       '/ocean/projects/cis220039p/shared/vo/SceneFlow',
                         'sintel':       '/ocean/projects/cis220039p/shared/vo/sintel',

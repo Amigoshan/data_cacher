@@ -187,7 +187,6 @@ class DataCacher(object):
             if not self.new_buffer_available:
                 # load modalities one by one
                 self.load_new_buffer()
-
             else:
                 time.sleep(0.1)
 

@@ -270,6 +270,9 @@ class MultiDatasets(object):
 
             sample = next(self.dataiters[datasetind])
             self.vprint('==> Working on {} for the {} time'.format(self.datafiles[datasetind], self.subsetrepeat[datasetind]))
+        except Exception as e:
+            # Handle any other exceptions that weren't caught by the above except blocks
+            print(f"An error occurred: {e}")
 
         self.batch_count_in_buffer[datasetind] += 1
         self.batch_count_in_epoch[datasetind] += 1

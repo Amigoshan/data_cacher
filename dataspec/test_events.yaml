@@ -25,17 +25,16 @@
           "events0":
             cacher_size: [15, 640, 640]
             length: 2
-        pose_lcam_front:
-          "pose0":
+        motion_lcam_front:
+          "motion0":
             cacher_size: [6]
             length: 2
       cacher:
-        # data_root_path_override: "/ocean/projects/cis220039p/gramasat/tmp/test_root"
         data_root_key: tartan2_event
-        subset_framenum: 100
-        worker_num: 2
+        subset_framenum: 300
+        worker_num: 0
       dataset:
         frame_skip: 0
       parameter:
         intrinsics: [640, 640, 320, 320, 320, 320]
-        intrinsics_scale: [0.25, 0.25]
+        intrinsics_scale: [1.0, 1.0]

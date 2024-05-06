@@ -25,15 +25,34 @@
           "events0":
             cacher_size: [15, 640, 640]
             length: 2
-        pose_lcam_front:
-          "pose0":
-            cacher_size: [6]
+      cacher:
+        data_root_key: tartan2_event
+        # Use subset_framenum=400 for v100-32, subset_framenum=3500 for h100 
+        subset_framenum: 3000
+        worker_num: 2
+      dataset:
+        frame_skip: 0
+      parameter:
+        intrinsics: [640, 640, 320, 320, 320, 320]
+        intrinsics_scale: [0.25, 0.25]
+    2:
+      file: "loader/data_cacher/data/event_train_blinkflow.txt"
+      modality: 
+        blinkflow_flow:
+          "flow0":
+            cacher_size: [480, 640]
+            length: 2
+          "mask0":
+            cacher_size: [480, 640]
+            length: 2
+        blinkflow_events:
+          "events0":
+            cacher_size: [15, 480, 640]
             length: 2
       cacher:
-        # data_root_path_override: "/ocean/projects/cis220039p/gramasat/tmp/train_root"
-        data_root_key: tartan2_event
-        subset_framenum: 500
-        worker_num: 0
+        data_root_key: blinkflow
+        subset_framenum: 1000
+        worker_num: 2
       dataset:
         frame_skip: 0
       parameter:

@@ -260,7 +260,7 @@ class MultiDatasets(object):
                     self.epoch_count[datasetind] += 1
                     self.batch_count_in_epoch[datasetind] = -1
                     
-                if self.datacachers[datasetind].new_buffer_available : # switch to the next buffer
+                if self.datacachers[datasetind].new_buffer_available and self.subsetrepeat[datasetind] == maxrepeatnum : # switch to the next buffer
                     self.new_epoch_loading_buffer[datasetind] = self.datacachers[datasetind].switch_buffer()
                     self.update_dataloader(datasetind)
                     self.subsetrepeat[datasetind] = 0

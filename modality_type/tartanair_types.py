@@ -1131,6 +1131,7 @@ class event_cam(EventsBase):
         self.folder_name = 'events'
         self.sub_folder = 'event_tensors'
         self.file_suffix = 'event_tensor'
+        self.drop_last = 1
 
     def framestr2filename(self, framestr):
         framenum = int(framestr)

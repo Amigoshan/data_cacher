@@ -11,20 +11,21 @@ DataRoot['local'] = {
                         'flying':       '/home/amigo/tmp/data/sceneflow',
                         'sintel':       '/home/amigo/tmp/data/sintel/training',
                         'euroc':        '/home/wenshan/tmp/vo_data/euroc',
-                        'kitti-stereo': '/prague/tartanvo_data/kitti/stereo', 
+                        'kitti-stereo': '/peru/tartanvo_data/kitti/stereo',
                         'kitti-vo':     '/home/wenshan/tmp/vo_data/kittivo',
                         'tartandrive':  '/home/amigo/workspace/ros_atv/src/rosbag_to_dataset/test_output',
                         'tartandrive2':  '/cairo/arl_bag_files/2023_traj'
 }
 
 DataRoot['desktop'] = {
-                        'sceneflow':    '/home/amigo/tmp/data/sceneflow',
-                        'tartan':       '/home/wenshan/tmp/tartanair',
-                        'tartan2':      '/peru/tartanairv2',
+                        'sceneflow':    '/data/stereo_data/sceneflow',
+                        'tartan':       '/data/tartanair',
+                        'tartan2':      '/data/tartanair_v2',
                         'shibuya':      '/prague/tartanvo_data/AirDOS_shibuya',
                         'euroc':        '/home/wenshan/tmp/vo_data/euroc',
                         'kitti-vo':     '/home/wenshan/tmp/vo_data/kittivo',
-                        'kitti-stereo': '/peru/tartanvo_data/kitti/stereo'
+                        'kitti-stereo': '/data/stereo_data/kitti/training',
+                        'tartan2_event':'/data/tartanair_v2_event'
 }
 
 DataRoot['wsl'] = {
@@ -80,7 +81,6 @@ DataRoot['psc'] = {
                         'chairs':       '/ocean/projects/cis220039p/shared/vo/flyingchairs',
                         'sintel':        '/ocean/projects/cis220039p/shared/vo/sintel/training',
                         'flying':        '/ocean/projects/cis220039p/shared/vo/SceneFlow',
-                        'sceneflow':        '/ocean/projects/cis220039p/shared/vo/SceneFlow',
 }
 
 

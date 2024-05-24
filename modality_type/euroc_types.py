@@ -2,6 +2,7 @@ from .ModBase import register, TYPEDICT
 from .tartanair_types import DepthModBase, FlowModBase, MotionModBase
 from .tartandrive_types import GreyModBase
 from os.path import join
+import cv2
 
 @register(TYPEDICT)
 class euroc_lmotion(MotionModBase):

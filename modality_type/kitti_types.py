@@ -60,6 +60,16 @@ class kitti_ldisp(DepthModBase):
         super().__init__(datashape)
         self.folder_name = "disp"
 
+    def resize_data(self, displist):
+        # resize disparity
+        for k, disp in enumerate(displist):
+            (h, w) = disp.shape
+            target_h, target_w = self.data_shapes[k]
+            if h != target_h or w != target_w:
+                displist[k] = cv2.resize(disp, (target_w, target_h), interpolation=cv2.INTER_LINEAR )
+                displist[k] = displist[k] * (float(target_w)/w)
+        return displist
+
 @register(TYPEDICT)
 class kitti_lflow(FlowModBase):
     def __init__(self, datashape):

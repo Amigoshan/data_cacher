@@ -33,7 +33,7 @@
         # data_root_path_override: "/home/amigo/tmp/test_root"
         data_root_key: blinkflow
         subset_framenum: 1200
-        worker_num: 3
+        worker_num: 4
       dataset:
         frame_skip: 0
       parameter:

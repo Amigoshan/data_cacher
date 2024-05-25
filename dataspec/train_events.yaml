@@ -13,7 +13,7 @@
   data:
     1:
       file: "loader/data_cacher/data/event_train_tartanairv2.txt"
-      modality: 
+      modality:
         flow_lcam_front:
           "flow0":
             cacher_size: [640, 640]

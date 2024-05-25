@@ -16,20 +16,19 @@
       modality: 
         mvsec_flow:
           "flow0":
-            cacher_size: [260, 346]
+            cacher_size: [520, 692]
             length: 2
           "mask0":
-            cacher_size: [260, 346]
+            cacher_size: [520, 692]
             length: 2
         mvsec_events:
           "events0":
-            cacher_size: [15, 260, 346]
+            cacher_size: [15, 520, 692]
             length: 2
       cacher:
-        # data_root_path_override: "/home/amigo/tmp/test_root"
         data_root_key: mvsec
         subset_framenum: 800
-        worker_num: 3
+        worker_num: 2
       dataset:
         frame_skip: 0
       parameter:

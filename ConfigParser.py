@@ -35,6 +35,8 @@ class ConfigParser(object):
                                     'intrinsics_scale', #[scale_x, scale_y] - note that the order of x and y are is different from the way in cacher_size
                                     'fxbl', # [focal_length * baseline]
                                     'input_size', # [h, w] - allow different datasets be rcr to different input size
+                                    'cam_model_for_flow', # [w, h, fx, fy, ox, oy] # replace the intrinsics parameter
+                                    'cam_model_for_intrinsics_layer', # [w, h, fx, fy, ox, oy]  
                                    ]
 
     def parse_from_fp(self, fp):

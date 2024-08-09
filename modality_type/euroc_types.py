@@ -2,6 +2,7 @@ from .ModBase import register, TYPEDICT
 from .tartanair_types import DepthModBase, FlowModBase, MotionModBase
 from .tartandrive_types import GreyModBase
 from os.path import join
+import cv2
 
 @register(TYPEDICT)
 class euroc_lmotion(MotionModBase):
@@ -43,6 +44,16 @@ class euroc_ldisp(DepthModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "cam0/disp_hsm"
+
+    def resize_data(self, displist):
+        # resize disparity
+        for k, disp in enumerate(displist):
+            (h, w) = disp.shape
+            target_h, target_w = self.data_shapes[k]
+            if h != target_h or w != target_w:
+                displist[k] = cv2.resize(disp, (target_w, target_h), interpolation=cv2.INTER_LINEAR )
+                displist[k] = displist[k] * (float(target_w)/w)
+        return displist
 
 @register(TYPEDICT)
 class euroc_lflow(FlowModBase):

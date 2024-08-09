@@ -44,21 +44,31 @@ class kitti_lmotion4(MotionModBase):
 class kitti_lcam(RGBModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
-        self.folder_name = "colored_0"
-        self.file_suffix = '10'
+        self.folder_name = "image_left"
+        self.file_suffix = ''
 
 @register(TYPEDICT)
 class kitti_rcam(RGBModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
-        self.folder_name = "colored_1"
-        self.file_suffix = '10'
+        self.folder_name = "image_right"
+        self.file_suffix = ''
 
 @register(TYPEDICT)
 class kitti_ldisp(DepthModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "disp"
+
+    def resize_data(self, displist):
+        # resize disparity
+        for k, disp in enumerate(displist):
+            (h, w) = disp.shape
+            target_h, target_w = self.data_shapes[k]
+            if h != target_h or w != target_w:
+                displist[k] = cv2.resize(disp, (target_w, target_h), interpolation=cv2.INTER_LINEAR )
+                displist[k] = displist[k] * (float(target_w)/w)
+        return displist
 
 @register(TYPEDICT)
 class kitti_lflow(FlowModBase):

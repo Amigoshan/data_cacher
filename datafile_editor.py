@@ -184,18 +184,45 @@ def rename_envs_datafile(datafilename, newdatafilename, envdict):
     print('Renamed {} trajs from {} trajs'.format(rename_count, len(trajlist)))
     outdatafile.close()
     
+def generate_datafile(datafile_name, trajstrlist, frameslist):
+    outdatafile = open(datafile_name, 'w')
+    for trajstr, frames in zip(trajstrlist, frameslist):
+        write_datafile(outdatafile, trajstr, frames)
+    outdatafile.close()
+    print('Generated datafile {} which contains {} trajs'.format(datafile_name, len(trajstrlist)))
+    
+def breakdown_trajectories(trajstrlist, frameslist, max_traj_len = 200):
+    new_trajstr, new_framelist = [], []
+    for trajstr, frames in zip(trajstrlist, frameslist):
+        while len(frames) > max_traj_len:
+            subframes = frames[:max_traj_len]
+            frames = frames[max_traj_len:]
+            new_trajstr.append(trajstr)
+            new_framelist.append(subframes)
+        if len(frames) > 0:
+            new_trajstr.append(trajstr)
+            new_framelist.append(frames)
+    return new_trajstr, new_framelist
+
 if __name__=="__main__":
     # generate_datafile("/home/amigo/tmp/test_datafile.txt", root_dir = '/home/amigo/tmp/test_root')
     # remove_envs_from_datafile('./data/data_tartanairv2.txt', './data/test_data_tartanairv2.txt', ['GreatMarshExposure', 'RetroOfficeExposure'])
-    from MapDict import mapdict
-    rename_envs_datafile('../data/tartanv2/tartan2_flow_front.txt', '../data/tartanv2_new/tartan2_flow_front.txt', mapdict)
-    rename_envs_datafile('../data/tartanv2/tartan2_flow_front_train.txt', '../data/tartanv2_new/tartan2_flow_front_train.txt', mapdict)
-    rename_envs_datafile('../data/tartanv2/tartan2_flow_front_test.txt', '../data/tartanv2_new/tartan2_flow_front_test.txt', mapdict)
-    rename_envs_datafile('../data/tartanv2/tartan2_flow_front_more_train.txt', '../data/tartanv2_new/tartan2_flow_front_train_more.txt', mapdict)
-    rename_envs_datafile('../data/tartanv2/tartan2_flow_front_more_test.txt', '../data/tartanv2_new/tartan2_flow_front_test_more.txt', mapdict)
-    rename_envs_datafile('../data/tartanv2/tartan2_flow_front_more.txt', '../data/tartanv2_new/tartan2_flow_front_more.txt', mapdict)
-    rename_envs_datafile('../data/tartanv2/tartan2_flow_front_more_train.txt', '../data/tartanv2_new/tartan2_flow_front_train_more.txt', mapdict)
-    rename_envs_datafile('../data/tartanv2/tartan2_flow_front_more_test.txt', '../data/tartanv2_new/tartan2_flow_front_test_more.txt', mapdict)
-    rename_envs_datafile('../data/tartanv2/tartan2_stereo_back.txt', '../data/tartanv2_new/tartan2_stereo_back.txt', mapdict)
-    rename_envs_datafile('../data/tartanv2/tartan2_stereo_bottom.txt', '../data/tartanv2_new/tartan2_stereo_bottom.txt', mapdict)
-    rename_envs_datafile('../data/tartanv2/tartan2_stereo_front.txt', '../data/tartanv2_new/tartan2_stereo_front.txt', mapdict)
+    # from MapDict import mapdict
+    # rename_envs_datafile('../data/tartanv2/tartan2_flow_front.txt', '../data/tartanv2_new/tartan2_flow_front.txt', mapdict)
+    # rename_envs_datafile('../data/tartanv2/tartan2_flow_front_train.txt', '../data/tartanv2_new/tartan2_flow_front_train.txt', mapdict)
+    # rename_envs_datafile('../data/tartanv2/tartan2_flow_front_test.txt', '../data/tartanv2_new/tartan2_flow_front_test.txt', mapdict)
+    # rename_envs_datafile('../data/tartanv2/tartan2_flow_front_more_train.txt', '../data/tartanv2_new/tartan2_flow_front_train_more.txt', mapdict)
+    # rename_envs_datafile('../data/tartanv2/tartan2_flow_front_more_test.txt', '../data/tartanv2_new/tartan2_flow_front_test_more.txt', mapdict)
+    # rename_envs_datafile('../data/tartanv2/tartan2_flow_front_more.txt', '../data/tartanv2_new/tartan2_flow_front_more.txt', mapdict)
+    # rename_envs_datafile('../data/tartanv2/tartan2_flow_front_more_train.txt', '../data/tartanv2_new/tartan2_flow_front_train_more.txt', mapdict)
+    # rename_envs_datafile('../data/tartanv2/tartan2_flow_front_more_test.txt', '../data/tartanv2_new/tartan2_flow_front_test_more.txt', mapdict)
+    # rename_envs_datafile('../data/tartanv2/tartan2_stereo_back.txt', '../data/tartanv2_new/tartan2_stereo_back.txt', mapdict)
+    # rename_envs_datafile('../data/tartanv2/tartan2_stereo_bottom.txt', '../data/tartanv2_new/tartan2_stereo_bottom.txt', mapdict)
+    # rename_envs_datafile('../data/tartanv2/tartan2_stereo_front.txt', '../data/tartanv2_new/tartan2_stereo_front.txt', mapdict)
+
+    inputfile = 'data/tartan_train.txt'
+    outputfile = 'data/test_datafile.txt'
+    trajlist, trajlenlist, framelist, totalframenum = read_datafile(inputfile)
+    trajlist, framelist = breakdown_trajectories(trajlist, framelist)
+    generate_datafile(outputfile, trajlist,framelist)
+    read_datafile(outputfile)

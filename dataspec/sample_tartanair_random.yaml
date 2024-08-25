@@ -12,13 +12,13 @@
     parameter:
   data:
     1:
-      file: "/home/amigo/workspace/pytorch/ss_costmap/data_cacher/data/data_coalmine.txt"
+      file: "/data/tmp/coalmine/analyze/data_coalmine.txt"
       modality: 
-        rgb_lcam_front:
+        image_lcam_front:
           "img0":
             cacher_size: [640, 640]
             length: 2
-        rgb_rcam_equirect:
+        image_rcam_equirect:
           "img1":
             cacher_size: [320, 640]
             length: 3
@@ -46,7 +46,7 @@
              cacher_size: [7]
              lenght: 2
       cacher:
-        data_root_path_override: "/home/amigo/tmp/test_root"
+        data_root_path_override: "/data/tmp"
         data_root_key: tartan2
         subset_framenum: 20
         worker_num: 2
@@ -56,13 +56,13 @@
         intrinsics: [640, 640, 320, 320, 320, 320]
         intrinsics_scale: [0.25, 0.25]
     2:
-      file: "/home/amigo/workspace/pytorch/ss_costmap/data_cacher/data/data_coalmine_filter.txt"
+      file: "/data/tmp/coalmine/analyze/data_coalmine_filter.txt"
       modality: 
-        rgb_lcam_back:
+        image_lcam_back:
           "img0":
             cacher_size: [640, 640]
             length: 2
-        rgb_rcam_equirect:
+        image_rcam_equirect:
           "img1":
             cacher_size: [320, 640]
             length: 3
@@ -90,7 +90,7 @@
              cacher_size: [7]
              lenght: 2
       cacher:
-        data_root_path_override: "/home/amigo/tmp/test_root"
+        data_root_path_override: "/data/tmp"
         data_root_key: tartan2
         subset_framenum: 100
         worker_num: 2

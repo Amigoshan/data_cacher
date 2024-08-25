@@ -29,7 +29,7 @@ class IMUBase(SimpleModBase):
 
     def crop_trajectory(self, data, framestrlist):
         startind = int(framestrlist[0]) * self.freq_mult
-        endind = int(framestrlist[-1]) * self.freq_mult # IMU len = (N-1)*10, where N is the number of images
+        endind = (int(framestrlist[-1]) + 1) * self.freq_mult # IMU len = (N-1)*10, where N is the number of images
         datalen = data.shape[0]
         assert startind < datalen and endind <= datalen, "Error in loading IMU, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
         return data[startind: endind]
@@ -333,7 +333,7 @@ class MotionModBase(SimpleModBase):
 
 # === lcam_front ===
 @register(TYPEDICT)
-class rgb_lcam_front(RGBModBase):
+class image_lcam_front(RGBModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "image_lcam_front"
@@ -355,7 +355,7 @@ class seg_lcam_front(SegModBase):
 
 # === rcam_front ===
 @register(TYPEDICT)
-class rgb_rcam_front(RGBModBase):
+class image_rcam_front(RGBModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "image_rcam_front"
@@ -378,7 +378,7 @@ class seg_rcam_front(SegModBase):
 
 # === lcam_back ===
 @register(TYPEDICT)
-class rgb_lcam_back(RGBModBase):
+class image_lcam_back(RGBModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "image_lcam_back"
@@ -400,7 +400,7 @@ class seg_lcam_back(SegModBase):
 
 # === rcam_back ===
 @register(TYPEDICT)
-class rgb_rcam_back(RGBModBase):
+class image_rcam_back(RGBModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "image_rcam_back"
@@ -422,7 +422,7 @@ class seg_rcam_back(SegModBase):
 
 # === lcam_left ===
 @register(TYPEDICT)
-class rgb_lcam_left(RGBModBase):
+class image_lcam_left(RGBModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "image_lcam_left"
@@ -444,7 +444,7 @@ class seg_lcam_left(SegModBase):
 
 # === rcam_left ===
 @register(TYPEDICT)
-class rgb_rcam_left(RGBModBase):
+class image_rcam_left(RGBModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "image_rcam_left"
@@ -466,7 +466,7 @@ class seg_rcam_left(SegModBase):
 
 # === lcam_right ===
 @register(TYPEDICT)
-class rgb_lcam_right(RGBModBase):
+class image_lcam_right(RGBModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "image_lcam_right"
@@ -488,7 +488,7 @@ class seg_lcam_right(SegModBase):
 
 # === rcam_right ===
 @register(TYPEDICT)
-class rgb_rcam_right(RGBModBase):
+class image_rcam_right(RGBModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "image_rcam_right"
@@ -510,7 +510,7 @@ class seg_rcam_right(SegModBase):
 
 # === lcam_top ===
 @register(TYPEDICT)
-class rgb_lcam_top(RGBModBase):
+class image_lcam_top(RGBModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "image_lcam_top"
@@ -532,7 +532,7 @@ class seg_lcam_top(SegModBase):
 
 # === rcam_top ===
 @register(TYPEDICT)
-class rgb_rcam_top(RGBModBase):
+class image_rcam_top(RGBModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "image_rcam_top"
@@ -554,7 +554,7 @@ class seg_rcam_top(SegModBase):
 
 # === lcam_bottom ===
 @register(TYPEDICT)
-class rgb_lcam_bottom(RGBModBase):
+class image_lcam_bottom(RGBModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "image_lcam_bottom"
@@ -576,7 +576,7 @@ class seg_lcam_bottom(SegModBase):
 
 # === rcam_bottom ===
 @register(TYPEDICT)
-class rgb_rcam_bottom(RGBModBase):
+class image_rcam_bottom(RGBModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "image_rcam_bottom"
@@ -598,7 +598,7 @@ class seg_rcam_bottom(SegModBase):
 
 # ==== lcam equirect ====
 @register(TYPEDICT)
-class rgb_lcam_equirect(RGBModBase):
+class image_lcam_equirect(RGBModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "image_lcam_equirect"
@@ -620,7 +620,7 @@ class seg_lcam_equirect(SegModBase):
 
 # ==== rcam equirect ====
 @register(TYPEDICT)
-class rgb_rcam_equirect(RGBModBase):
+class image_rcam_equirect(RGBModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "image_rcam_equirect"
@@ -635,7 +635,7 @@ class depth_rcam_equirect(DepthModBase):
 
 # ==== lcam fish ====
 @register(TYPEDICT)
-class rgb_lcam_fish(RGBModBase):
+class image_lcam_fish(RGBModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "image_lcam_fish"
@@ -657,7 +657,7 @@ class seg_lcam_fish(SegModBase):
 
 # ==== rcam fish ====
 @register(TYPEDICT)
-class rgb_rcam_fish(RGBModBase):
+class image_rcam_fish(RGBModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = "image_rcam_fish"
@@ -703,6 +703,34 @@ class imu_gyro(IMUBase):
     '''
     def get_filename(self):
         return [join(self.folder_name, 'gyro.npy')]
+
+@register(TYPEDICT)
+class imu(IMUBase):
+    '''
+    This combines imu_acc and imu_gyro
+    '''
+    def __init__(self, datashapelist):
+        super().__init__(datashapelist)
+        self.data_shapes = [(6,)]
+
+        self.freq_mult = 10
+        self.drop_last = 10
+
+        self.folder_name = 'imu'
+
+        self.imu_acc_loader = imu_acc(datashapelist)
+        self.imu_gyro_loader = imu_gyro(datashapelist)
+
+    def load_data(self, trajdir, framestrlist):
+        '''
+        The startingframe indicates the starting frame of this modality
+        It is used in the case that the trajectory is cropped into pieces and the current trajectory is not start from the first frame
+        '''
+        datalist_acc = self.imu_acc_loader.load_data(trajdir, framestrlist)
+        datalist_gyro = self.imu_gyro_loader.load_data(trajdir, framestrlist)
+
+        datalist = [np.concatenate((acc, gyro), axis=-1) for acc, gyro in zip(datalist_acc, datalist_gyro)]
+        return datalist
 
 @register(TYPEDICT)
 class pose_lcam_front(PoseModBase):
@@ -1122,7 +1150,7 @@ class lidar(LiDARBase):
 
     def framestr2filename(self, framestr):
         file_suffix = '_' + self.file_suffix if self.file_suffix != "" else ""
-        return join(self.folder_name, framestr + file_suffix + '.ply')
+        return [join(self.folder_name, framestr + file_suffix + '.ply')]
 
 @register(TYPEDICT)
 class event_cam(EventsBase):

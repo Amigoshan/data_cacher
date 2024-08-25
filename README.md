@@ -13,13 +13,14 @@ Cluster w/ networked storage    |    20    |    40     |     60     |
 
 
 ### Basic Ideas
-**Note that this datacacher won't help in every case. It only helps when there are lots of repetitive loadings between samples or batches.**
 
 When randomly loading sequences from a bunch of trajectories, different sequences might have a large overlap (as in the figure below), which results in loading the same image multiple times. Because the most time-consuming thing is loading data from the storage (SSD, hard drive, or networked storage) to the RAM. The idea to accelerate the loading is to cache a subset of trajectories in RAM, and load sequences from these cached trajectories exclusively before the next cache is loaded. 
 
 ![Loading sequences from trajectories](imgs/seq_loading.png)
 
-This datacacher maintains two buffers in RAM. One is a "loading" buffer, one is a "ready" buffer. Data is loaded alternately to these two buffers using multiple workers. The training code loads data from the ready buffer and will either wait for the next buffer or repetitively train on the current one once all data has been sampled. 
+This datacacher maintains two buffers in RAM. One is a "loading" buffer, one is a "ready" buffer. Data is loaded alternately to these two buffers in multiple threads. The training code loads data from the ready buffer and will either wait for the next buffer or repetitively train on the current one once all data has been sampled. 
+
+**Note that this datacacher won't help in every case. It only helps when there are lots of repetitive loadings between samples or batches.**
 
 **Note that the datacacher breaks the IID assumption. Depending on the size of your buffer, or whether you allow repetitive sampling, the distribution of your data will be less IID.**
 
@@ -124,7 +125,7 @@ python -m data_cacher.example_multidatasets
       --data-spec data_cacher/dataspec/sample_tartanair_traj.yaml
 ```
 
-## How it works
+## Under the Hood
 Now we talk about the implementation details of this data_cacher, in case people want to support their own dataset or add new functionalities. We first talk about some key components. Then we use KITTI dataset as an example to show how easy it is to add a new dataset.  
 
 ### Features and Assumptions 
@@ -134,7 +135,7 @@ By design, we make the following assumptions.
 - Different modalities are temporally aligned. It is only supported that one modality has a higher frequency that is an integral multiple of other modalities. For example, in TartanAir, images are at 10 Hz and IMU is at 100 Hz. 
 
 ### Key components
-**Data sepc file** is used by both low-level interface DataCacher and high-level interface MultiDatasets. It defines what modalities you want to load and how you want to load them (size, length, skip, stride, etc.). It also allows you to load dataset-specific parameters such as camera intrinsics. This file will be parsed by `ConfigParser`. 
+**Data spec file** is used by both low-level interface DataCacher and high-level interface MultiDatasets. It defines what modalities you want to load and how you want to load them (size, length, skip, stride, etc.). It also allows you to load dataset-specific parameters such as camera intrinsics. This file will be parsed by `ConfigParser`. 
 
 ```
 1:

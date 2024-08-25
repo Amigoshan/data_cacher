@@ -173,6 +173,6 @@ class SimpleModBase(ModBase):
             if padding is not None:
                 data = np.concatenate((data, padding), axis=0)
             data = self.crop_trajectory(data, framestrlist)
-            assert len(data) == len(framestrlist), "Error Loading {}, data len {}, framestr len {}".format(self.name, len(data), len(framestrlist))
+            assert len(data) == len(framestrlist) * self.freq_mult, "Error Loading {}, data len {}, framestr len {}".format(self.name, len(data), len(framestrlist))
             datalist.append(data)
         return datalist

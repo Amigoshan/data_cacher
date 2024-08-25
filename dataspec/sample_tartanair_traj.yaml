@@ -14,11 +14,11 @@
     1:
       file: "/home/amigo/workspace/pytorch/ss_costmap/data_cacher/data/data_coalmine.txt"
       modality: 
-        rgb_lcam_front:
+        image_lcam_front:
           "img0":
             cacher_size: [640, 640]
             length: 2
-        rgb_rcam_equirect:
+        image_rcam_equirect:
           "img1":
             cacher_size: [320, 640]
             length: 3
@@ -52,11 +52,11 @@
     2:
       file: "/home/amigo/workspace/pytorch/ss_costmap/data_cacher/data/data_coalmine_filter.txt"
       modality: 
-        rgb_lcam_back:
+        image_lcam_back:
           "img0":
             cacher_size: [640, 640]
             length: 2
-        rgb_rcam_equirect:
+        image_rcam_equirect:
           "img1":
             cacher_size: [320, 640]
             length: 3

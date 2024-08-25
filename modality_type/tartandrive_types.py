@@ -550,7 +550,7 @@ class depth_left_tartan(DepthModBase):
 
 
 @register(TYPEDICT)
-class imu(IMUBase):
+class imu_v1(IMUBase):
     '''
     This defines modality that is light-weight
     such as IMU, pose, wheel_encoder

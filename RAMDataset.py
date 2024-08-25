@@ -176,7 +176,7 @@ class RAMDataset(Dataset):
         return sample
 
 if __name__ == '__main__':
-    from .modality_type.tartanair_types import rgb_lcam_front, depth_lcam_front, flow_lcam_front
+    from .modality_type.tartanair_types import image_lcam_front, depth_lcam_front, flow_lcam_front
     from .DataSplitter import DataSplitter
     from .utils import visflow, visdepth
     from .datafile_editor import read_datafile
@@ -189,7 +189,7 @@ if __name__ == '__main__':
     datafile = '/home/amigo/tmp/test_root/coalmine/analyze/data_coalmine_Data_easy_P000.txt'
     trajlist, trajlenlist, framelist, totalframenum = read_datafile(datafile)
     dataspliter = DataSplitter(trajlist, trajlenlist, framelist, 12)
-    rgbtype = rgb_lcam_front((320, 320))
+    rgbtype = image_lcam_front((320, 320))
     depthtype = depth_lcam_front((320, 320))
     flowtype = flow_lcam_front((320, 320))
     dataroot = "/home/amigo/tmp/test_root"

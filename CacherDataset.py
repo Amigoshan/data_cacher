@@ -13,7 +13,7 @@ class CacherDataset(Dataset):
     '''
     def __init__(self, modality, trajlist, trajlenlist, framelist, datarootdir=""):
         '''
-        modality: the object of the modality_type, e.g. rgb_lcam_front
+        modality: the object of the modality_type, e.g. imiage_lcam_front
         '''
         self.modality = modality
         self.trajlist = trajlist

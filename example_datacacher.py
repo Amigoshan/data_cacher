@@ -31,7 +31,7 @@ def get_args():
     return args
                         
 def call_data_cacher(args):
-    from .modality_type.tartanair_types import rgb_lcam_front, rgb_rcam_equirect, depth_lcam_fish, seg_lcam_fish, flow_lcam_front, lidar
+    from .modality_type.tartanair_types import image_lcam_front, image_rcam_equirect, depth_lcam_fish, seg_lcam_fish, flow_lcam_front, lidar
     from .DataSplitter import DataSplitter
     from .datafile_editor import read_datafile
     from .DataCacher import DataCacher
@@ -53,8 +53,8 @@ def call_data_cacher(args):
                                 shuffle= shuffle) # this parameter only take effect if you have multiple trajectories in the datafile
 
     # we can load as many modality as we want
-    rgbtype = rgb_lcam_front([(640, 640)])
-    panorgbtype = rgb_rcam_equirect([(320,640)])
+    rgbtype = image_lcam_front([(640, 640)])
+    panorgbtype = image_rcam_equirect([(320,640)])
     fishdepthtype = depth_lcam_fish([(560,360)])
     fishsegtype = seg_lcam_fish([(280,280)])
     # note that the flow is one frame less than other modalities in the trajecotry

@@ -13,7 +13,7 @@ class DataCacher(object):
 
     def __init__(self, modalities, modkey_list, data_splitter, data_root, num_worker, batch_size=1, load_traj=False, verbose=False):
         '''
-        modalities: object of the class under modality_type folder, e.g. rgb_lcam_front
+        modalities: object of the class under modality_type folder, e.g. image_lcam_front
         modality_dict: [[mod_key0, mod_key1, ...], ...], wehre mod_key is the key of the sample dict, e.g. img0
         {   
             mod_class_name0: [mod_key0, mod_key1, ...], 
@@ -200,7 +200,7 @@ class DataCacher(object):
 
 # python -m Datacacher.DataCacher
 if __name__=="__main__":
-    from .modality_type.tartanair_types import rgb_lcam_back, pose_lcam_bottom, flow_lcam_front
+    from .modality_type.tartanair_types import image_lcam_back, pose_lcam_bottom, flow_lcam_front
     from .DataSplitter import DataSplitter
     from .datafile_editor import read_datafile
     from .utils import visflow
@@ -211,7 +211,7 @@ if __name__=="__main__":
     dataroot = '/peru/tartanairv2'
     trajlist, trajlenlist, framelist, totalframenum = read_datafile(datafile)
     dataspliter = DataSplitter(trajlist, trajlenlist, framelist, 100)
-    rgbtype = rgb_lcam_back([(320, 320)])
+    rgbtype = image_lcam_back([(320, 320)])
     posetype = pose_lcam_bottom([7])
     flowtype = flow_lcam_front([(320,320),(320,320)])
 

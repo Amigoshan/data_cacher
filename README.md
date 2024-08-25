@@ -30,7 +30,7 @@ This datacacher maintains two buffers in RAM. One is a "loading" buffer, one is 
 ### Prepare Data
 This datacacher supports both [TartanAir](https://github.com/castacks/tartanair_tools) and [TartanAir-V2](https://tartanair.org/). The first step is to **download the dataset** and **prepare a datafile**. As an example, download a sample trajectory from TartanAir-V2, using the following command: 
 ```
-wget http://airlab-share.andrew.cmu.edu/tartanair_test/sample_coalmine.zip
+wget -O sample_coalmine.zip https://cmu.box.com/shared/static/nt7av69j88e2uge77fxbc9cfw4nnxb0a.zip
 ```
 Extract the zip file to a data_root folder $DATA_ROOT. 
 

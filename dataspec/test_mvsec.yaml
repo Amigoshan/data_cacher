@@ -16,14 +16,14 @@
       modality: 
         mvsec_flow:
           "flow0":
-            cacher_size: [520, 692]
+            cacher_size: [260, 346]
             length: 2
           "mask0":
-            cacher_size: [520, 692]
+            cacher_size: [260, 346]
             length: 2
         mvsec_events:
           "events0":
-            cacher_size: [15, 520, 692]
+            cacher_size: [15, 260, 346]
             length: 2
       cacher:
         data_root_key: mvsec

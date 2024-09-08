@@ -4,7 +4,7 @@
     modality:
       length: 1
     cacher:
-      load_traj: false
+      load_traj: true
     dataset:
       frame_skip: 0
       seq_stride: 1
@@ -31,10 +31,10 @@
             length: 2
       cacher:
         data_root_key: tartan2_event
-        subset_framenum: 300
-        worker_num: 0
+        subset_framenum: 200
+        worker_num: 3
       dataset:
         frame_skip: 0
       parameter:
         intrinsics: [640, 640, 320, 320, 320, 320]
-        intrinsics_scale: [1.0, 1.0]
+        intrinsics_scale: [0.25, 0.25]

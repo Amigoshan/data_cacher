@@ -12,23 +12,23 @@
     parameter:
   data:
     1:
-      file: "loader/data_cacher/data/event_test_tum_vieo.txt"
+      file: "loader/data_cacher/data/event_test_vector.txt"
       modality: 
-        tum_vieo_events:
+        vector_events:
           "events0":
-            cacher_size: [15, 720, 1280]
+            cacher_size: [15, 480, 640]
             length: 2
-        tum_motion_left:
+        vector_motion_left:
           "motion0":
             cacher_size: [6]
             length: 2
       cacher:
         # data_root_path_override: "/home/amigo/tmp/test_root"
-        data_root_key: tum_vieo
+        data_root_key: vector
         subset_framenum: 100
         worker_num: 2
       dataset:
         frame_skip: 0
       parameter:
-        intrinsics: [1280, 720, 985.62, 986.07, 634.7, 252.8]
+        intrinsics: [640, 480, 327.32749, 327.46184, 304.97749, 235.37621]
         intrinsics_scale: [0.25, 0.25]

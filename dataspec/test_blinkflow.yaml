@@ -12,7 +12,7 @@
     parameter:
   data:
     1:
-      file: "./data_cacher/data/event_test_blinkflow.txt"
+      file: "loader/data_cacher/data/event_test_blinkflow.txt"
       modality: 
         blinkflow_flow:
           "flow0":

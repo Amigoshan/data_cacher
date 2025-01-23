@@ -86,9 +86,42 @@ class FlowModBase(FrameModBase):
         target_h, target_w = self.data_shapes[1]
         (h, w) = mask.shape
         if h != target_h or w != target_w:
-            scale_w, scale_h = float(target_w) / w, float(target_h) / h
             mask = cv2.resize(mask, (target_w, target_h), interpolation=cv2.INTER_NEAREST )
         return [flow, mask]
+
+    def resize_sparse_flow_map(self, flow, valid, fx=1.0, fy=1.0):
+        ht, wd = flow.shape[:2]
+        coords = np.meshgrid(np.arange(wd), np.arange(ht))
+        coords = np.stack(coords, axis=-1)
+
+        coords = coords.reshape(-1, 2).astype(np.float32)
+        flow = flow.reshape(-1, 2).astype(np.float32)
+        valid = valid.reshape(-1).astype(np.uint8)
+
+        coords0 = coords[valid>=1]
+        flow0 = flow[valid>=1]
+
+        ht1 = int(round(ht * fy))
+        wd1 = int(round(wd * fx))
+
+        coords1 = coords0 * [fx, fy]
+        flow1 = flow0 * [fx, fy]
+
+        xx = np.round(coords1[:,0]).astype(np.int32)
+        yy = np.round(coords1[:,1]).astype(np.int32)
+
+        v = (xx > 0) & (xx < wd1) & (yy > 0) & (yy < ht1)
+        xx = xx[v]
+        yy = yy[v]
+        flow1 = flow1[v]
+
+        flow_img = np.zeros([ht1, wd1, 2], dtype=np.float32)
+        valid_img = np.zeros([ht1, wd1], dtype=np.uint8)
+
+        flow_img[yy, xx] = flow1
+        valid_img[yy, xx] = 1
+
+        return flow_img, valid_img
 
     def transpose(self, flowlist):
         reslist = []
@@ -183,7 +216,7 @@ class blinkflow_events(EventsBase):
 class mvsec_flow(FlowModBase):
     def __init__(self, datashape):
         super().__init__(datashape)
-        self.folder_name = "forward_flow"
+        self.folder_name = "forward_flow_1"
         self.file_prefix = "forward_flow"
     
     def load_frame(self, trajdir, filenamelist):
@@ -197,6 +230,23 @@ class mvsec_flow(FlowModBase):
         mask8 = flow_npz["valid"].astype(np.uint8)
         return [flow, mask8]
     
+    def resize_data(self, flowmasklist):
+        # resize image
+        flow = flowmasklist[0]
+        mask = flowmasklist[1]
+
+        assert self.data_shapes[0][1] == self.data_shapes[1][0] and self.data_shapes[0][2] == self.data_shapes[1][1], "The flow and mask should have the same shape for mvsec_flow"
+
+        _, target_h, target_w = self.data_shapes[0]
+        (h, w, _) = flow.shape
+        scale_w, scale_h = float(target_w) / w, float(target_h) / h
+        flow, mask = self.resize_sparse_flow_map(flow, mask, scale_w, scale_h)
+
+        if self.listlen == 1: 
+            return [flow]
+
+        return [flow, mask]
+    
     def framestr2filename(self, framestr):
         '''
         This is very dataset specific
@@ -207,10 +257,30 @@ class mvsec_flow(FlowModBase):
         return [join(self.folder_name, self.file_prefix + "_" + framestr + '_' + framestr2 + '.npz')]
 
 @register(TYPEDICT)
+class mvsec_motion_left(SimpleModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.data_shapes = [(6,)]
+        self.drop_last = 1 # this is used to let the loader know how much frames are short
+    
+    def crop_trajectory(self, data, framestrlist):
+        startind = int(framestrlist[0])
+        endind = int(framestrlist[-1]) + 1
+        datalen = data.shape[0]
+        assert startind < datalen and endind <= datalen, "Error in loading motion, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
+        return data[startind: endind]
+
+    def get_filename(self):
+        return ['left_event_cam_motions_1.npy']
+
+    def data_padding(self, k):
+        return np.zeros((self.drop_last, self.data_shapes[k][0]), dtype=np.float32)
+
+@register(TYPEDICT)
 class mvsec_events(EventsBase):
     def __init__(self, datashape):
         super().__init__(datashape)
-        self.folder_name = "event_tensor"
+        self.folder_name = "event_tensor_1"
         self.file_suffix = "event_tensor"
     
     def framestr2filename(self, framestr):
@@ -266,7 +336,7 @@ class vector_events(EventsBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         # 00354_00356_event_tensor.npz
-        self.folder_name = "left_event_tensor_rect"
+        self.folder_name = "left_event_tensor_rect_1"
         self.file_suffix = "event_tensor"
     
     def framestr2filename(self, framestr):
@@ -293,7 +363,7 @@ class vector_motion_left(SimpleModBase):
         return data[startind: endind]
 
     def get_filename(self):
-        return ['left_events_motion.txt']
+        return ['left_events_motion_1.txt']
 
     def data_padding(self, k):
         return np.zeros((self.drop_last, self.data_shapes[k][0]), dtype=np.float32)

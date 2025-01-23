@@ -1129,7 +1129,7 @@ class event_cam(EventsBase):
     def __init__(self, datashape):
         super().__init__(datashape)
         self.folder_name = 'events'
-        self.sub_folder = 'event_tensors'
+        self.sub_folder = 'event_tensors_1'
         self.file_suffix = 'event_tensor'
 
     def framestr2filename(self, framestr):

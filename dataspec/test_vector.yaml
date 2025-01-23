@@ -12,8 +12,8 @@
     parameter:
   data:
     1:
-      file: "loader/data_cacher/data/event_test_vector.txt"
-      modality: 
+      file: "loader/data_cacher/data/event_test_vector_1.txt"
+      modality:
         vector_events:
           "events0":
             cacher_size: [15, 480, 640]
@@ -26,7 +26,7 @@
         # data_root_path_override: "/home/amigo/tmp/test_root"
         data_root_key: vector
         subset_framenum: 100
-        worker_num: 2
+        worker_num: 1
       dataset:
         frame_skip: 0
       parameter:

@@ -1,0 +1,33 @@
+---
+  task: flowvo
+  global:
+    modality:
+      length: 1
+    cacher:
+      load_traj: true
+    dataset:
+      frame_skip: 0
+      seq_stride: 1
+      frame_dir: true
+    parameter:
+  data:
+    1:
+      file: "loader/data_cacher/data/mvsec_test_dataset.txt"
+      modality: 
+        mvsec_events:
+          "events0":
+            cacher_size: [15, 520, 692]
+            length: 2
+        mvsec_motion_left:
+          "motion0":
+            cacher_size: [6]
+            length: 2
+      cacher:
+        data_root_key: mvsec
+        subset_framenum: 800
+        worker_num: 1
+      dataset:
+        frame_skip: 0
+      parameter:
+        intrinsics: [692, 520, 452.76, 452.30, 347.294, 267.46]
+        intrinsics_scale: [0.25, 0.25]

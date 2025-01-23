@@ -1,0 +1,40 @@
+---
+  task: flowvo
+  global:
+    modality:
+      length: 1
+    cacher:
+      load_traj: true
+    dataset:
+      frame_skip: 0
+      seq_stride: 1
+      frame_dir: true
+    parameter:
+  data:
+    1:
+      file: "loader/data_cacher/data/mvsec_test_dataset_indoor_flying.txt"
+      modality: 
+        mvsec_events:
+          "events0":
+            cacher_size: [15, 260, 346]
+            length: 2
+        mvsec_motion_left:
+          "motion0":
+            cacher_size: [6]
+            length: 2
+        mvsec_flow:
+          "flow0":
+            cacher_size: [260, 346]
+            length: 2
+          "mask0":
+            cacher_size: [260, 346]
+            length: 2
+      cacher:
+        data_root_key: mvsec
+        subset_framenum: 800
+        worker_num: 1
+      dataset:
+        frame_skip: 0
+      parameter:
+        intrinsics: [346, 260, 196.74327274, 196.5432482, 173.98455063, 134.62566728]
+        intrinsics_scale: [0.25, 0.25]

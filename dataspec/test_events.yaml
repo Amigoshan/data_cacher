@@ -4,7 +4,7 @@
     modality:
       length: 1
     cacher:
-      load_traj: false
+      load_traj: true
     dataset:
       frame_skip: 0
       seq_stride: 1
@@ -12,8 +12,9 @@
     parameter:
   data:
     1:
-      file: "loader/data_cacher/data/event_test_tartanairv2.txt"
-      modality: 
+      file: "loader/data_cacher/data/event_test_tartanairv2_2025_02.txt"
+      # file: "loader/data_cacher/data/event_sample_test_tartanairv2_1.txt"
+      modality:
         flow_lcam_front:
           "flow0":
             cacher_size: [640, 640]
@@ -31,8 +32,8 @@
             length: 2
       cacher:
         data_root_key: tartan2_event
-        subset_framenum: 400
-        worker_num: 3
+        subset_framenum: 800
+        worker_num: 2
       dataset:
         frame_skip: 0
       parameter:

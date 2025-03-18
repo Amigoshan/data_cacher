@@ -367,3 +367,40 @@ class vector_motion_left(SimpleModBase):
 
     def data_padding(self, k):
         return np.zeros((self.drop_last, self.data_shapes[k][0]), dtype=np.float32)
+
+@register(TYPEDICT)
+class tartan_real_events(EventsBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        # 00354_00356_event_tensor.npz
+        self.folder_name = "left_event_tensor_rect"
+        self.file_suffix = "event_tensor"
+    
+    def framestr2filename(self, framestr):
+        '''
+        This is very dataset specific
+        Basically it handles how each dataset naming the frames and organizing the data
+        '''
+        framenum = int(framestr)
+        framestr2 = str(framenum + 1).zfill(6)
+        return [join(self.folder_name,  framestr + "_" + framestr2 + "_" + self.file_suffix + '.npz')]
+
+@register(TYPEDICT)
+class tartan_real_motion_left(SimpleModBase):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.data_shapes = [(6,)]
+        self.drop_last = 1 # this is used to let the loader know how much frames are short
+
+    def crop_trajectory(self, data, framestrlist):
+        startind = int(framestrlist[0])
+        endind = int(framestrlist[-1]) + 1
+        datalen = data.shape[0]
+        assert startind < datalen and endind <= datalen, "Error in loading motion, startind {}, endind {}, datalen {}".format(startind, endind, datalen)
+        return data[startind: endind]
+
+    def get_filename(self):
+        return ['gt_trajectory_motion.txt']
+
+    def data_padding(self, k):
+        return np.zeros((self.drop_last, self.data_shapes[k][0]), dtype=np.float32)

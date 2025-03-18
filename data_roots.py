@@ -84,6 +84,7 @@ DataRoot['psc'] = {
                         'sintel':        '/ocean/projects/cis220039p/shared/vo/sintel/training',
                         'flying':        '/ocean/projects/cis220039p/shared/vo/SceneFlow',
                         'sceneflow':        '/ocean/projects/cis220039p/shared/vo/SceneFlow',
+                        'tartan_real':       '/ocean/projects/cis220039p/shared/event_rosbag_npz',
 }
 
 

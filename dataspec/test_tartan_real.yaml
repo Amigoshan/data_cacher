@@ -1,0 +1,33 @@
+---
+  task: flowvo
+  global:
+    modality:
+      length: 1
+    cacher:
+      load_traj: true
+    dataset:
+      frame_skip: 0
+      seq_stride: 1
+      frame_dir: true
+    parameter:
+  data:
+    1:
+      file: "loader/data_cacher/data/tartan_real_test.txt"
+      modality:
+        tartan_real_events:
+          "events0":
+            cacher_size: [15, 720, 1280]
+            length: 2
+        tartan_real_motion_left:
+          "motion0":
+            cacher_size: [6]
+            length: 2
+      cacher:
+        data_root_key: tartan_real
+        subset_framenum: 100
+        worker_num: 1
+      dataset:
+        frame_skip: 0
+      parameter:
+        intrinsics: [1280, 720, 1581.505, 1578.08, 633.423, 398.614]
+        intrinsics_scale: [0.25, 0.25]

@@ -220,9 +220,16 @@ if __name__=="__main__":
     # rename_envs_datafile('../data/tartanv2/tartan2_stereo_bottom.txt', '../data/tartanv2_new/tartan2_stereo_bottom.txt', mapdict)
     # rename_envs_datafile('../data/tartanv2/tartan2_stereo_front.txt', '../data/tartanv2_new/tartan2_stereo_front.txt', mapdict)
 
-    inputfile = 'data/tartan_train.txt'
-    outputfile = 'data/test_datafile.txt'
-    trajlist, trajlenlist, framelist, totalframenum = read_datafile(inputfile)
-    trajlist, framelist = breakdown_trajectories(trajlist, framelist)
-    generate_datafile(outputfile, trajlist,framelist)
-    read_datafile(outputfile)
+    # inputfile = 'data/tartan_train.txt'
+    # outputfile = 'data/test_datafile.txt'
+    # trajlist, trajlenlist, framelist, totalframenum = read_datafile(inputfile)
+    # trajlist, framelist = breakdown_trajectories(trajlist, framelist)
+    # generate_datafile(outputfile, trajlist,framelist)
+    # read_datafile(outputfile)
+
+    # for debugging event data loader
+    outputfile = 'data/event_test.txt'
+    envlist = ['AbandonedCable', 'AbandonedFactory', 'AbandonedFactory2', 'AbandonedSchool', 'AmericanDiner', 'AmusementPark', 'AncientTowns', 'Antiquity3D', 'Apocalyptic', 'ArchVizTinyHouseDay']
+    trajlist = [join(env, 'Data_easy', 'P000') for env in envlist]
+    framelist = [[str(k).zfill(6) for k in range(11)]] * len(trajlist)
+    generate_datafile(outputfile, trajlist, framelist)

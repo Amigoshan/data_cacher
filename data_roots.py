@@ -14,7 +14,8 @@ DataRoot['local'] = {
                         'kitti-stereo': '/peru/tartanvo_data/kitti/stereo',
                         'kitti-vo':     '/home/wenshan/tmp/vo_data/kittivo',
                         'tartandrive':  '/home/amigo/workspace/ros_atv/src/rosbag_to_dataset/test_output',
-                        'tartandrive2':  '/cairo/arl_bag_files/2023_traj'
+                        'tartandrive2':  '/cairo/arl_bag_files/2023_traj',
+                        'tartan2_event':'/home/wenshan/tmp/event/test_root'
 }
 
 DataRoot['desktop'] = {

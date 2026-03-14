@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "data_cacher"
+version = "0.1.0"
+description = "Efficient multi-modal sequential data loader for PyTorch"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "torch>=1.9.0",
+    "numpy>=1.21.0",
+    "opencv-python>=4.5.0",
+    "pyyaml>=6.0",
+    "plyfile>=0.7.0",
+    "pandas>=1.3.0",
+    "open3d>=0.15.0",
+    "colorama>=0.4.0",
+    "pydantic>=1.8.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]

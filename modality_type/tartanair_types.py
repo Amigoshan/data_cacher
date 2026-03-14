@@ -68,7 +68,7 @@ class LiDARBase(FrameModBase):
     def resize_data(self, lidarlist):
         return lidarlist
 
-class EventsBase(FrameModBase):
+class EventTensorBase(FrameModBase):
     def __init__(self, datashapelist):
         super().__init__(datashapelist) # point dimention, e.g. 3 for tartanvo, 6 if rgb is included
         lenlist = len(datashapelist)
@@ -77,7 +77,7 @@ class EventsBase(FrameModBase):
             self.data_types.append(np.float32)
 
         self.folder_name = "" # to be filled in the derived class
-        self.file_suffix = "" # to be filled in the derived class
+        self.file_suffix = "event_tensor" # to be filled in the derived class
 
     def load_frame(self, trajdir, filenamelist):
         eventtensorlist = []
@@ -94,6 +94,12 @@ class EventsBase(FrameModBase):
 
     def resize_data(self, events):
         return events
+
+    def framestr2filename(self, framestr):
+        framenum = int(framestr)
+        framestr2 = str(framenum + 1).zfill(6)
+        file_suffix = '_' + self.file_suffix if self.file_suffix != "" else ""
+        return [join(self.folder_name, join(framestr + '_' + framestr2 + file_suffix + '.npz'))]
 
 class RGBModBase(FrameModBase):
     def __init__(self, datashapelist):
@@ -1153,16 +1159,10 @@ class lidar(LiDARBase):
         return [join(self.folder_name, framestr + file_suffix + '.ply')]
 
 @register(TYPEDICT)
-class event_cam(EventsBase):
+class event_tensor_lcam_left(EventTensorBase):
     def __init__(self, datashape):
         super().__init__(datashape)
-        self.folder_name = 'events'
-        self.sub_folder = 'event_tensors'
+        self.folder_name = 'eventtensor_lcam_front'
         self.file_suffix = 'event_tensor'
         self.drop_last = 1
 
-    def framestr2filename(self, framestr):
-        framenum = int(framestr)
-        framestr2 = str(framenum + 1).zfill(6)
-        file_suffix = '_' + self.file_suffix if self.file_suffix != "" else ""
-        return [join(self.folder_name, join(self.sub_folder, framestr + '_' + framestr2 + file_suffix + '.npz'))]

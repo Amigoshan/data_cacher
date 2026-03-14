@@ -1,6 +1,25 @@
 import numpy as np
 import cv2
 import os
+import logging
+from colorama import init, Fore, Style
+
+def setup_logger(name, verbose=False):
+    """
+    Set up a logger with colored console output for the given name.
+    Returns a logger instance.
+    """
+    init(autoreset=True)
+    logger = logging.getLogger(name)
+    if not logger.handlers:
+        handler = logging.StreamHandler()
+        formatter = logging.Formatter(
+            f'{Fore.BLUE}%(asctime)s{Style.RESET_ALL} - {Fore.GREEN}%(name)s{Style.RESET_ALL} - %(levelname)s - %(message)s'
+        )
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+    logger.setLevel(logging.DEBUG if verbose else logging.INFO)
+    return logger
 
 
 def tensor2img(tensImg,mean,std):
@@ -77,8 +96,8 @@ def visseg(segnp):
 
     return segvis
 
-import open3d as o3d
 def vispcd( pc_np, vis_size=(1920, 480), o3d_cam=None):
+    import open3d as o3d
     # pcd: numpy array
     w, h = (1920, 480)   # default o3d window size
 

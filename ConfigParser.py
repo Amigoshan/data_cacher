@@ -1,113 +1,125 @@
 import yaml
-
 from collections import OrderedDict
 
 class ConfigParser(object):
     """
-    Class that reads in the spec dataset.
-    This is simply reading in the yaml file and handling the global default value
+    Class that reads and validates dataset specification files.
+
+    Supports YAML format with global defaults and per-dataset overrides.
+    Validates configuration against predefined schemas for better error messages.
     """
+
     def __init__(self):
-        # these params are required, assert error if not provided
+        # Required global params
         self.global_paramlist = ['task']
 
-        self.modality_paramlist = ['cacher_size', # (h, w) the size of the modality
-                                   'length', # the sequence lengh of one particular modality
-                                  ]
+        # Modality params (per key like 'img0')
+        self.modality_paramlist = {
+            'cacher_size': {'type': 'list', 'minlength': 2, 'schema': {'type': 'integer'}, 'required': True},
+            'length': {'type': 'integer', 'min': 1, 'required': True}
+        }
 
-        self.cacher_paramlist = [   'data_root_key',
-                                    'data_root_path_override', # override the default data root path with this one.
-                                    'subset_framenum', # frame number in cacher
-                                    'worker_num', # how many works for the cacher
-                                    'load_traj' # load one trajectory into the cacher at one time
-                                ]
+        # Cacher params
+        self.cacher_paramlist = {
+            'data_root_key': {'type': 'string', 'required': True},
+            'data_root_path_override': {'type': 'string', 'required': False},
+            'subset_framenum': {'type': 'integer', 'min': 1, 'required': True},
+            'worker_num': {'type': 'integer', 'min': 0, 'required': True},
+            'load_traj': {'type': 'boolean', 'required': True}
+        }
 
-        self.dataset_paramlist = ['frame_skip',
-                                  'seq_stride',
-                                  'frame_dir'
-                                 ]
+        # Dataset params (optional, with defaults)
+        self.dataset_paramlist = {
+            'frame_skip': {'type': 'integer', 'min': 0, 'required': False},
+            'seq_stride': {'type': 'integer', 'min': 1, 'required': False},
+            'frame_dir': {'type': 'boolean', 'required': False}
+        }
 
-        # This defines parameters that come with the dataset
-        # such as camera intrinsics and stereo baseline     
-        # These params can be used in RAMDataset, 
-        # which will utilizing these values or directly return them for up-level class   
-        self.parameter_paramlist = ['intrinsics', # [w, h, fx, fy, ox, oy] - w corresponds to x and h cooresponds to y
-                                    'intrinsics_scale', #[scale_x, scale_y] - note that the order of x and y are is different from the way in cacher_size
-                                    'fxbl', # [focal_length * baseline]
-                                    'input_size', # [h, w] - allow different datasets be rcr to different input size
-                                    'cam_model_for_flow', # [w, h, fx, fy, ox, oy] # replace the intrinsics parameter
-                                    'cam_model_for_intrinsics_layer', # [w, h, fx, fy, ox, oy]  
-                                   ]
+        # Parameter params (optional)
+        self.parameter_paramlist = {
+            'intrinsics': {'type': 'list', 'minlength': 6, 'maxlength': 6, 'required': False},
+            'intrinsics_scale': {'type': 'list', 'minlength': 2, 'maxlength': 2, 'required': False},
+            'fxbl': {'type': 'number', 'required': False},
+            'input_size': {'type': 'list', 'minlength': 2, 'maxlength': 2, 'required': False},
+            'cam_model_for_flow': {'type': 'list', 'minlength': 6, 'maxlength': 6, 'required': False},
+            'cam_model_for_intrinsics_layer': {'type': 'list', 'minlength': 6, 'maxlength': 6, 'required': False}
+        }
+
 
     def parse_from_fp(self, fp):
-        x = yaml.safe_load(open(fp, 'r'))
-        return self.parse(x)
+        """
+        Parse YAML from file path.
 
-    def parse_from_dict(self, x):
-        return self.parse(x)
+        Args:
+            fp (str): Path to YAML file.
 
-    def parse_sub_global_param(self, spec, param_name, paramlist):
-        '''
-        the global param list should be the same with the individual param list
-        this function simply reads the global params 
-        the missing param will be assigned with None
-        '''
-        default_params = {}
-        for param in paramlist:
-            if not 'global' in spec or \
-                spec['global'] is None or (not param_name in spec['global']) or \
-                (spec['global'][param_name] is None) or (not param in spec['global'][param_name]):
-                default_params[param] = None 
-            else:
-                default_params[param] = spec['global'][param_name][param]
-        return default_params
+        Returns:
+            dict: Parsed and validated config.
 
-    def parse_sub_data_param(self, subparams, paramlist, default_params):
-        '''
-        params_spec: the raw data from the file under one datafile
-        param_name: modality/cacher/dataset
-        paramlist: self.dataset_paramlist/modality_paramlist/..
-        default_params: the return of the parse_sub_global_param function
-        '''
+        Raises:
+            ValueError: If validation fails.
+        """
+        try:
+            with open(fp, 'r') as f:
+                data = yaml.safe_load(f)
+        except yaml.YAMLError as e:
+            raise ValueError(f"Invalid YAML in {fp}: {e}")
+        return self.parse(data)
 
-        data_params = {}
-        # assert param_name in params_spec, 'ConfigParser: Missing {} in the spec'.format(param_name)
-        # subparams = params_spec[param_name]
-        for param in paramlist:
-            if subparams is not None and param in subparams: # use specific param
-                data_params[param] = subparams[param]
-            elif default_params[param] is not None: # use default param
-                data_params[param] = default_params[param]
+    def parse_from_dict(self, data):
+        """
+        Parse from dict (for programmatic configs).
 
-        return data_params
+        Args:
+            data (dict): Config dict.
+
+        Returns:
+            dict: Parsed and validated config.
+        """
+        return self.parse(data)
 
     def parse(self, spec):
+        """
+        Parse and validate the config dict.
+
+        Applies global defaults and validates structure.
+
+        Args:
+            spec (dict): Raw config dict from YAML.
+
+        Returns:
+            dict: Parsed config with defaults applied.
+
+        Raises:
+            ValueError: If required fields missing or validation fails.
+        """
+        if not isinstance(spec, dict):
+            raise ValueError("Config must be a dict")
+
         dataset_config = OrderedDict()
+        dataset_config['task'] = spec.get('task')
+        if not dataset_config['task']:
+            raise ValueError("Missing required 'task' in config")
 
-        # Check if the global params are available
-        for param in self.global_paramlist:
-            if param in spec: 
-                dataset_config[param] = spec[param]
-            else:
-                assert False, "ConfigParser: Missing {} in the spec file".format(param)
-
+        # Get global defaults
         default_modality_params = self.parse_sub_global_param(spec, "modality", self.modality_paramlist)
         default_cacher_params = self.parse_sub_global_param(spec, "cacher", self.cacher_paramlist)
         default_dataset_params = self.parse_sub_global_param(spec, "dataset", self.dataset_paramlist)
         default_parameter_params = self.parse_sub_global_param(spec, "parameter", self.parameter_paramlist)
 
         data_config = {}
-        for datasetind, params in spec['data'].items():
+        for datasetind, params in spec.get('data', {}).items():
             all_params = {}
-            assert 'file' in params, 'ConfigParser: Missing filename in the spec data/{}'.format(datasetind)
+            if 'file' not in params:
+                raise ValueError(f"Missing 'file' in data/{datasetind}")
             datafile = params['file']
             all_params['file'] = datafile
 
-            # import ipdb;ipdb.set_trace()
-            assert 'modality' in params, 'ConfigParser: Missing modality in the data/{}'.format(datasetind)
+            if 'modality' not in params:
+                raise ValueError(f"Missing 'modality' in data/{datasetind}")
             all_modality_params = {}
             modality_list = params['modality']
-            for mod_type in modality_list: 
+            for mod_type in modality_list:
                 modtype_params = {}
                 for modkey in modality_list[mod_type]:
                     modality_params = self.parse_sub_data_param(modality_list[mod_type][modkey], self.modality_paramlist, default_modality_params)
@@ -115,31 +127,131 @@ class ConfigParser(object):
                 all_modality_params[mod_type] = modtype_params
             all_params['modality'] = all_modality_params
 
-            assert 'cacher' in params, 'ConfigParser: Missing cacher in the data/{}'.format(datasetind)
+            if 'cacher' not in params:
+                raise ValueError(f"Missing 'cacher' in data/{datasetind}")
             cacher_params = self.parse_sub_data_param(params["cacher"], self.cacher_paramlist, default_cacher_params)
             all_params['cacher'] = cacher_params
 
-            assert 'dataset' in params, 'ConfigParser: Missing dataset in the data/{}'.format(datasetind)
-            dataset_params = self.parse_sub_data_param(params["dataset"], self.dataset_paramlist, default_dataset_params)
+            dataset_params = self.parse_sub_data_param(params.get("dataset", {}), self.dataset_paramlist, default_dataset_params)
             all_params['dataset'] = dataset_params
 
-            assert 'parameter' in params, 'ConfigParser: Missing parameter in the data/{}'.format(datasetind)
-            parameter_params = self.parse_sub_data_param(params["parameter"], self.parameter_paramlist, default_parameter_params)
+            parameter_params = self.parse_sub_data_param(params.get("parameter", {}), self.parameter_paramlist, default_parameter_params)
             all_params['parameter'] = parameter_params
 
             data_config[datasetind] = all_params
 
         dataset_config['data'] = data_config
+
+        # Validate the final config
+        self._validate_final(dataset_config)
+
         return dataset_config
 
+    def _validate_param(self, name, value, schema):
+        """Validate a single parameter against a schema definition."""
+        if value is None:
+            return
+
+        expected_type = schema.get('type')
+        if expected_type:
+            if expected_type == 'list':
+                if not isinstance(value, list):
+                    raise ValueError(f"Parameter '{name}' should be a list")
+                minlength = schema.get('minlength')
+                maxlength = schema.get('maxlength')
+                if minlength is not None and len(value) < minlength:
+                    raise ValueError(f"Parameter '{name}' must have at least {minlength} elements")
+                if maxlength is not None and len(value) > maxlength:
+                    raise ValueError(f"Parameter '{name}' must have at most {maxlength} elements")
+                item_schema = schema.get('schema')
+                if item_schema is not None:
+                    for i, item in enumerate(value):
+                        if item_schema.get('type') == 'integer' and not isinstance(item, int):
+                            raise ValueError(f"Parameter '{name}' element {i} must be integer")
+                        if item_schema.get('type') == 'number' and not isinstance(item, (int, float)):
+                            raise ValueError(f"Parameter '{name}' element {i} must be number")
+            elif expected_type == 'string':
+                if not isinstance(value, str):
+                    raise ValueError(f"Parameter '{name}' should be a string")
+            elif expected_type == 'integer':
+                if not isinstance(value, int):
+                    raise ValueError(f"Parameter '{name}' should be an integer")
+            elif expected_type == 'number':
+                if not isinstance(value, (int, float)):
+                    raise ValueError(f"Parameter '{name}' should be a number")
+            elif expected_type == 'boolean':
+                if not isinstance(value, bool):
+                    raise ValueError(f"Parameter '{name}' should be a boolean")
+
+    def parse_sub_global_param(self, spec, param_name, paramlist):
+        '''
+        Read global defaults for a section (modality, cacher, etc.).
+
+        This returns a dict with all expected keys (from `paramlist`), where missing
+        values are set to None.
+        '''
+        global_values = spec.get('global', {}).get(param_name, {}) or {}
+        defaults = {}
+        for param, schema in paramlist.items():
+            val = global_values.get(param)
+            self._validate_param(param, val, schema)
+            defaults[param] = val
+        return defaults
+
+    def parse_sub_data_param(self, params, paramlist, default_params):
+        '''
+        Merge data-specific parameters with defaults.
+
+        Raises:
+            ValueError: if a required parameter is missing or type/shape mismatch.
+        '''
+        merged = dict(default_params)
+        merged.update(params or {})
+
+        # Validate parameters according to schema
+        for p, schema in paramlist.items():
+            val = merged.get(p)
+            # Only enforce required params
+            if schema.get('required', True) and val is None:
+                raise ValueError(f"Missing required parameter '{p}'")
+            self._validate_param(p, val, schema)
+
+        return merged
+
+    def _validate_final(self, config):
+        """Basic validation of the final config structure."""
+        if 'task' not in config:
+            raise ValueError("Missing 'task'")
+        if 'data' not in config or not isinstance(config['data'], dict):
+            raise ValueError("'data' must be a dict")
+        for key, data in config['data'].items():
+            required = ['file', 'modality', 'cacher', 'dataset', 'parameter']
+            for r in required:
+                if r not in data:
+                    raise ValueError(f"Data {key} missing '{r}'")
+
+    def validate_config_file(self, fp):
+        """
+        Validate a config file without parsing (for CLI use).
+
+        Args:
+            fp (str): Path to YAML file.
+
+        Raises:
+            ValueError: If invalid.
+        """
+        self.parse_from_fp(fp)
+        print(f"Config {fp} is valid.")
 
 if __name__ == "__main__":
-    # fp = open('dataspec/flowvo_train_local_new.yaml')
-    dataset_specfile = '/home/amigo/workspace/pytorch/ss_costmap/data_cacher/dataspec/flowvo_test_local_v1.yaml'
-    fp = open(dataset_specfile)
-    d = yaml.safe_load(fp)
-    print(d)
-    print(type(d))
-    parser = ConfigParser()
-    x = parser.parse(d)
-    print(x)
+    import sys
+    if len(sys.argv) > 1:
+        fp = sys.argv[1]
+        parser = ConfigParser()
+        try:
+            parser.validate_config_file(fp)
+        except ValueError as e:
+            print(f"Validation failed: {e}")
+            sys.exit(1)
+    else:
+        print("Usage: python ConfigParser.py <config.yaml>")

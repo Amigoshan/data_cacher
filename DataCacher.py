@@ -8,6 +8,8 @@ from .TrajBuffer import TrajBuffer
 from .CacherDataset import  SimpleDataloader #CacherDataset,
 
 import concurrent.futures
+from .utils import setup_logger
+from colorama import Fore, Style
 
 class DataCacher(object):
 
@@ -27,6 +29,9 @@ class DataCacher(object):
         if the loaded data is in different shape with what defined in modalities_sizes, the data will be resized
         '''
         self.verbose = verbose
+
+        # Set up logging
+        self.logger = setup_logger(__name__, verbose)
 
         assert len(modalities) == len(modkey_list), "DataCacher: Modality number {} and modkey number {} mismatch!".format(\
             len(modalities), len(modkey_list))
@@ -83,7 +88,7 @@ class DataCacher(object):
         assert startind == self.loading_buffer.framenum * modality.freq_mult, \
             "DataCacher: Load simple mod {} for {} frames, which does not match {}".format(modkeys, startind, 
                                                                                             self.loading_buffer.framenum * modality.freq_mult)
-        self.vprint('  simple type {} loaded: traj {} frames {}'.format(modkeys, len(self.loading_buffer.trajlist), startind))
+        self.logger.info(f'{Fore.CYAN}Simple type {modkeys} loaded: traj {len(self.loading_buffer.trajlist)}, frames {startind}{Style.RESET_ALL}')
         self.loading_buffer.set_full(modkeys)
 
     def process_filelist(self, trajlist, framelist):
@@ -159,7 +164,7 @@ class DataCacher(object):
                                 'spec keys {} for {} do not match the data returned'.format(modkeys, modobj.name)
                                 
                         except Exception as exc:
-                            self.vprint(f"Failed to load image {data_index}: {exc}")
+                            self.logger.warning(f'{Fore.RED}Failed to load image {data_index}: {exc}{Style.RESET_ALL}')
                         else:
                             for datanp, modkey in zip(data_array_list, modkeys):
                                 self.loading_buffer.insert_frame_one_mod(data_index, modkey, datanp[np.newaxis,...])
@@ -169,17 +174,15 @@ class DataCacher(object):
 
                     if all(future.done() for future in future_to_index):
                         self.loading_buffer.set_full(modkeys)
-                        self.vprint('  type {} loaded: traj {}, frame {}, time {}'.format( \
-                            modkeys, len(self.loading_buffer.trajlist),len(self.loading_buffer), time.time()-modstarttime))
+                        self.logger.info(f'{Fore.YELLOW}Type {modkeys} loaded: traj {len(self.loading_buffer.trajlist)}, frame {len(self.loading_buffer)}, time {time.time()-modstarttime:.2f}{Style.RESET_ALL}')
                     else:
-                        self.vprint("Not all tasks have completed yet.")
+                        self.logger.warning(f'{Fore.RED}Not all tasks have completed yet.{Style.RESET_ALL}')
             else:
                 assert False, "DataCacher: Unknown modality type {}".format(modkeys)
         
         assert self.loading_buffer.is_full(), "Datacacher: the buffer is not full!"
         self.new_buffer_available = True
-        self.vprint('==> Buffer loaded: traj {}, frame {}, time {}'.format( \
-            len(self.loading_buffer.trajlist),len(self.loading_buffer), time.time()-self.starttime))
+        self.logger.info(f'{Fore.GREEN}==> Buffer loaded: traj {len(self.loading_buffer.trajlist)}, frame {len(self.loading_buffer)}, time {time.time()-self.starttime:.2f}{Style.RESET_ALL}')
 
     def run(self):
         # check which buffer is active
@@ -193,10 +196,6 @@ class DataCacher(object):
 
     def stop_cache(self):
         self.stop_flag = True
-    
-    def vprint(self, *args, **kwargs):
-        if self.verbose:
-            print(*args, **kwargs)
 
 # python -m Datacacher.DataCacher
 if __name__=="__main__":

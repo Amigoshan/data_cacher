@@ -3,6 +3,7 @@ from torch.utils.data import DataLoader
 import numpy as np
 from os.path import isfile, split
 import time
+
 from .data_roots import *
 from .modality_type.ModBase import get_modality_type
 from .DataSplitter import DataSplitter
@@ -12,6 +13,8 @@ from .ConfigParser import ConfigParser
 from .datafile_editor import read_datafile
 import torch 
 import numbers
+from .utils import setup_logger
+from colorama import Fore, Style
 
 class MultiDatasets(object):
     '''
@@ -46,6 +49,9 @@ class MultiDatasets(object):
         self.workernum = workernum
         self.shuffle = shuffle
         self.verbose = verbose
+
+        # Set up logging
+        self.logger = setup_logger(__name__, verbose)
 
         self.datafiles = []
         self.datasetnames = []
@@ -237,7 +243,7 @@ class MultiDatasets(object):
             if not self.shuffle: # sequential loading, switch to the next buffer in the same dataset or the first buffer of the next dataset
                 while not self.datacachers[datasetind].new_buffer_available:
                     time.sleep(1.0) # in sequential way, we always want the next buffer be loaded
-                    self.vprint('  Wait for the next buffer...')
+                    self.logger.info(f'{Fore.YELLOW}Wait for the next buffer...{Style.RESET_ALL}')
                     # import ipdb;ipdb.set_trace()
                 self.new_epoch_loading_buffer[datasetind] = self.datacachers[datasetind].switch_buffer()
 
@@ -254,7 +260,7 @@ class MultiDatasets(object):
                 if notrepeat or self.subsetrepeat[datasetind] > maxrepeatnum: # wait for the new buffer ready, do not repeat the current buffer
                     while not self.datacachers[datasetind].new_buffer_available:
                         time.sleep(1.0)
-                        self.vprint('  Wait for the next buffer...')
+                        self.logger.info(f'{Fore.YELLOW}Wait for the next buffer...{Style.RESET_ALL}')
 
                 if self.new_epoch_loading_buffer[datasetind]:
                     self.epoch_count[datasetind] += 1
@@ -269,7 +275,7 @@ class MultiDatasets(object):
                     self.subsetrepeat[datasetind] += 1
 
             sample = next(self.dataiters[datasetind])
-            self.vprint('==> Working on {} for the {} time'.format(self.datafiles[datasetind], self.subsetrepeat[datasetind]))
+            self.logger.info(f'{Fore.GREEN}==> Working on {self.datafiles[datasetind]} for the {self.subsetrepeat[datasetind]} time{Style.RESET_ALL}')
 
         self.batch_count_in_buffer[datasetind] += 1
         self.batch_count_in_epoch[datasetind] += 1
@@ -295,10 +301,6 @@ class MultiDatasets(object):
     def stop_cachers(self):
         for datacacher in self.datacachers:
             datacacher.stop_cache()
-
-    def vprint(self, *args, **kwargs):
-        if self.verbose:
-            print(*args, **kwargs)
 
 if __name__ == '__main__':
 
@@ -335,8 +337,8 @@ if __name__ == '__main__':
     num = 23201                       
     for k in range(num):
         sample = trainDataloader.load_sample(notrepeat=True, fullbatch=False)
-        print(k, sample['trajdir'], sample.keys())
-        print(sample['dataset_info'])
+        trainDataloader.logger.debug(f'{Fore.CYAN}Sample {k}: trajdir {sample["trajdir"]}, keys {list(sample.keys())}{Style.RESET_ALL}')
+        trainDataloader.logger.debug(f'{Fore.CYAN}Dataset info: {sample["dataset_info"]}{Style.RESET_ALL}')
         # time.sleep(0.02)
         # import ipdb;ipdb.set_trace()
         for b in range(len(sample['trajdir'])):
@@ -351,5 +353,5 @@ if __name__ == '__main__':
             cv2.imshow('img', ss4)
             cv2.waitKey(0)
 
-    print((time.time()-tic))
+    trainDataloader.logger.info(f'{Fore.MAGENTA}Total time: {time.time()-tic:.2f} seconds{Style.RESET_ALL}')
     trainDataloader.stop_cachers()

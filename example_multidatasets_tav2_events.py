@@ -87,8 +87,8 @@ def call_multi_datasets(args):
             # import ipdb;ipdb.set_trace()
              # visualize the data
             eventtensor = sample['events_left'] # the key is the same as the one defined in the dataspec file
-            for k in range(eventtensor.shape[0]):
-                vis_im = vis_event_tensor(eventtensor[k][0].numpy())
+            for i in range(eventtensor.shape[0]):
+                vis_im = vis_event_tensor(eventtensor[i][0].numpy())
                 cv2.imshow('event_tensor', vis_im)
                 cv2.waitKey(1)
         metadata = sample['dataset_info']

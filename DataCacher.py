@@ -46,6 +46,9 @@ class DataCacher(object):
         else:
             self.splitter_func = data_splitter.get_next_split
 
+        # Thread safety: lock for buffer operations
+        self.buffer_lock = threading.Lock()
+
         # initialize two buffers
         self.loading_buffer = None
         self.ready_buffer = None
@@ -67,10 +70,6 @@ class DataCacher(object):
         th = threading.Thread(target=self.run)
         th.start()
 
-    def insert_datalist(self, ind, modnamelist, datalist):
-        for modname, data in zip(modnamelist, datalist):
-            self.loading_buffer.insert_frame_one_mod(ind, modname, data)
-
     def load_simple_mod(self, modkeys, modality):
         simpleloader = SimpleDataloader(modality, self.loading_buffer.trajlist, self.loading_buffer.trajlenlist, 
                                         self.loading_buffer.framelist, datarootdir=self.data_root)
@@ -80,8 +79,9 @@ class DataCacher(object):
             assert len(datanp_list) == len(modkeys), \
                 'DataCacher: Data number {} and key number {} mismatch!'.format(len(datanp_list), len(modkeys))
             
-            for modkey, datanp in zip(modkeys, datanp_list):
-                self.loading_buffer.insert_all_one_mode(modkey, datanp, startind)
+            with self.buffer_lock:
+                for modkey, datanp in zip(modkeys, datanp_list):
+                    self.loading_buffer.insert_all_one_mode(modkey, datanp, startind)
 
             startind += datanp.shape[0]
             
@@ -120,22 +120,23 @@ class DataCacher(object):
         return new_epoch
 
     def switch_buffer(self):
-        if (self.loading_b and self.buffer_b.full):
-            # start to load buffer a
-            self.loading_b = False
-            self.loading_a = True
-            self.loading_buffer = self.buffer_a
-            self.ready_buffer = self.buffer_b
+        with self.buffer_lock:
+            if (self.loading_b and self.buffer_b.full):
+                # start to load buffer a
+                self.loading_b = False
+                self.loading_a = True
+                self.loading_buffer = self.buffer_a
+                self.ready_buffer = self.buffer_b
 
-        elif self.loading_a and self.buffer_a.full:
-            # switch to buffer b
-            self.loading_a = False
-            self.loading_b = True
-            self.loading_buffer = self.buffer_b
-            self.ready_buffer = self.buffer_a
+            elif self.loading_a and self.buffer_a.full:
+                # switch to buffer b
+                self.loading_a = False
+                self.loading_b = True
+                self.loading_buffer = self.buffer_b
+                self.ready_buffer = self.buffer_a
 
-        else:
-            assert False, "DataCacher: Unknow buffer state loading_a {}, loading_b {}".format(self.loading_a, self.loading_b)
+            else:
+                assert False, "DataCacher: Unknow buffer state loading_a {}, loading_b {}".format(self.loading_a, self.loading_b)
 
         new_epoch = self.reset_buffer()
         return new_epoch
@@ -166,8 +167,9 @@ class DataCacher(object):
                         except Exception as exc:
                             self.logger.warning(f'{Fore.RED}Failed to load image {data_index}: {exc}{Style.RESET_ALL}')
                         else:
-                            for datanp, modkey in zip(data_array_list, modkeys):
-                                self.loading_buffer.insert_frame_one_mod(data_index, modkey, datanp[np.newaxis,...])
+                            with self.buffer_lock:
+                                for datanp, modkey in zip(data_array_list, modkeys):
+                                    self.loading_buffer.insert_frame_one_mod(data_index, modkey, datanp[np.newaxis,...])
 
                         if self.stop_flag:
                             return

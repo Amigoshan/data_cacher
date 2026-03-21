@@ -3,6 +3,9 @@ from .ModBase import SimpleModBase, FrameModBase, register, TYPEDICT, repeat_fun
 from os.path import join
 import numpy as np
 from .ply_io import read_ply
+import h5py
+import hdf5plugin
+from .gen_event_tensor import gen_event_tensor_torch
 
 '''
 In the low level, each modality corresponds to a folder in the traj folder
@@ -100,6 +103,49 @@ class EventTensorBase(FrameModBase):
         framestr2 = str(framenum + 1).zfill(6)
         file_suffix = '_' + self.file_suffix if self.file_suffix != "" else ""
         return [join(self.folder_name, join(framestr + '_' + framestr2 + file_suffix + '.npz'))]
+
+class EventH5Base(FrameModBase):
+    def __init__(self, datashapelist):
+        super().__init__(datashapelist) # point dimention, e.g. 3 for tartanvo, 6 if rgb is included
+        lenlist = len(datashapelist)
+        self.data_types = []
+        for k in range(lenlist):
+            self.data_types.append(np.float32)
+
+        self.h5_filename = "" # to be filled in the derived class
+
+    def load_frame(self, trajdir, filenamelist):
+        eventtensorlist = []
+        h5file = join(trajdir, self.h5_filename)
+        with h5py.File(h5file, "r") as f:
+            ms_to_idx = f["ms_to_idx"][:]
+            for start_ms, end_ms in filenamelist:
+                start_idx = ms_to_idx[start_ms]
+                end_ms = min(end_ms, len(ms_to_idx)-1) # clamp to the valid ms range
+                end_idx = ms_to_idx[end_ms] 
+                t_events = f["events"]["t"][start_idx:end_idx]
+                x_events = f["events"]["x"][start_idx:end_idx]
+                y_events = f["events"]["y"][start_idx:end_idx]
+                p_events = f["events"]["p"][start_idx:end_idx]
+                events_data = np.stack([t_events, x_events, y_events, p_events], axis = 1)
+                event_tensor = gen_event_tensor_torch(events_data)
+                eventtensorlist.append(event_tensor.cpu().numpy())
+
+        return eventtensorlist
+    
+    def transpose(self, events):
+        return events
+
+    def resize_data(self, events):
+        return events
+
+    def framestr2filename(self, framestr):
+        # for event h5 files, we don't really need to load from frame-based filenames
+        # instead, we will convert framestr to ms
+        framenum = int(framestr)
+        start_ms = framenum * 100 # we assume the ms per frame is 100ms, which is the same as the default setting in EventH5
+        end_ms = start_ms + 100
+        return [(start_ms, end_ms)]
 
 class RGBModBase(FrameModBase):
     def __init__(self, datashapelist):
@@ -1166,3 +1212,9 @@ class event_tensor_lcam_left(EventTensorBase):
         self.file_suffix = 'event_tensor'
         self.drop_last = 1
 
+@register(TYPEDICT)
+class event_h5_lcam_left(EventH5Base):
+    def __init__(self, datashape):
+        super().__init__(datashape)
+        self.h5_filename = 'events_lcam_front.h5'
+        self.drop_last = 1

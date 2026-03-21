@@ -1,5 +1,6 @@
 import numpy as np
 from torch.utils.data import Dataset
+from .utils import setup_logger
 # from .utils import make_intrinsics_layer
 
 class RAMDataset(Dataset):
@@ -44,6 +45,7 @@ class RAMDataset(Dataset):
         ):  
 
         super(RAMDataset, self).__init__()
+        self.logger = setup_logger(__name__, verbose)
         self.datacacher = datacacher
         self.modalities_lengths = modalities_lengths
         self.modalities_freq_mults = modalities_freq_mults
@@ -84,11 +86,8 @@ class RAMDataset(Dataset):
 
         self.verbose = verbose
 
-        self.vprint('Loaded {} sequences from the RAM, which contains {} frames...'.format(self.N, self.framenumFromFile))
+        self.logger.info('Loaded {} sequences from the RAM, which contains {} frames...'.format(self.N, self.framenumFromFile))
 
-    def vprint(self, *args, **kwargs):
-        if self.verbose:
-            print(*args, **kwargs)
 
     def parse_seqnum(self):
         seqnumlist = []

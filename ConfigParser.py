@@ -15,7 +15,7 @@ class ConfigParser(object):
 
         # Modality params (per key like 'img0')
         self.modality_paramlist = {
-            'cacher_size': {'type': 'list', 'minlength': 2, 'schema': {'type': 'integer'}, 'required': True},
+            'cacher_size': {'type': 'list', 'minlength': 1, 'schema': {'type': 'integer'}, 'required': True},
             'length': {'type': 'integer', 'min': 1, 'required': True}
         }
 

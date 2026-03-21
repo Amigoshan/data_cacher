@@ -1,6 +1,7 @@
 import numpy as np
 import ctypes
 import multiprocessing as mp
+from .utils import setup_logger
 
 def convert_type(nptype):
     '''
@@ -29,10 +30,7 @@ class RAMBufferBase(object):
         self.datasize = (0)
         # self.reset(datasize)
         self.verbose = verbose
-    
-    def vprint(self, *args, **kwargs):
-        if self.verbose:
-            print(*args, **kwargs)
+        self.logger = setup_logger(__name__, verbose)
 
     def reset(self, datasize):
         if datasize != self.datasize: # re-allocate the buffer only if the datasize changes
@@ -42,7 +40,7 @@ class RAMBufferBase(object):
             buffer_base = mp.Array(self.ctype, datanum)
             self.buffer = np.ctypeslib.as_array(buffer_base.get_obj())
             self.buffer = self.buffer.reshape(self.datasize)
-            self.vprint("RAM Buffer allocated size {}, mem {} G".format(datasize, datanum * self.databyte / 1000./1000./1000.))
+            self.logger.info("RAM Buffer allocated size {}, mem {} G".format(datasize, datanum * self.databyte / 1000./1000./1000.))
 
     def insert(self, index, data):
         assert data.shape == self.datasize[1:], "Insert data shape error! Data shape {}, buffer shape {}".format(data.shape, self.datasize)
@@ -62,7 +60,7 @@ class RAMBufferBase(object):
 
     def __getitem__(self, index):
         # assert index < self.datasize[0], 'Invalid index {}, buffer size {}'.format(index, self.datasize[0])
-        return self.buffer[index].copy()
+        return self.buffer[index]
 
 if __name__=="__main__":
     import ipdb;ipdb.set_trace()

@@ -4,12 +4,12 @@ import os
 import logging
 from colorama import init, Fore, Style
 
+init(autoreset=True)
 def setup_logger(name, verbose=False):
     """
     Set up a logger with colored console output for the given name.
     Returns a logger instance.
     """
-    init(autoreset=True)
     logger = logging.getLogger(name)
     if not logger.handlers:
         handler = logging.StreamHandler()

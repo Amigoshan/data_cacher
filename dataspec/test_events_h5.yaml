@@ -1,0 +1,30 @@
+---
+  task: flowevo
+  global:
+    modality:
+      length: 1
+    cacher:
+      load_traj: false
+    dataset:
+      frame_skip: 0
+      seq_stride: 1
+      frame_dir: true
+    parameter:
+  data:
+    1:
+      file: "data_cacher/data/event_test.txt"
+      modality: 
+        event_h5_lcam_left:
+          "events_left":
+            cacher_size: [15, 640, 640]
+            length: 2
+      cacher:
+        # data_root_path_override: "/ocean/projects/cis220039p/gramasat/tmp/test_root"
+        data_root_key: tartan2_event
+        subset_framenum: 50
+        worker_num: 2
+      dataset:
+        frame_skip: 0
+      parameter:
+        intrinsics: [640, 640, 320, 320, 320, 320]
+        intrinsics_scale: [0.25, 0.25]

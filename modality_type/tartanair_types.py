@@ -113,6 +113,7 @@ class EventH5Base(FrameModBase):
             self.data_types.append(np.float32)
 
         self.h5_filename = "" # to be filled in the derived class
+        self.frame_ms_interval = 100 # we assume each frame corresponds to 100ms, which is the default setting in EventH5
 
     def load_frame(self, trajdir, filenamelist):
         eventtensorlist = []
@@ -143,8 +144,8 @@ class EventH5Base(FrameModBase):
         # for event h5 files, we don't really need to load from frame-based filenames
         # instead, we will convert framestr to ms
         framenum = int(framestr)
-        start_ms = framenum * 100 # we assume the ms per frame is 100ms, which is the same as the default setting in EventH5
-        end_ms = start_ms + 100
+        start_ms = framenum * self.frame_ms_interval # we assume the ms per frame is 100ms, which is the same as the default setting in EventH5
+        end_ms = start_ms + self.frame_ms_interval
         return [(start_ms, end_ms)]
 
 class RGBModBase(FrameModBase):

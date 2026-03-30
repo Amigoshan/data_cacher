@@ -55,7 +55,7 @@ class MultiDatasets(object):
 
         self.datafiles = []
         self.datasetnames = []
-        self.datacachers = [ ] 
+        self.datacachers = []
         self.datasets = [None, ] * self.datasetNum
         self.dataloaders = [None, ] * self.datasetNum
         self.dataiters = [None, ] * self.datasetNum
